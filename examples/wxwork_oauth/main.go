@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/lixinio/weixin/redis"
 	"github.com/lixinio/weixin/wxwork"
 	"github.com/lixinio/weixin/wxwork/agent"
 )
@@ -36,7 +37,7 @@ func login(agent *agent.Agent, sso bool) http.HandlerFunc {
 		} else {
 			url = agent.GetSSOAuthorizeUrl(url, "state")
 		}
-		http.Redirect(w, r, url, http.StatusSeeOther)
+		http.Redirect(w, r, url, http.StatusFound)
 	}
 }
 
@@ -53,10 +54,11 @@ func callback(agent *agent.Agent) http.HandlerFunc {
 }
 
 func main() {
+	cache := redis.NewRedis(&redis.Config{RedisUrl: "redis://127.0.0.1:6379/1"})
 	corp := wxwork.New(&wxwork.Config{
 		Corpid: "wx247d4bc469342dc4",
 	})
-	agent := agent.New(corp, &agent.Config{
+	agent := agent.New(corp, cache, &agent.Config{
 		AgentId: "20",
 		Secret:  "G9x8iHpoQMJ8ynDgcplAvwiF4qWF1tRJ3gMVShXZ1Ks",
 	})

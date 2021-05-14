@@ -23,5 +23,5 @@ func New(config *Config) (corp *WxWork) {
 }
 
 func (corp *WxWork) NewClient(accessTokenCache *weixin.AccessTokenCache) *weixin.Client {
-	return weixin.NewClient(QyWXServerUrl, UserAgent, accessTokenCache)
+	return weixin.NewClient(QyWXServerUrl, accessTokenCache)
 }

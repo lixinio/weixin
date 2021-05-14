@@ -29,6 +29,7 @@ import (
 var (
 	ErrorAccessToken = errors.New("access token error")
 	ErrorSystemBusy  = errors.New("system busy")
+	UserAgent        = "lixinio/weixin"
 )
 
 /*
@@ -40,10 +41,10 @@ type Client struct {
 	accessTokenCache *AccessTokenCache
 }
 
-func NewClient(serverUrl, userAgent string, accessTokenCache *AccessTokenCache) *Client {
+func NewClient(serverUrl string, accessTokenCache *AccessTokenCache) *Client {
 	return &Client{
 		serverUrl:        serverUrl,
-		userAgent:        userAgent,
+		userAgent:        UserAgent,
 		accessTokenCache: accessTokenCache,
 	}
 }
