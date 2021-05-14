@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/lixinio/weixin/redis"
 	"github.com/lixinio/weixin/wxwork"
 	"github.com/lixinio/weixin/wxwork/agent"
 	"github.com/lixinio/weixin/wxwork/department_api"
@@ -12,10 +13,11 @@ import (
 )
 
 func main() {
+	cache := redis.NewRedis(&redis.Config{RedisUrl: "redis://127.0.0.1:6379/1"})
 	corp := wxwork.New(&wxwork.Config{
 		Corpid: "wx247d4bc469342dc4",
 	})
-	agent := agent.New(corp, &agent.Config{
+	agent := agent.New(corp, cache, &agent.Config{
 		AgentId: "20",
 		Secret:  "G9x8iHpoQMJ8ynDgcplAvwiF4qWF1tRJ3gMVShXZ1Ks",
 	})

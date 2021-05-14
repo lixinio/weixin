@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/lixinio/weixin"
-	"github.com/lixinio/weixin/redis"
 	work "github.com/lixinio/weixin/wxwork"
 )
 
@@ -21,16 +20,12 @@ type Agent struct {
 	Client *weixin.Client
 }
 
-func New(corp *work.WxWork, config *Config) *Agent {
+func New(corp *work.WxWork, cache weixin.Cache, config *Config) *Agent {
 	instance := &Agent{
 		Config: config,
 		wxwork: corp,
 	}
-	instance.Client = corp.NewClient(weixin.NewAccessTokenCache(
-		instance,
-		redis.NewRedis(&redis.Config{RedisUrl: "redis://127.0.0.1:6379/1"}),
-		0,
-	))
+	instance.Client = corp.NewClient(weixin.NewAccessTokenCache(instance, cache, 0))
 	return instance
 }
 
