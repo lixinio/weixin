@@ -1,6 +1,6 @@
 package wxwork
 
-import "github.com/lixinio/weixin"
+import "github.com/lixinio/weixin/utils"
 
 var (
 	QyWXServerUrl = "https://qyapi.weixin.qq.com"
@@ -22,6 +22,6 @@ func New(config *Config) (corp *WxWork) {
 	return &instance
 }
 
-func (corp *WxWork) NewClient(accessTokenCache *weixin.AccessTokenCache) *weixin.Client {
-	return weixin.NewClient(QyWXServerUrl, accessTokenCache)
+func (corp *WxWork) NewClient(accessTokenCache *utils.AccessTokenCache) *utils.Client {
+	return utils.NewClient(QyWXServerUrl, accessTokenCache)
 }

@@ -20,6 +20,20 @@ package agent
 import (
 	"bytes"
 	"net/url"
+
+	"github.com/lixinio/weixin/utils"
+)
+
+const (
+	MenuTypeClick            = "click"              // 点击推事件
+	MenuTypeView             = "view"               // 跳转URL
+	MenuTypeScanCodePush     = "scancode_push"      // 扫码推事件
+	MenuTypeScanCodeWaitmsg  = "scancode_waitmsg"   // 扫码推事件 且弹出“消息接收中”提示框
+	MenuTypePicSysPhoto      = "pic_sysphoto"       // 弹出系统拍照发图
+	MenuTypePicPhotoOrAlbum  = "pic_photo_or_album" // 弹出拍照或者相册发图
+	MenuTypePicWeixin        = "pic_weixin"         // 弹出企业微信相册发图器
+	MenuTypeLocationSelect   = "location_select"    // 弹出地理位置选择器
+	MenuTypeViewMiniPrograme = "view_miniprogram"   // 跳转到小程序
 )
 
 const (
@@ -33,6 +47,16 @@ const (
 	apiGetWorkbenchTemplate = "/cgi-bin/agent/get_workbench_template"
 	apiSetWorkbenchData     = "/cgi-bin/agent/set_workbench_data"
 )
+
+type MenuEntryObj struct {
+	Type      string          `json:"type"`
+	Name      string          `json:"name"`
+	Key       string          `json:"key,omitempty"`
+	Url       string          `json:"url,omitempty"`
+	AppID     string          `json:"appid,omitempty"`
+	Pagepath  string          `json:"pagepath,omitempty"`
+	SubButton []*MenuEntryObj `json:"sub_button,omitempty"`
+}
 
 /*
 获取指定的应用详情
@@ -66,8 +90,19 @@ func (agent *Agent) AgentSet(payload []byte) (resp []byte, err error) {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90231
 POST https://qyapi.weixin.qq.com/cgi-bin/menu/create?access_token=ACCESS_TOKEN&agentid=AGENTID
 */
-func (agent *Agent) MenuCreate(payload []byte, params url.Values) (resp []byte, err error) {
+func (agent *Agent) MenuCreateRaw(payload []byte, params url.Values) (resp []byte, err error) {
 	return agent.Client.HTTPPost(apiMenuCreate+"?"+params.Encode(), bytes.NewReader(payload), "application/json;charset=utf-8")
+}
+func (agent *Agent) MenuCreate(agentid string, menus []MenuEntryObj) error {
+	params := url.Values{}
+	params.Add("agentid", agentid)
+
+	payload := struct {
+		Buttons []MenuEntryObj `json:"button,omitempty"`
+	}{
+		Buttons: menus,
+	}
+	return utils.ApiPostWrapperEx(agent.MenuCreateRaw, payload, params, nil)
 }
 
 /*
@@ -84,8 +119,13 @@ func (agent *Agent) MenuGet(params url.Values) (resp []byte, err error) {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90233
 GET https://qyapi.weixin.qq.com/cgi-bin/menu/delete?access_token=ACCESS_TOKEN&agentid=AGENTID
 */
-func (agent *Agent) MenuDelete(params url.Values) (resp []byte, err error) {
+func (agent *Agent) MenuDeleteRaw(params url.Values) (resp []byte, err error) {
 	return agent.Client.HTTPGet(apiMenuDelete + "?" + params.Encode())
+}
+func (agent *Agent) MenuDelete(agentid string) error {
+	return utils.ApiGetWrapper(agent.MenuDeleteRaw, func(params url.Values) {
+		params.Add("agentid", agentid)
+	}, nil)
 }
 
 /*

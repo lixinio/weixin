@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/lixinio/weixin"
+	"github.com/lixinio/weixin/utils"
 	"github.com/lixinio/weixin/wxwork"
 )
 
@@ -38,7 +38,7 @@ func (agent *Agent) refreshAccessTokenFromWXServer() (accessToken string, expire
 		return
 	}
 
-	var result weixin.TokenResponse
+	var result utils.TokenResponse
 
 	err = json.Unmarshal(resp, &result)
 	if err != nil {
