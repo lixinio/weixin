@@ -18,13 +18,15 @@ package material_api
 // Package material 素材管理
 
 import (
+	"encoding/json"
+	"fmt"
 	"io"
 	"mime/multipart"
+	"net/http"
 	"net/url"
-	"os"
 	"path"
 
-	"github.com/lixinio/weixin"
+	"github.com/lixinio/weixin/utils"
 	"github.com/lixinio/weixin/wxwork/agent"
 )
 
@@ -35,8 +37,15 @@ const (
 	apiJssdk     = "/cgi-bin/media/get/jssdk"
 )
 
+const (
+	MediaTypeImage = "image"
+	MediaTypeVoice = "voice"
+	MediaTypeVideo = "video"
+	MediaTypeFile  = "file"
+)
+
 type MaterialApi struct {
-	*weixin.Client
+	*utils.Client
 }
 
 func NewAgentApi(agent *agent.Agent) *MaterialApi {
@@ -45,33 +54,54 @@ func NewAgentApi(agent *agent.Agent) *MaterialApi {
 	}
 }
 
+type MaterialID struct {
+	utils.CommonError
+	MediaID   string `json:"media_id"`
+	Type      string `json:"type"`
+	CreatedAt string `json:"created_at"`
+}
+
 /*
 上传临时素材
 See: https://work.weixin.qq.com/api/doc/90000/90135/90253
 POST(@media) https://qyapi.weixin.qq.com/cgi-bin/media/upload?access_token=ACCESS_TOKEN&type=TYPE
 */
-func (api *MaterialApi) Upload(media string, params url.Values) (resp []byte, err error) {
+func (api *MaterialApi) Upload(filename string, content io.Reader, mediaType string) (result *MaterialID, err error) {
+	params := url.Values{}
+	params.Add("type", mediaType)
 	r, w := io.Pipe()
 	m := multipart.NewWriter(w)
 	go func() {
 		defer w.Close()
 		defer m.Close()
 
-		part, err := m.CreateFormFile("media", path.Base(media))
+		part, err := m.CreateFormFile("media", path.Base(filename))
 		if err != nil {
 			return
 		}
-		file, err := os.Open(media)
-		if err != nil {
-			return
-		}
-		defer file.Close()
-		if _, err = io.Copy(part, file); err != nil {
+		if _, err = io.Copy(part, content); err != nil {
 			return
 		}
 
 	}()
-	return api.Client.HTTPPost(apiUpload+"?"+params.Encode(), r, m.FormDataContentType())
+
+	var resp []byte
+	resp, err = api.Client.HTTPPost(apiUpload+"?"+params.Encode(), r, m.FormDataContentType())
+	if err != nil {
+		return
+	}
+
+	result = &MaterialID{}
+	err = json.Unmarshal(resp, result)
+	if err != nil {
+		return
+	}
+	return
+}
+
+type MaterialUrl struct {
+	utils.CommonError
+	URL string `json:"url"`
 }
 
 /*
@@ -79,28 +109,35 @@ func (api *MaterialApi) Upload(media string, params url.Values) (resp []byte, er
 See: https://work.weixin.qq.com/api/doc/90000/90135/90256
 POST(@media) https://qyapi.weixin.qq.com/cgi-bin/media/uploadimg?access_token=ACCESS_TOKEN
 */
-func (api *MaterialApi) UploadImg(media string) (resp []byte, err error) {
+func (api *MaterialApi) UploadImg(filename string, content io.Reader) (url string, err error) {
 	r, w := io.Pipe()
 	m := multipart.NewWriter(w)
 	go func() {
 		defer w.Close()
 		defer m.Close()
 
-		part, err := m.CreateFormFile("media", path.Base(media))
+		part, err := m.CreateFormFile("media", path.Base(filename))
 		if err != nil {
 			return
 		}
-		file, err := os.Open(media)
-		if err != nil {
-			return
-		}
-		defer file.Close()
-		if _, err = io.Copy(part, file); err != nil {
+
+		if _, err = io.Copy(part, content); err != nil {
 			return
 		}
 
 	}()
-	return api.Client.HTTPPost(apiUploadImg, r, m.FormDataContentType())
+
+	var resp []byte
+	resp, err = api.Client.HTTPPost(apiUploadImg, r, m.FormDataContentType())
+	if err != nil {
+		return
+	}
+	var result MaterialUrl
+	err = json.Unmarshal(resp, &result)
+	if err != nil {
+		return
+	}
+	return result.URL, nil
 }
 
 /*
@@ -108,23 +145,29 @@ func (api *MaterialApi) UploadImg(media string) (resp []byte, err error) {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90254
 GET https://qyapi.weixin.qq.com/cgi-bin/media/get?access_token=ACCESS_TOKEN&media_id=MEDIA_ID
 */
-// func (api *MaterialApi) Get(params url.Values, header http.Header) (resp *http.Response, err error) {
+func (api *MaterialApi) Get(mediaID string) (resp *http.Response, err error) {
+	params := url.Values{}
+	params.Add("media_id", mediaID)
 
-// 	return api.Client.HTTPGetWithParams(apiGet + "?" + params.Encode())
-// 	accessToken, err := ctx.AccessToken.GetAccessTokenHandler(ctx)
-// 	if err != nil {
-// 		return
-// 	}
+	resp, err = api.Client.HTTPGetWithParamsRaw(apiGet, params)
+	if err != nil {
+		return
+	}
 
-// 	req, err := http.NewRequest(http.MethodGet, corporation.WXServerUrl+apiGet+"?access_token="+accessToken+"&"+params.Encode(), nil)
-// 	if err != nil {
-// 		return
-// 	}
+	ct := utils.ContentType(resp)
+	if ct != "application/json" && (resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusPartialContent) {
+		return resp, nil
+	}
 
-// 	req.Header = header
+	var body []byte
+	body, err = utils.ResponseFilter(resp)
+	if err == nil {
+		// 不应该走到这里来
+		err = fmt.Errorf("unknown error %s(%s)", ct, string(body))
+	}
+	return
 
-// 	return http.DefaultClient.Do(req)
-// }
+}
 
 // /*
 // 获取高清语音素材

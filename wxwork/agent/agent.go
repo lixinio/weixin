@@ -3,29 +3,27 @@ package agent
 import (
 	"fmt"
 
-	"github.com/lixinio/weixin"
+	"github.com/lixinio/weixin/utils"
 	work "github.com/lixinio/weixin/wxwork"
 )
 
 type Config struct {
-	AgentId        string // 企业（自建）应用ID
-	Secret         string // 企业（自建）应用密钥
-	Token          string // 接收消息服务器配置（Token）
-	EncodingAESKey string // 接收消息服务器配置（EncodingAESKey）
+	AgentId string // 企业（自建）应用ID
+	Secret  string // 企业（自建）应用密钥
 }
 
 type Agent struct {
 	Config *Config
 	wxwork *work.WxWork
-	Client *weixin.Client
+	Client *utils.Client
 }
 
-func New(corp *work.WxWork, cache weixin.Cache, config *Config) *Agent {
+func New(corp *work.WxWork, cache utils.Cache, config *Config) *Agent {
 	instance := &Agent{
 		Config: config,
 		wxwork: corp,
 	}
-	instance.Client = corp.NewClient(weixin.NewAccessTokenCache(instance, cache, 0))
+	instance.Client = corp.NewClient(utils.NewAccessTokenCache(instance, cache, 0))
 	return instance
 }
 

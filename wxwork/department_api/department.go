@@ -19,9 +19,10 @@ package department_api
 
 import (
 	"bytes"
+	"fmt"
 	"net/url"
 
-	"github.com/lixinio/weixin"
+	"github.com/lixinio/weixin/utils"
 	"github.com/lixinio/weixin/wxwork/agent"
 )
 
@@ -33,7 +34,7 @@ const (
 )
 
 type DepartmentApi struct {
-	*weixin.Client
+	*utils.Client
 }
 
 func NewAgentApi(agent *agent.Agent) *DepartmentApi {
@@ -42,13 +43,55 @@ func NewAgentApi(agent *agent.Agent) *DepartmentApi {
 	}
 }
 
+type CreateParam struct {
+	Name     string `json:"name"`
+	NameEn   string `json:"name_en,omitempty"`
+	Parentid int    `json:"parentid"`
+	Order    int    `json:"order,omitempty"`
+	ID       int    `json:"id,omitempty"`
+}
+
+type UpdateParam struct {
+	ID       int    `json:"id"`
+	Name     string `json:"name,omitempty"`
+	NameEn   string `json:"name_en,omitempty"`
+	Parentid int    `json:"parentid,omitempty"`
+	Order    int    `json:"order,omitempty"`
+}
+
+type DepartmentID struct {
+	utils.CommonError
+	ID int `json:"id"`
+}
+
+type DepartmentItem struct {
+	Name     string `json:"name"`
+	NameEn   string `json:"name_en"`
+	Parentid int    `json:"parentid"`
+	Order    int    `json:"order"`
+	ID       int    `json:"id"`
+}
+
+type DepartmentList struct {
+	utils.CommonError
+	Department []DepartmentItem `json:"department"`
+}
+
 /*
 创建部门
 See: https://work.weixin.qq.com/api/doc/90000/90135/90205
 POST https://qyapi.weixin.qq.com/cgi-bin/department/create?access_token=ACCESS_TOKEN
 */
-func (api *DepartmentApi) Create(payload []byte) (resp []byte, err error) {
+func (api *DepartmentApi) CreateRaw(payload []byte) (resp []byte, err error) {
 	return api.Client.HTTPPost(apiCreate, bytes.NewReader(payload), "application/json;charset=utf-8")
+}
+func (api *DepartmentApi) Create(params *CreateParam) (*DepartmentID, error) {
+	var result DepartmentID
+	err := utils.ApiPostWrapper(api.CreateRaw, params, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 /*
@@ -56,8 +99,12 @@ func (api *DepartmentApi) Create(payload []byte) (resp []byte, err error) {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90206
 POST https://qyapi.weixin.qq.com/cgi-bin/department/update?access_token=ACCESS_TOKEN
 */
-func (api *DepartmentApi) Update(payload []byte) (resp []byte, err error) {
+func (api *DepartmentApi) UpdateRaw(payload []byte) (resp []byte, err error) {
 	return api.Client.HTTPPost(apiUpdate, bytes.NewReader(payload), "application/json;charset=utf-8")
+}
+func (api *DepartmentApi) Update(params *UpdateParam) error {
+	var result DepartmentID
+	return utils.ApiPostWrapper(api.UpdateRaw, params, &result)
 }
 
 /*
@@ -65,8 +112,13 @@ func (api *DepartmentApi) Update(payload []byte) (resp []byte, err error) {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90207
 GET https://qyapi.weixin.qq.com/cgi-bin/department/delete?access_token=ACCESS_TOKEN&id=ID
 */
-func (api *DepartmentApi) Delete(params url.Values) (resp []byte, err error) {
+func (api *DepartmentApi) DeleteRaw(params url.Values) (resp []byte, err error) {
 	return api.Client.HTTPGet(apiDelete + "?" + params.Encode())
+}
+func (api *DepartmentApi) Delete(id int) error {
+	return utils.ApiGetWrapper(api.DeleteRaw, func(params url.Values) {
+		params.Add("id", fmt.Sprintf("%d", id))
+	}, nil)
 }
 
 /*
@@ -74,6 +126,18 @@ func (api *DepartmentApi) Delete(params url.Values) (resp []byte, err error) {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90208
 GET https://qyapi.weixin.qq.com/cgi-bin/department/list?access_token=ACCESS_TOKEN&id=ID
 */
-func (api *DepartmentApi) List(params url.Values) (resp []byte, err error) {
+func (api *DepartmentApi) ListRaw(params url.Values) (resp []byte, err error) {
 	return api.Client.HTTPGet(apiList + "?" + params.Encode())
+}
+func (api *DepartmentApi) List(id int) (*DepartmentList, error) {
+	var result DepartmentList
+	err := utils.ApiGetWrapper(api.ListRaw, func(params url.Values) {
+		if id != 0 {
+			params.Add("id", fmt.Sprintf("%d", id))
+		}
+	}, &result)
+	if err == nil {
+		return &result, nil
+	}
+	return nil, err
 }

@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/lixinio/weixin/redis"
+	"github.com/lixinio/weixin/test"
+	"github.com/lixinio/weixin/utils/redis"
 	"github.com/lixinio/weixin/wxwork"
 	"github.com/lixinio/weixin/wxwork/agent"
 )
@@ -12,14 +13,14 @@ import (
 func index(agent *agent.Agent) http.HandlerFunc {
 	html := `
 <form method="get" action="/login">
-    <button type="submit">登 录</button>
+    <button type="submit">企业微信登录</button>
 </form>
 <br/>
 <br/>
 <br/>
 <br/>
 <form method="get" action="/login_sso">
-<button type="submit">单点登录</button>
+<button type="submit">网页扫码登录</button>
 </form>
 	`
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -54,13 +55,13 @@ func callback(agent *agent.Agent) http.HandlerFunc {
 }
 
 func main() {
-	cache := redis.NewRedis(&redis.Config{RedisUrl: "redis://127.0.0.1:6379/1"})
+	cache := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
 	corp := wxwork.New(&wxwork.Config{
-		Corpid: "wx247d4bc469342dc4",
+		Corpid: test.CorpID,
 	})
 	agent := agent.New(corp, cache, &agent.Config{
-		AgentId: "20",
-		Secret:  "G9x8iHpoQMJ8ynDgcplAvwiF4qWF1tRJ3gMVShXZ1Ks",
+		AgentId: test.AgentID,
+		Secret:  test.AgentSecret,
 	})
 
 	http.HandleFunc("/", index(agent))

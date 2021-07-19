@@ -14,3 +14,9 @@ $(BINARIES):
 .PHONY: mod
 mod:
 	go mod tidy && go mod vendor
+
+.PHONY: unitest
+unitest:
+	go test $(REPO)/wxwork/agent/
+	go test $(REPO)/wxwork/department_api/
+	go test $(REPO)/wxwork/user_api/

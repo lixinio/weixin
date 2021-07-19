@@ -9,7 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/examples/wxwork_oauth"
+            "program": "${workspaceFolder}/examples/official_account"
         }
     ]
 }

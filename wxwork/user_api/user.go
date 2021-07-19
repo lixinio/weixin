@@ -21,7 +21,7 @@ import (
 	"bytes"
 	"net/url"
 
-	"github.com/lixinio/weixin"
+	"github.com/lixinio/weixin/utils"
 	"github.com/lixinio/weixin/wxwork/agent"
 )
 
@@ -42,7 +42,7 @@ const (
 )
 
 type UserApi struct {
-	*weixin.Client
+	*utils.Client
 }
 
 func NewAgentApi(agent *agent.Agent) *UserApi {
@@ -71,8 +71,18 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90196
 
 GET https://qyapi.weixin.qq.com/cgi-bin/user/get?access_token=ACCESS_TOKEN&userid=USERID
 */
-func (api *UserApi) Get(params url.Values) (resp []byte, err error) {
+func (api *UserApi) GetRaw(params url.Values) (resp []byte, err error) {
 	return api.Client.HTTPGet(apiGet + "?" + params.Encode())
+}
+func (api *UserApi) Get(userid string) (*UserInfo, error) {
+	var result UserInfo
+	err := utils.ApiGetWrapper(api.GetRaw, func(params url.Values) {
+		params.Add("userid", userid)
+	}, &result)
+	if err == nil {
+		return &result, nil
+	}
+	return nil, err
 }
 
 /*
