@@ -30,8 +30,6 @@ package official_account
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"net/url"
 )
 
@@ -98,14 +96,8 @@ func (officialAccount *OfficialAccount) GetSnsAccessToken(code string) (oauthAcc
 	params.Add("code", code)
 	params.Add("grant_type", "authorization_code")
 
-	uri := WXServerUrl + apiAccessToken + "?" + params.Encode()
-	response, err := http.Get(uri)
-	if err != nil {
-		return
-	}
-
-	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
+	var body []byte
+	body, err = officialAccount.Client.HTTPGetWithParams(apiAccessToken, params)
 	if err != nil {
 		return
 	}
@@ -134,14 +126,8 @@ func (officialAccount *OfficialAccount) RefreshToken(refresh_token string) (oaut
 	params.Add("refresh_token", refresh_token)
 	params.Add("grant_type", "refresh_token")
 
-	uri := WXServerUrl + apiRefreshToken + "?" + params.Encode()
-	response, err := http.Get(uri)
-	if err != nil {
-		return
-	}
-
-	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
+	var body []byte
+	body, err = officialAccount.Client.HTTPGetWithParams(apiRefreshToken, params)
 	if err != nil {
 		return
 	}
@@ -188,14 +174,8 @@ func (officialAccount *OfficialAccount) GetUserInfo(access_token string, openid 
 	params.Add("openid", openid)
 	params.Add("lang", lang)
 
-	uri := WXServerUrl + apiUserInfo + "?" + params.Encode()
-	response, err := http.Get(uri)
-	if err != nil {
-		return
-	}
-
-	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
+	var body []byte
+	body, err = officialAccount.Client.HTTPGetWithParams(apiUserInfo, params)
 	if err != nil {
 		return
 	}
@@ -221,14 +201,8 @@ func (officialAccount *OfficialAccount) Auth(access_token string, openid string)
 	params.Add("access_token", access_token)
 	params.Add("openid", openid)
 
-	uri := WXServerUrl + apiAuth + "?" + params.Encode()
-	response, err := http.Get(uri)
-	if err != nil {
-		return
-	}
-
-	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
+	var body []byte
+	body, err = officialAccount.Client.HTTPGetWithParams(apiAuth, params)
 	if err != nil {
 		return
 	}
@@ -261,17 +235,39 @@ See: https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/JS-SDK.html#62
 GET https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=ACCESS_TOKEN&type=jsapi
 */
 func (officialAccount *OfficialAccount) GetJSApiTicket() (jsapiTicket string, expiresIn int64, err error) {
+	return officialAccount.getApiTicket("jsapi")
+}
+
+/*
+获取 wxcard_ticket
+
+商户在调用授权页前需要先获取一个7200s过期的授权页ticket，在获取授权页接口中，该ticket作为参数传入，加强安全性。
+
+See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Vendor_API_List.html#1
+
+GET https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=ACCESS_TOKEN&type=wx_card
+*/
+func (officialAccount *OfficialAccount) GetWxCardApiTicket() (jsapiTicket string, expiresIn int64, err error) {
+	return officialAccount.getApiTicket("wx_card")
+}
+
+func (officialAccount *OfficialAccount) getApiTicket(tp string) (jsapiTicket string, expiresIn int64, err error) {
 
 	jsapiTicketResp := struct {
 		Ticket    string `json:"ticket"`
 		ExpiresIn int64  `json:"expires_in"`
 	}{}
-	resp, err := officialAccount.Client.HTTPGet(apiGetJSApiTicket + "?type=jsapi")
+
+	params := url.Values{}
+	params.Add("type", tp)
+
+	var body []byte
+	body, err = officialAccount.Client.HTTPGetWithParams(apiGetJSApiTicket, params)
 	if err != nil {
 		return
 	}
 
-	err = json.Unmarshal(resp, &jsapiTicketResp)
+	err = json.Unmarshal(body, &jsapiTicketResp)
 	if err != nil {
 		return
 	}

@@ -3,7 +3,7 @@ package official_account
 import (
 	"fmt"
 
-	"github.com/lixinio/weixin"
+	"github.com/lixinio/weixin/utils"
 )
 
 var (
@@ -14,22 +14,20 @@ var (
 公众号配置
 */
 type Config struct {
-	Appid          string
-	Secret         string
-	Token          string
-	EncodingAESKey string
+	Appid  string
+	Secret string
 }
 
 type OfficialAccount struct {
 	Config *Config
-	Client *weixin.Client
+	Client *utils.Client
 }
 
-func New(cache weixin.Cache, config *Config) *OfficialAccount {
+func New(cache utils.Cache, config *Config) *OfficialAccount {
 	instance := &OfficialAccount{
 		Config: config,
 	}
-	instance.Client = weixin.NewClient(WXServerUrl, weixin.NewAccessTokenCache(instance, cache, 0))
+	instance.Client = utils.NewClient(WXServerUrl, utils.NewAccessTokenCache(instance, cache, 0))
 	return instance
 }
 

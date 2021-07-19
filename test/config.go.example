@@ -1,0 +1,31 @@
+package test
+
+const (
+	// 缓存
+	CacheUrl = "redis://127.0.0.1:6379/1"
+	// 企业微信
+	CorpID = "wx7123451234512345" // 企业ID
+	// 自建H5应用， 回调配置参考 https://work.weixin.qq.com/api/doc/90000/90135/90237
+	AgentID             = "1012345"                                     // 企业（自建）应用ID
+	AgentSecret         = "eeRaquaec0nie7gughahC3xeobaethai8OoGh5DahSh" // 企业（自建）应用密钥
+	AgentContactSecret  = "Al6caeno4ooba5oi0Tha8yaec7ojaeshooh6Sooxem9" // 企业（自建）通讯录密钥， 只有这个才能写通讯录
+	AgentToken          = "othuiRi3beero0xut6ohquiewahthaixu7cor8OShai" // 接收消息服务器配置（Token）
+	AgentEncodingAESKey = "teingie6aeSha9uo7aiC6phaez0moofooy7pa3kohCa" // 接收消息服务器配置（EncodingAESKey）
+	AgentUserID         = "test"                                        // 用作测试的用户ID
+	// 微信服务号
+	OfficialAccountAppid  = "wx7123451234512345"
+	OfficialAccountSecret = "eeRaquaec0nie7gughahC3xeobaethai8OoGh5DahSh"
+	OfficialAccountToken  = "othuiRi3beero0xut6ohquiewahthaixu7cor8OShai" // 接收消息服务器配置（Token）
+	OfficialAccountAESKey = "teingie6aeSha9uo7aiC6phaez0moofooy7pa3kohCa" // 接收消息服务器配置（EncodingAESKey）
+	OfficialAccountAuthKey   = "MP_verify_7JuEh0gsFco1d0Uq.txt"           // 域名所有权检验 文件名
+	OfficialAccountAuthValue = "7JuEh0gsFco1d0Uq"                         // 域名所有权检验 文件内容
+
+	// 发票
+	InvoicePayee             = "深圳市XXX信息技术有限公司"
+	InvoicePhone             = "13800138000"
+	InvoiceType              = "广东省增值税普通发票"
+	InvoiceCustomUrlName     = "XXX公司"
+	InvoiceCustomURL         = "https://www.xxx.com"
+	InvoiceCustomUrlSubTitle = "XXX"
+	InvoicePdf               = "fapiao.pdf"
+)

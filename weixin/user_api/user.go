@@ -19,7 +19,7 @@ import (
 	"bytes"
 	"net/url"
 
-	"github.com/lixinio/weixin"
+	"github.com/lixinio/weixin/utils"
 	"github.com/lixinio/weixin/weixin/official_account"
 )
 
@@ -34,7 +34,7 @@ const (
 )
 
 type UserApi struct {
-	*weixin.Client
+	*utils.Client
 }
 
 func NewOfficialAccountApi(officialAccount *official_account.OfficialAccount) *UserApi {
@@ -52,8 +52,39 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Configurin
 
 POST https://api.weixin.qq.com/cgi-bin/user/info/updateremark?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) UpdateRemark(payload []byte) (resp []byte, err error) {
+func (api *UserApi) UpdateRemarkRaw(payload []byte) (resp []byte, err error) {
 	return api.Client.HTTPPost(apiUpdateRemark, bytes.NewReader(payload), "application/json;charset=utf-8")
+}
+func (api *UserApi) UpdateRemark(openID, remark string) error {
+	var result utils.CommonError
+	return utils.ApiPostWrapper(api.UpdateRemarkRaw, map[string]string{
+		"openid": openID,
+		"remark": remark,
+	}, &result)
+}
+
+type User struct {
+	Subscribe      int32   `json:"subscribe"`
+	OpenID         string  `json:"openid"`
+	Nickname       string  `json:"nickname"`
+	Sex            int32   `json:"sex"`
+	City           string  `json:"city"`
+	Country        string  `json:"country"`
+	Province       string  `json:"province"`
+	Language       string  `json:"language"`
+	Headimgurl     string  `json:"headimgurl"`
+	SubscribeTime  int32   `json:"subscribe_time"`
+	UnionID        string  `json:"unionid"`
+	Remark         string  `json:"remark"`
+	GroupID        int32   `json:"groupid"`
+	TagIDList      []int32 `json:"tagid_list"`
+	SubscribeScene string  `json:"subscribe_scene"`
+	QrScene        int     `json:"qr_scene"`
+	QrSceneStr     string  `json:"qr_scene_str"`
+}
+
+type UserInfo struct {
+	User
 }
 
 /*
@@ -65,8 +96,29 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Get_users_
 
 GET https://api.weixin.qq.com/cgi-bin/user/info?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN
 */
-func (api *UserApi) GetUserInfo(params url.Values) (resp []byte, err error) {
+func (api *UserApi) GetUserInfoRaw(params url.Values) (resp []byte, err error) {
 	return api.Client.HTTPGet(apiGetUserInfo + "?" + params.Encode())
+}
+func (api *UserApi) GetUserInfo(openid, lang string) (*UserInfo, error) {
+	var result UserInfo
+	err := utils.ApiGetWrapper(api.GetUserInfoRaw, func(params url.Values) {
+		params.Add("openid", openid)
+		params.Add("lang", lang)
+	}, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+type BatchGetUserParams struct {
+	UserList []struct {
+		OpenID string `json:"openid"`
+		Lang   string `json:"lang"`
+	} `json:"user_list"`
+}
+type UserInfoList struct {
+	UserInfoList []User `json:"user_info_list"`
 }
 
 /*
@@ -78,8 +130,26 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Get_users_
 
 POST https://api.weixin.qq.com/cgi-bin/user/info/batchget?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) BatchGetUserInfo(payload []byte) (resp []byte, err error) {
+func (api *UserApi) BatchGetUserInfoRaw(payload []byte) (resp []byte, err error) {
 	return api.Client.HTTPPost(apiBatchGetUserInfo, bytes.NewReader(payload), "application/json;charset=utf-8")
+}
+func (api *UserApi) BatchGetUserInfo(param *BatchGetUserParams) (*UserInfoList, error) {
+	var result UserInfoList
+	err := utils.ApiPostWrapper(api.BatchGetUserInfoRaw, param, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// OpenidList 用户列表
+type OpenidList struct {
+	Total int `json:"total"`
+	Count int `json:"count"`
+	Data  struct {
+		OpenIDs []string `json:"openid"`
+	} `json:"data"`
+	NextOpenID string `json:"next_openid"`
 }
 
 /*
@@ -91,8 +161,27 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Getting_a_
 
 GET https://api.weixin.qq.com/cgi-bin/user/get?access_token=ACCESS_TOKEN&next_openid=NEXT_OPENID
 */
-func (api *UserApi) Get(params url.Values) (resp []byte, err error) {
+func (api *UserApi) GetRaw(params url.Values) (resp []byte, err error) {
 	return api.Client.HTTPGet(apiGet + "?" + params.Encode())
+}
+func (api *UserApi) Get(next_openid string) (*OpenidList, error) {
+	var result OpenidList
+	err := utils.ApiGetWrapper(api.GetRaw, func(params url.Values) {
+		params.Add("next_openid", next_openid)
+	}, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+type BlackList struct {
+	Total int `json:"total"`
+	Count int `json:"count"`
+	Data  struct {
+		OpenIDs []string `json:"openid"`
+	} `json:"data"`
+	NextOpenID string `json:"next_openid"`
 }
 
 /*
@@ -104,8 +193,18 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Manage_bla
 
 POST https://api.weixin.qq.com/cgi-bin/tags/members/getblacklist?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) GetBlackList(payload []byte) (resp []byte, err error) {
+func (api *UserApi) GetBlackListRaw(payload []byte) (resp []byte, err error) {
 	return api.Client.HTTPPost(apiGetBlackList, bytes.NewReader(payload), "application/json;charset=utf-8")
+}
+func (api *UserApi) GetBlackList(beginOpenid string) (*BlackList, error) {
+	var result BlackList
+	err := utils.ApiPostWrapper(api.GetBlackListRaw, map[string]string{
+		"begin_openid": beginOpenid,
+	}, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 /*
@@ -117,8 +216,13 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Manage_bla
 
 POST https://api.weixin.qq.com/cgi-bin/tags/members/batchblacklist?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) BatchBlackList(payload []byte) (resp []byte, err error) {
+func (api *UserApi) BatchBlackListRaw(payload []byte) (resp []byte, err error) {
 	return api.Client.HTTPPost(apiBatchBlackList, bytes.NewReader(payload), "application/json;charset=utf-8")
+}
+func (api *UserApi) BatchBlackList(openidList []string) (err error) {
+	return utils.ApiPostWrapper(api.BatchBlackListRaw, map[string][]string{
+		"openid_list": openidList,
+	}, nil)
 }
 
 /*
@@ -130,6 +234,11 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Manage_bla
 
 POST https://api.weixin.qq.com/cgi-bin/tags/members/batchunblacklist?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) BatchUnBlackList(payload []byte) (resp []byte, err error) {
+func (api *UserApi) BatchUnBlackListRaw(payload []byte) (resp []byte, err error) {
 	return api.Client.HTTPPost(apiBatchUnBlackList, bytes.NewReader(payload), "application/json;charset=utf-8")
+}
+func (api *UserApi) BatchUnBlackList(openidList []string) (err error) {
+	return utils.ApiPostWrapper(api.BatchUnBlackListRaw, map[string][]string{
+		"openid_list": openidList,
+	}, nil)
 }
