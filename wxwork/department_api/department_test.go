@@ -1,6 +1,7 @@
 package department_api
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -25,6 +26,7 @@ func TestDepartment(t *testing.T) {
 		AgentId: "0",
 		Secret:  test.AgentContactSecret,
 	})
+	ctx := context.Background()
 
 	departmentName := time.Now().Format("20060201150405")
 	departmentApi := NewAgentApi(agent)
@@ -33,7 +35,7 @@ func TestDepartment(t *testing.T) {
 	rootDepartmentID := 0
 	{
 		// 获取根目录
-		resp, err := departmentApi.List(0)
+		resp, err := departmentApi.List(ctx, 0)
 		require.Equal(t, nil, err)
 		require.Greater(t, len(resp.Department), 0)
 		rootDepartmentID = resp.Department[0].ID
@@ -42,7 +44,7 @@ func TestDepartment(t *testing.T) {
 	newDepartmentID := 0
 	{
 		// 创建部门
-		resp, err := departmentContactApi.Create(&CreateParam{
+		resp, err := departmentContactApi.Create(ctx, &CreateParam{
 			Parentid: rootDepartmentID,
 			Name:     departmentName,
 		})
@@ -54,7 +56,7 @@ func TestDepartment(t *testing.T) {
 
 	{
 		// 更新部门
-		require.Equal(t, nil, departmentContactApi.Update(&UpdateParam{
+		require.Equal(t, nil, departmentContactApi.Update(ctx, &UpdateParam{
 			ID:   newDepartmentID,
 			Name: fmt.Sprintf("%snew", departmentName),
 		}))
@@ -62,7 +64,7 @@ func TestDepartment(t *testing.T) {
 
 	{
 		// 确认新部门
-		resp, err := departmentApi.List(newDepartmentID)
+		resp, err := departmentApi.List(ctx, newDepartmentID)
 		require.Equal(t, nil, err)
 		require.Greater(t, len(resp.Department), 0)
 		require.Equal(t, newDepartmentID, resp.Department[0].ID)
@@ -71,12 +73,12 @@ func TestDepartment(t *testing.T) {
 
 	{
 		// 删除部门
-		require.Equal(t, nil, departmentContactApi.Delete(newDepartmentID))
+		require.Equal(t, nil, departmentContactApi.Delete(ctx, newDepartmentID))
 	}
 
 	{
 		// 确认删除结果
-		resp, err := departmentApi.List(0)
+		resp, err := departmentApi.List(ctx, 0)
 		require.Equal(t, nil, err)
 		require.Greater(t, len(resp.Department), 0)
 

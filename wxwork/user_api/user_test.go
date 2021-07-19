@@ -1,6 +1,7 @@
 package user_api
 
 import (
+	"context"
 	"testing"
 
 	"github.com/lixinio/weixin/test"
@@ -19,10 +20,11 @@ func TestUser(t *testing.T) {
 		AgentId: test.AgentID,
 		Secret:  test.AgentSecret,
 	})
+	ctx := context.Background()
 
 	userApi := NewAgentApi(agent)
 	{
-		resp, err := userApi.Get(test.AgentUserID)
+		resp, err := userApi.Get(ctx, test.AgentUserID)
 		require.Equal(t, nil, err)
 		require.Equal(t, test.AgentUserID, resp.UserID)
 	}

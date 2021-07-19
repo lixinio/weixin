@@ -15,11 +15,7 @@
 // Package tags 用户标签管理
 package user_api
 
-import (
-	"bytes"
-
-	"github.com/lixinio/weixin/utils"
-)
+import "context"
 
 const (
 	apiTagCreate         = "/cgi-bin/tags/create"
@@ -69,10 +65,7 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/User_Tag_M
 
 POST https://api.weixin.qq.com/cgi-bin/tags/create?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) CreateTagRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiTagCreate, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-func (api *UserApi) CreateTag(tagName string) (*TagInfo, error) {
+func (api *UserApi) CreateTag(ctx context.Context, tagName string) (*TagInfo, error) {
 	var result TagInfo
 	tag := &struct {
 		Name string `json:"name"`
@@ -80,7 +73,7 @@ func (api *UserApi) CreateTag(tagName string) (*TagInfo, error) {
 	params := map[string]*struct {
 		Name string `json:"name"`
 	}{"tag": tag}
-	err := utils.ApiPostWrapper(api.CreateTagRaw, params, &result)
+	err := api.Client.ApiPostWrapper(ctx, apiTagCreate, params, &result)
 
 	if err != nil {
 		return nil, err
@@ -95,12 +88,9 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/User_Tag_M
 
 GET https://api.weixin.qq.com/cgi-bin/tags/get?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) GetTagRaw() (resp []byte, err error) {
-	return api.Client.HTTPGet(apiTagGet)
-}
-func (api *UserApi) GetTag() (*TagList, error) {
+func (api *UserApi) GetTag(ctx context.Context) (*TagList, error) {
 	var result TagList
-	err := utils.ApiGetNullWrapper(api.GetTagRaw, &result)
+	err := api.Client.ApiGetNullWrapper(ctx, apiTagGet, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -114,10 +104,7 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/User_Tag_M
 
 POST https://api.weixin.qq.com/cgi-bin/tags/update?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) UpdateTagRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiTagUpdate, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-func (api *UserApi) UpdateTag(id int, name string) error {
+func (api *UserApi) UpdateTag(ctx context.Context, id int, name string) error {
 	tag := &struct {
 		ID   int    `json:"id"`
 		Name string `json:"name"`
@@ -126,7 +113,7 @@ func (api *UserApi) UpdateTag(id int, name string) error {
 		ID   int    `json:"id"`
 		Name string `json:"name"`
 	}{"tag": tag}
-	return utils.ApiPostWrapper(api.UpdateTagRaw, params, nil)
+	return api.Client.ApiPostWrapper(ctx, apiTagUpdate, params, nil)
 }
 
 /*
@@ -138,17 +125,14 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/User_Tag_M
 
 POST https://api.weixin.qq.com/cgi-bin/tags/delete?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) DeleteTagRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiTagDelete, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-func (api *UserApi) DeleteTag(id int) error {
+func (api *UserApi) DeleteTag(ctx context.Context, id int) error {
 	tag := &struct {
 		ID int `json:"id"`
 	}{ID: id}
 	params := map[string]*struct {
 		ID int `json:"id"`
 	}{"tag": tag}
-	return utils.ApiPostWrapper(api.DeleteTagRaw, params, nil)
+	return api.Client.ApiPostWrapper(ctx, apiTagDelete, params, nil)
 }
 
 /*
@@ -158,10 +142,7 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/User_Tag_M
 
 POST https://api.weixin.qq.com/cgi-bin/user/tag/get?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) GetUsersByTagRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiTagGetUsersByTag, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-func (api *UserApi) GetUsersByTag(tagID int, nextOpenid string) (*TagOpenIDList, error) {
+func (api *UserApi) GetUsersByTag(ctx context.Context, tagID int, nextOpenid string) (*TagOpenIDList, error) {
 	params := &struct {
 		TagID      int    `json:"tagid"`
 		NextOpenid string `json:"next_openid"`
@@ -170,7 +151,7 @@ func (api *UserApi) GetUsersByTag(tagID int, nextOpenid string) (*TagOpenIDList,
 		NextOpenid: nextOpenid,
 	}
 	var result TagOpenIDList
-	err := utils.ApiPostWrapper(api.GetUsersByTagRaw, params, &result)
+	err := api.Client.ApiPostWrapper(ctx, apiTagGetUsersByTag, params, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -186,10 +167,7 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/User_Tag_M
 
 POST https://api.weixin.qq.com/cgi-bin/tags/members/batchtagging?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) BatchTaggingRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiTagBatchTagging, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-func (api *UserApi) BatchTagging(tagID int, openIDList []string) error {
+func (api *UserApi) BatchTagging(ctx context.Context, tagID int, openIDList []string) error {
 	params := &struct {
 		TagID      int      `json:"tagid"`
 		OpenIDList []string `json:"openid_list"`
@@ -197,7 +175,7 @@ func (api *UserApi) BatchTagging(tagID int, openIDList []string) error {
 		TagID:      tagID,
 		OpenIDList: openIDList,
 	}
-	return utils.ApiPostWrapper(api.BatchTaggingRaw, params, nil)
+	return api.Client.ApiPostWrapper(ctx, apiTagBatchTagging, params, nil)
 }
 
 /*
@@ -209,10 +187,7 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/User_Tag_M
 
 POST https://api.weixin.qq.com/cgi-bin/tags/members/batchuntagging?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) BatchUnTaggingRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiTagBatchUnTagging, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-func (api *UserApi) BatchUnTagging(tagID int, openIDList []string) error {
+func (api *UserApi) BatchUnTagging(ctx context.Context, tagID int, openIDList []string) error {
 	params := &struct {
 		TagID      int      `json:"tagid"`
 		OpenIDList []string `json:"openid_list"`
@@ -220,7 +195,7 @@ func (api *UserApi) BatchUnTagging(tagID int, openIDList []string) error {
 		TagID:      tagID,
 		OpenIDList: openIDList,
 	}
-	return utils.ApiPostWrapper(api.BatchUnTaggingRaw, params, nil)
+	return api.Client.ApiPostWrapper(ctx, apiTagBatchUnTagging, params, nil)
 }
 
 /*
@@ -232,13 +207,9 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/User_Tag_M
 
 POST https://api.weixin.qq.com/cgi-bin/tags/getidlist?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) GetTagIdListRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiTagGetTagIdList, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-
-func (api *UserApi) GetTagIdList(openID string) (*UserTagList, error) {
+func (api *UserApi) GetTagIdList(ctx context.Context, openID string) (*UserTagList, error) {
 	var result UserTagList
-	err := utils.ApiPostWrapper(api.GetTagIdListRaw, map[string]string{
+	err := api.Client.ApiPostWrapper(ctx, apiTagGetTagIdList, map[string]string{
 		"openid": openID,
 	}, &result)
 	if err != nil {

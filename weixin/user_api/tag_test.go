@@ -1,6 +1,7 @@
 package user_api
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -17,10 +18,11 @@ func TestUserTag(t *testing.T) {
 		Appid:  test.OfficialAccountAppid,
 		Secret: test.OfficialAccountSecret,
 	})
+	ctx := context.Background()
 
 	userApi := NewOfficialAccountApi(officialAccount)
 	// 获得第一个用户
-	resp, err := userApi.Get("")
+	resp, err := userApi.Get(ctx, "")
 	require.Equal(t, nil, err)
 	require.NotEmpty(t, resp.Data.OpenIDs)
 	require.Equal(t, len(resp.Data.OpenIDs), resp.Count)
@@ -31,7 +33,7 @@ func TestUserTag(t *testing.T) {
 
 	{
 		// 创建标签
-		resp, err := userApi.CreateTag(tagName)
+		resp, err := userApi.CreateTag(ctx, tagName)
 		require.Equal(t, nil, err)
 		tagID = resp.Tag.ID
 		require.Equal(t, tagName, resp.Tag.Name)
@@ -39,7 +41,7 @@ func TestUserTag(t *testing.T) {
 
 	{
 		// 获取标签
-		resp, err := userApi.GetTag()
+		resp, err := userApi.GetTag(ctx)
 		require.Equal(t, nil, err)
 
 		var tag *TagItem = nil
@@ -55,13 +57,13 @@ func TestUserTag(t *testing.T) {
 	tagName = fmt.Sprintf("%snew", tagName)
 	{
 		// 编辑标签
-		require.Equal(t, nil, userApi.UpdateTag(tagID, tagName))
+		require.Equal(t, nil, userApi.UpdateTag(ctx, tagID, tagName))
 
 	}
 
 	{
 		// 重新 获取标签
-		resp, err := userApi.GetTag()
+		resp, err := userApi.GetTag(ctx)
 		require.Equal(t, nil, err)
 
 		var tag *TagItem = nil
@@ -76,12 +78,12 @@ func TestUserTag(t *testing.T) {
 
 	{
 		// 给粉丝打标签
-		require.Equal(t, nil, userApi.BatchTagging(tagID, []string{openid}))
+		require.Equal(t, nil, userApi.BatchTagging(ctx, tagID, []string{openid}))
 	}
 
 	{
 		// 获取标签下粉丝列表
-		resp, err := userApi.GetUsersByTag(tagID, "")
+		resp, err := userApi.GetUsersByTag(ctx, tagID, "")
 		require.Equal(t, nil, err)
 		require.Greater(t, resp.Count, 0)
 		require.Contains(t, resp.Data.OpenIDs, openid)
@@ -89,31 +91,31 @@ func TestUserTag(t *testing.T) {
 
 	{
 		// 获取用户身上的标签列表
-		resp, err := userApi.GetTagIdList(openid)
+		resp, err := userApi.GetTagIdList(ctx, openid)
 		require.Equal(t, nil, err)
 		require.Contains(t, resp.TagIDList, tagID)
 	}
 
 	{
 		// 删除粉丝标签
-		require.Equal(t, nil, userApi.BatchUnTagging(tagID, []string{openid}))
+		require.Equal(t, nil, userApi.BatchUnTagging(ctx, tagID, []string{openid}))
 	}
 
 	{
 		// 验证删除粉丝标签
-		resp, err := userApi.GetTagIdList(openid)
+		resp, err := userApi.GetTagIdList(ctx, openid)
 		require.Equal(t, nil, err)
 		require.NotContains(t, resp.TagIDList, tagID)
 	}
 
 	{
 		// 删除标签
-		require.Equal(t, nil, userApi.DeleteTag(tagID))
+		require.Equal(t, nil, userApi.DeleteTag(ctx, tagID))
 	}
 
 	{
 		// 验证删除标签
-		resp, err := userApi.GetTag()
+		resp, err := userApi.GetTag(ctx)
 		require.Equal(t, nil, err)
 
 		var tag *TagItem = nil

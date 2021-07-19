@@ -28,6 +28,7 @@
 package official_account
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -89,7 +90,7 @@ See: https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage
 
 GET https://api.weixin.qq.com/sns/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code
 */
-func (officialAccount *OfficialAccount) GetSnsAccessToken(code string) (oauthAccessToken OauthAccessToken, err error) {
+func (officialAccount *OfficialAccount) GetSnsAccessToken(ctx context.Context, code string) (oauthAccessToken OauthAccessToken, err error) {
 	params := url.Values{}
 	params.Add("appid", officialAccount.Config.Appid)
 	params.Add("secret", officialAccount.Config.Secret)
@@ -97,7 +98,7 @@ func (officialAccount *OfficialAccount) GetSnsAccessToken(code string) (oauthAcc
 	params.Add("grant_type", "authorization_code")
 
 	var body []byte
-	body, err = officialAccount.Client.HTTPGetWithParams(apiAccessToken, params)
+	body, err = officialAccount.Client.HTTPGetWithParams(ctx, apiAccessToken, params)
 	if err != nil {
 		return
 	}
@@ -120,14 +121,14 @@ See: https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage
 
 POST https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=APPID&grant_type=refresh_token&refresh_token=REFRESH_TOKEN
 */
-func (officialAccount *OfficialAccount) RefreshToken(refresh_token string) (oauthAccessToken OauthAccessToken, err error) {
+func (officialAccount *OfficialAccount) RefreshToken(ctx context.Context, refresh_token string) (oauthAccessToken OauthAccessToken, err error) {
 	params := url.Values{}
 	params.Add("appid", officialAccount.Config.Appid)
 	params.Add("refresh_token", refresh_token)
 	params.Add("grant_type", "refresh_token")
 
 	var body []byte
-	body, err = officialAccount.Client.HTTPGetWithParams(apiRefreshToken, params)
+	body, err = officialAccount.Client.HTTPGetWithParams(ctx, apiRefreshToken, params)
 	if err != nil {
 		return
 	}
@@ -168,14 +169,16 @@ See: https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage
 
 POST https://api.weixin.qq.com/sns/userinfo?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN
 */
-func (officialAccount *OfficialAccount) GetUserInfo(access_token string, openid string, lang string) (oauthUserInfo OauthUserInfo, err error) {
+func (officialAccount *OfficialAccount) GetUserInfo(
+	ctx context.Context, access_token string, openid string, lang string,
+) (oauthUserInfo OauthUserInfo, err error) {
 	params := url.Values{}
 	params.Add("access_token", access_token)
 	params.Add("openid", openid)
 	params.Add("lang", lang)
 
 	var body []byte
-	body, err = officialAccount.Client.HTTPGetWithParams(apiUserInfo, params)
+	body, err = officialAccount.Client.HTTPGetWithParams(ctx, apiUserInfo, params)
 	if err != nil {
 		return
 	}
@@ -196,13 +199,15 @@ See: https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage
 
 GET https://api.weixin.qq.com/sns/auth?access_token=ACCESS_TOKEN&openid=OPENID
 */
-func (officialAccount *OfficialAccount) Auth(access_token string, openid string) (isValid bool, err error) {
+func (officialAccount *OfficialAccount) Auth(
+	ctx context.Context, access_token string, openid string) (isValid bool, err error,
+) {
 	params := url.Values{}
 	params.Add("access_token", access_token)
 	params.Add("openid", openid)
 
 	var body []byte
-	body, err = officialAccount.Client.HTTPGetWithParams(apiAuth, params)
+	body, err = officialAccount.Client.HTTPGetWithParams(ctx, apiAuth, params)
 	if err != nil {
 		return
 	}
@@ -234,8 +239,10 @@ See: https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/JS-SDK.html#62
 
 GET https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=ACCESS_TOKEN&type=jsapi
 */
-func (officialAccount *OfficialAccount) GetJSApiTicket() (jsapiTicket string, expiresIn int64, err error) {
-	return officialAccount.getApiTicket("jsapi")
+func (officialAccount *OfficialAccount) GetJSApiTicket(
+	ctx context.Context,
+) (jsapiTicket string, expiresIn int64, err error) {
+	return officialAccount.getApiTicket(ctx, "jsapi")
 }
 
 /*
@@ -247,11 +254,15 @@ See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/V
 
 GET https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=ACCESS_TOKEN&type=wx_card
 */
-func (officialAccount *OfficialAccount) GetWxCardApiTicket() (jsapiTicket string, expiresIn int64, err error) {
-	return officialAccount.getApiTicket("wx_card")
+func (officialAccount *OfficialAccount) GetWxCardApiTicket(
+	ctx context.Context,
+) (jsapiTicket string, expiresIn int64, err error) {
+	return officialAccount.getApiTicket(ctx, "wx_card")
 }
 
-func (officialAccount *OfficialAccount) getApiTicket(tp string) (jsapiTicket string, expiresIn int64, err error) {
+func (officialAccount *OfficialAccount) getApiTicket(
+	ctx context.Context, tp string,
+) (jsapiTicket string, expiresIn int64, err error) {
 
 	jsapiTicketResp := struct {
 		Ticket    string `json:"ticket"`
@@ -262,7 +273,7 @@ func (officialAccount *OfficialAccount) getApiTicket(tp string) (jsapiTicket str
 	params.Add("type", tp)
 
 	var body []byte
-	body, err = officialAccount.Client.HTTPGetWithParams(apiGetJSApiTicket, params)
+	body, err = officialAccount.Client.HTTPGetWithParams(ctx, apiGetJSApiTicket, params)
 	if err != nil {
 		return
 	}

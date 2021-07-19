@@ -16,7 +16,7 @@
 package user_api
 
 import (
-	"bytes"
+	"context"
 	"net/url"
 
 	"github.com/lixinio/weixin/utils"
@@ -52,12 +52,9 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Configurin
 
 POST https://api.weixin.qq.com/cgi-bin/user/info/updateremark?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) UpdateRemarkRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiUpdateRemark, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-func (api *UserApi) UpdateRemark(openID, remark string) error {
+func (api *UserApi) UpdateRemark(ctx context.Context, openID, remark string) error {
 	var result utils.CommonError
-	return utils.ApiPostWrapper(api.UpdateRemarkRaw, map[string]string{
+	return api.Client.ApiPostWrapper(ctx, apiUpdateRemark, map[string]string{
 		"openid": openID,
 		"remark": remark,
 	}, &result)
@@ -96,12 +93,9 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Get_users_
 
 GET https://api.weixin.qq.com/cgi-bin/user/info?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN
 */
-func (api *UserApi) GetUserInfoRaw(params url.Values) (resp []byte, err error) {
-	return api.Client.HTTPGet(apiGetUserInfo + "?" + params.Encode())
-}
-func (api *UserApi) GetUserInfo(openid, lang string) (*UserInfo, error) {
+func (api *UserApi) GetUserInfo(ctx context.Context, openid, lang string) (*UserInfo, error) {
 	var result UserInfo
-	err := utils.ApiGetWrapper(api.GetUserInfoRaw, func(params url.Values) {
+	err := api.Client.ApiGetWrapper(ctx, apiGetUserInfo, func(params url.Values) {
 		params.Add("openid", openid)
 		params.Add("lang", lang)
 	}, &result)
@@ -130,12 +124,9 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Get_users_
 
 POST https://api.weixin.qq.com/cgi-bin/user/info/batchget?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) BatchGetUserInfoRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiBatchGetUserInfo, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-func (api *UserApi) BatchGetUserInfo(param *BatchGetUserParams) (*UserInfoList, error) {
+func (api *UserApi) BatchGetUserInfo(ctx context.Context, param *BatchGetUserParams) (*UserInfoList, error) {
 	var result UserInfoList
-	err := utils.ApiPostWrapper(api.BatchGetUserInfoRaw, param, &result)
+	err := api.Client.ApiPostWrapper(ctx, apiBatchGetUserInfo, param, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -161,12 +152,9 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Getting_a_
 
 GET https://api.weixin.qq.com/cgi-bin/user/get?access_token=ACCESS_TOKEN&next_openid=NEXT_OPENID
 */
-func (api *UserApi) GetRaw(params url.Values) (resp []byte, err error) {
-	return api.Client.HTTPGet(apiGet + "?" + params.Encode())
-}
-func (api *UserApi) Get(next_openid string) (*OpenidList, error) {
+func (api *UserApi) Get(ctx context.Context, next_openid string) (*OpenidList, error) {
 	var result OpenidList
-	err := utils.ApiGetWrapper(api.GetRaw, func(params url.Values) {
+	err := api.Client.ApiGetWrapper(ctx, apiGet, func(params url.Values) {
 		params.Add("next_openid", next_openid)
 	}, &result)
 	if err != nil {
@@ -193,12 +181,9 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Manage_bla
 
 POST https://api.weixin.qq.com/cgi-bin/tags/members/getblacklist?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) GetBlackListRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiGetBlackList, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-func (api *UserApi) GetBlackList(beginOpenid string) (*BlackList, error) {
+func (api *UserApi) GetBlackList(ctx context.Context, beginOpenid string) (*BlackList, error) {
 	var result BlackList
-	err := utils.ApiPostWrapper(api.GetBlackListRaw, map[string]string{
+	err := api.Client.ApiPostWrapper(ctx, apiGetBlackList, map[string]string{
 		"begin_openid": beginOpenid,
 	}, &result)
 	if err != nil {
@@ -216,11 +201,8 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Manage_bla
 
 POST https://api.weixin.qq.com/cgi-bin/tags/members/batchblacklist?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) BatchBlackListRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiBatchBlackList, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-func (api *UserApi) BatchBlackList(openidList []string) (err error) {
-	return utils.ApiPostWrapper(api.BatchBlackListRaw, map[string][]string{
+func (api *UserApi) BatchBlackList(ctx context.Context, openidList []string) (err error) {
+	return api.Client.ApiPostWrapper(ctx, apiBatchBlackList, map[string][]string{
 		"openid_list": openidList,
 	}, nil)
 }
@@ -234,11 +216,8 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Manage_bla
 
 POST https://api.weixin.qq.com/cgi-bin/tags/members/batchunblacklist?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) BatchUnBlackListRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiBatchUnBlackList, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-func (api *UserApi) BatchUnBlackList(openidList []string) (err error) {
-	return utils.ApiPostWrapper(api.BatchUnBlackListRaw, map[string][]string{
+func (api *UserApi) BatchUnBlackList(ctx context.Context, openidList []string) (err error) {
+	return api.Client.ApiPostWrapper(ctx, apiBatchUnBlackList, map[string][]string{
 		"openid_list": openidList,
 	}, nil)
 }

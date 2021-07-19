@@ -19,6 +19,7 @@ package invoice_api
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/url"
@@ -69,34 +70,33 @@ type SetbizattrObj struct {
 	TimeOut int    `json:"time_out"`
 }
 
-func (api *InvoiceApi) SetbizattrRaw(payload []byte, params url.Values) (resp []byte, err error) {
+func (api *InvoiceApi) SetbizattrRaw(ctx context.Context, payload []byte, params url.Values) (resp []byte, err error) {
 	return api.Client.HTTPPost(
+		ctx,
 		apiSetbizattr+"?"+params.Encode(),
 		bytes.NewReader(payload),
 		"application/json;charset=utf-8",
 	)
 }
-func (api *InvoiceApi) SetContact(param *SetbizattrObj) error {
-	params := url.Values{}
-	params.Add("action", "set_contact")
-
+func (api *InvoiceApi) SetContact(ctx context.Context, param *SetbizattrObj) error {
 	payload := &struct {
 		Contact *SetbizattrObj `json:"contact"`
 	}{
 		Contact: param,
 	}
 
-	return utils.ApiPostWrapperEx(api.SetbizattrRaw, payload, params, nil)
+	return api.Client.ApiPostWrapperEx(ctx, apiSetbizattr, payload, func(params url.Values) {
+		params.Add("action", "set_contact")
+	}, nil)
 }
-func (api *InvoiceApi) GetContact() (*SetbizattrObj, error) {
-	params := url.Values{}
-	params.Add("action", "get_contact")
-
+func (api *InvoiceApi) GetContact(ctx context.Context) (*SetbizattrObj, error) {
 	result := &struct {
 		Contact *SetbizattrObj `json:"contact"`
 	}{}
 
-	err := utils.ApiPostWrapperEx(api.SetbizattrRaw, "{}", params, result)
+	err := api.Client.ApiPostWrapperEx(ctx, apiSetbizattr, "{}", func(params url.Values) {
+		params.Add("action", "get_contact")
+	}, result)
 	if err != nil {
 		return nil, err
 	}
@@ -142,17 +142,16 @@ type AuthBizField struct {
 	CustomFields    []AuthCustomField `json:"custom_field,omitempty"`
 }
 
-func (api *InvoiceApi) SetAuthField(param *AuthFieldObj) error {
-	params := url.Values{}
-	params.Add("action", "set_auth_field")
-
+func (api *InvoiceApi) SetAuthField(ctx context.Context, param *AuthFieldObj) error {
 	payload := &struct {
 		AuthField *AuthFieldObj `json:"auth_field"`
 	}{
 		AuthField: param,
 	}
 
-	return utils.ApiPostWrapperEx(api.SetbizattrRaw, payload, params, nil)
+	return api.Client.ApiPostWrapperEx(ctx, apiSetbizattr, payload, func(params url.Values) {
+		params.Add("action", "set_auth_field")
+	}, nil)
 }
 
 /*
@@ -161,16 +160,12 @@ func (api *InvoiceApi) SetAuthField(param *AuthFieldObj) error {
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Invoicing_Platform_API_List.html
 POST https://api.weixin.qq.com/card/invoice/seturl?access_token={access_token}
 */
-func (api *InvoiceApi) SetUrlRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiSetUrl, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-
-func (api *InvoiceApi) SetUrl() (string, error) {
+func (api *InvoiceApi) SetUrl(ctx context.Context) (string, error) {
 	result := &struct {
 		InvoiceUrl string `json:"invoice_url"`
 	}{}
 
-	err := utils.ApiPostWrapper(api.SetUrlRaw, "{}", result)
+	err := api.Client.ApiPostWrapper(ctx, apiSetUrl, "{}", result)
 	if err != nil {
 		return "", err
 	}
@@ -199,13 +194,9 @@ type AuthUrlResult struct {
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Vendor_API_List.html
 POST https://api.weixin.qq.com/card/invoice/getauthurl?access_token={access_token}
 */
-func (api *InvoiceApi) GetAuthUrlRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiGetAuthUrl, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-
-func (api *InvoiceApi) GetAuthUrl(param *AuthUrlObj) (*AuthUrlResult, error) {
+func (api *InvoiceApi) GetAuthUrl(ctx context.Context, param *AuthUrlObj) (*AuthUrlResult, error) {
 	var result AuthUrlResult
-	err := utils.ApiPostWrapper(api.GetAuthUrlRaw, param, &result)
+	err := api.Client.ApiPostWrapper(ctx, apiGetAuthUrl, param, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -256,13 +247,9 @@ type AuthDataResult struct {
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Vendor_API_List.html
 POST https://api.weixin.qq.com/card/invoice/getauthdata?access_token={access_token}
 */
-func (api *InvoiceApi) GetAuthDataRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiGetAuthData, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-
-func (api *InvoiceApi) GetAuthData(param *AuthDataObj) (*AuthDataResult, error) {
+func (api *InvoiceApi) GetAuthData(ctx context.Context, param *AuthDataObj) (*AuthDataResult, error) {
 	var result AuthDataResult
-	err := utils.ApiPostWrapper(api.GetAuthDataRaw, param, &result)
+	err := api.Client.ApiPostWrapper(ctx, apiGetAuthData, param, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -282,12 +269,8 @@ type RejectInsertObj struct {
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Vendor_API_List.html
 POST https://api.weixin.qq.com/card/invoice/rejectinsert?access_token={access_token}
 */
-func (api *InvoiceApi) RejectInsertRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiRejectInsert, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-
-func (api *InvoiceApi) RejectInsert(param *RejectInsertObj) error {
-	return utils.ApiPostWrapper(api.RejectInsertRaw, param, nil)
+func (api *InvoiceApi) RejectInsert(ctx context.Context, param *RejectInsertObj) error {
+	return api.Client.ApiPostWrapper(ctx, apiRejectInsert, param, nil)
 }
 
 type CreateCardBaseInfo struct {
@@ -313,10 +296,7 @@ type CreateCardObj struct {
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Invoicing_Platform_API_List.html
 POST https://api.weixin.qq.com/card/invoice/platform/createcard?access_token={access_token}
 */
-func (api *InvoiceApi) PlatformCreateCardRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiPlatformCreateCard, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-func (api *InvoiceApi) PlatformCreateCard(param *CreateCardObj) (string, error) {
+func (api *InvoiceApi) PlatformCreateCard(ctx context.Context, param *CreateCardObj) (string, error) {
 	payload := struct {
 		InvoiceInfo *CreateCardObj `json:"invoice_info"`
 	}{
@@ -325,7 +305,7 @@ func (api *InvoiceApi) PlatformCreateCard(param *CreateCardObj) (string, error) 
 	result := struct {
 		CardID string `json:"card_id"`
 	}{}
-	err := utils.ApiPostWrapper(api.PlatformCreateCardRaw, payload, &result)
+	err := api.Client.ApiPostWrapper(ctx, apiPlatformCreateCard, payload, &result)
 	if err != nil {
 		return "", err
 	}
@@ -338,10 +318,10 @@ func (api *InvoiceApi) PlatformCreateCard(param *CreateCardObj) (string, error) 
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Invoicing_Platform_API_List.html
 POST https://api.weixin.qq.com/card/invoice/platform/setpdf?access_token={access_token}
 */
-func (api *InvoiceApi) PlatformSetpdf(filename string, length int64, content io.Reader) (mediaID string, err error) {
+func (api *InvoiceApi) PlatformSetpdf(ctx context.Context, filename string, length int64, content io.Reader) (mediaID string, err error) {
 
 	var resp []byte
-	resp, err = api.Client.HTTPUpload(apiPlatformSetpdf, content, "pdf", filename, length)
+	resp, err = api.Client.HTTPUpload(ctx, apiPlatformSetpdf, content, "pdf", filename, length)
 	if err != nil {
 		return
 	}
@@ -413,12 +393,9 @@ type InvoiceInsertResult struct {
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Invoicing_Platform_API_List.html
 POST https://api.weixin.qq.com/card/invoice/insert?access_token={access_token}
 */
-func (api *InvoiceApi) InsertRaw(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiInsert, bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-func (api *InvoiceApi) Insert(param *InvoiceInsertObj) (*InvoiceInsertResult, error) {
+func (api *InvoiceApi) Insert(ctx context.Context, param *InvoiceInsertObj) (*InvoiceInsertResult, error) {
 	var result InvoiceInsertResult
-	err := utils.ApiPostWrapper(api.PlatformCreateCardRaw, param, &result)
+	err := api.Client.ApiPostWrapper(ctx, apiInsert, param, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -431,8 +408,8 @@ func (api *InvoiceApi) Insert(param *InvoiceInsertObj) (*InvoiceInsertResult, er
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Vendor_API_List.html
 POST https://api.weixin.qq.com/card/invoice/makeoutinvoice?access_token={access_token}
 */
-func (api *InvoiceApi) MakeOutInvoice(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiMakeOutInvoice, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *InvoiceApi) MakeOutInvoice(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return api.Client.HTTPPost(ctx, apiMakeOutInvoice, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -441,8 +418,8 @@ func (api *InvoiceApi) MakeOutInvoice(payload []byte) (resp []byte, err error) {
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Vendor_API_List.html
 POST https://api.weixin.qq.com/card/invoice/clearoutinvoice?access_token={access_token}
 */
-func (api *InvoiceApi) ClearOutInvoice(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiClearOutInvoice, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *InvoiceApi) ClearOutInvoice(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return api.Client.HTTPPost(ctx, apiClearOutInvoice, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -451,8 +428,8 @@ func (api *InvoiceApi) ClearOutInvoice(payload []byte) (resp []byte, err error) 
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Vendor_API_List.html
 POST https://api.weixin.qq.com/card/invoice/queryinvoceinfo?access_token={access_token}
 */
-func (api *InvoiceApi) QueryInvoceInfo(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiQueryInvoceInfo, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *InvoiceApi) QueryInvoceInfo(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return api.Client.HTTPPost(ctx, apiQueryInvoceInfo, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -461,8 +438,8 @@ func (api *InvoiceApi) QueryInvoceInfo(payload []byte) (resp []byte, err error) 
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Invoicing_Platform_API_List.html
 POST https://api.weixin.qq.com/card/invoice/platform/getpdf?action=get_url&access_token={access_token}
 */
-func (api *InvoiceApi) PlatformGetpdf(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiPlatformGetpdf, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *InvoiceApi) PlatformGetpdf(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return api.Client.HTTPPost(ctx, apiPlatformGetpdf, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -470,8 +447,8 @@ func (api *InvoiceApi) PlatformGetpdf(payload []byte) (resp []byte, err error) {
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Invoicing_Platform_API_List.html
 POST https://api.weixin.qq.com/card/invoice/platform/updatestatus?access_token={access_token}
 */
-func (api *InvoiceApi) PlatformUpdateStatus(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiPlatformUpdateStatus, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *InvoiceApi) PlatformUpdateStatus(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return api.Client.HTTPPost(ctx, apiPlatformUpdateStatus, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -480,8 +457,8 @@ func (api *InvoiceApi) PlatformUpdateStatus(payload []byte) (resp []byte, err er
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Reimburser_API_List.html
 POST https://api.weixin.qq.com/card/invoice/reimburse/getinvoiceinfo?access_token={access_token}
 */
-func (api *InvoiceApi) ReimburseGetInvoiceInfo(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiReimburseGetInvoiceInfo, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *InvoiceApi) ReimburseGetInvoiceInfo(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return api.Client.HTTPPost(ctx, apiReimburseGetInvoiceInfo, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -489,8 +466,8 @@ func (api *InvoiceApi) ReimburseGetInvoiceInfo(payload []byte) (resp []byte, err
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Reimburser_API_List.html
 POST https://api.weixin.qq.com/card/invoice/reimburse/getinvoicebatch?access_token={access_token}
 */
-func (api *InvoiceApi) ReimburseGetInvoiceBatch(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiReimburseGetInvoiceBatch, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *InvoiceApi) ReimburseGetInvoiceBatch(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return api.Client.HTTPPost(ctx, apiReimburseGetInvoiceBatch, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -498,8 +475,8 @@ func (api *InvoiceApi) ReimburseGetInvoiceBatch(payload []byte) (resp []byte, er
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Reimburser_API_List.html
 POST https://api.weixin.qq.com/card/invoice/reimburse/updateinvoicestatus?access_token={access_token}
 */
-func (api *InvoiceApi) ReimburseUpdateInvoiceStatus(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiReimburseUpdateInvoiceStatus, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *InvoiceApi) ReimburseUpdateInvoiceStatus(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return api.Client.HTTPPost(ctx, apiReimburseUpdateInvoiceStatus, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -507,8 +484,8 @@ func (api *InvoiceApi) ReimburseUpdateInvoiceStatus(payload []byte) (resp []byte
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Reimburser_API_List.html
 POST https://api.weixin.qq.com/card/invoice/reimburse/updatestatusbatch?access_token={access_token}
 */
-func (api *InvoiceApi) ReimburseUpdateStatusBatch(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiReimburseUpdateStatusBatch, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *InvoiceApi) ReimburseUpdateStatusBatch(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return api.Client.HTTPPost(ctx, apiReimburseUpdateStatusBatch, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -517,8 +494,8 @@ func (api *InvoiceApi) ReimburseUpdateStatusBatch(payload []byte) (resp []byte, 
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/Quick_issuing/Interface_Instructions.html
 POST https://api.weixin.qq.com/card/invoice/biz/getusertitleurl?access_token={access_token
 */
-func (api *InvoiceApi) GetUserTitleUrl(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiGetUserTitleUrl, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *InvoiceApi) GetUserTitleUrl(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return api.Client.HTTPPost(ctx, apiGetUserTitleUrl, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -527,8 +504,8 @@ func (api *InvoiceApi) GetUserTitleUrl(payload []byte) (resp []byte, err error) 
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/Quick_issuing/Interface_Instructions.html
 POST https://api.weixin.qq.com/card/invoice/biz/getselecttitleurl?access_token={access_token}
 */
-func (api *InvoiceApi) GetSelectTitleUrl(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiGetSelectTitleUrl, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *InvoiceApi) GetSelectTitleUrl(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return api.Client.HTTPPost(ctx, apiGetSelectTitleUrl, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -537,6 +514,6 @@ func (api *InvoiceApi) GetSelectTitleUrl(payload []byte) (resp []byte, err error
 See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/Quick_issuing/Interface_Instructions.html
 POST https://api.weixin.qq.com/card/invoice/scantitle?access_token={access_token}
 */
-func (api *InvoiceApi) ScanTitle(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiScanTitle, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *InvoiceApi) ScanTitle(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return api.Client.HTTPPost(ctx, apiScanTitle, bytes.NewReader(payload), "application/json;charset=utf-8")
 }

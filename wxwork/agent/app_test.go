@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"context"
 	"testing"
 
 	"github.com/lixinio/weixin/test"
@@ -18,6 +19,7 @@ func TestUser(t *testing.T) {
 		AgentId: test.AgentID,
 		Secret:  test.AgentSecret,
 	})
+	ctx := context.Background()
 
 	menu := []MenuEntryObj{
 		{
@@ -77,6 +79,6 @@ func TestUser(t *testing.T) {
 		},
 	}
 
-	require.Equal(t, nil, agent.MenuDelete(agent.Config.AgentId))
-	require.Equal(t, nil, agent.MenuCreate(agent.Config.AgentId, menu))
+	require.Equal(t, nil, agent.MenuDelete(ctx, agent.Config.AgentId))
+	require.Equal(t, nil, agent.MenuCreate(ctx, agent.Config.AgentId, menu))
 }

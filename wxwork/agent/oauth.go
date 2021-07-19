@@ -18,6 +18,7 @@ package agent
 // Package oauth 网页授权登录(oauth)
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -70,11 +71,11 @@ func (agent *Agent) GetSSOAuthorizeUrl(redirectUri string, state string) (author
 See: https://work.weixin.qq.com/api/doc/90000/90135/91023
 GET https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token=ACCESS_TOKEN&code=CODE
 */
-func (agent *Agent) GetUserInfo(code string) (userInfo UserInfo, err error) {
+func (agent *Agent) GetUserInfo(ctx context.Context, code string) (userInfo UserInfo, err error) {
 	params := url.Values{}
 	params.Add("code", code)
 
-	body, err := agent.Client.HTTPGetWithParams(apiUserInfo, params)
+	body, err := agent.Client.HTTPGetWithParams(ctx, apiUserInfo, params)
 	if err != nil {
 		return
 	}
