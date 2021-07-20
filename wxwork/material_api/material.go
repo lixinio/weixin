@@ -18,6 +18,7 @@ package material_api
 // Package material 素材管理
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -66,7 +67,7 @@ type MaterialID struct {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90253
 POST(@media) https://qyapi.weixin.qq.com/cgi-bin/media/upload?access_token=ACCESS_TOKEN&type=TYPE
 */
-func (api *MaterialApi) Upload(filename string, content io.Reader, mediaType string) (result *MaterialID, err error) {
+func (api *MaterialApi) Upload(ctx context.Context, filename string, content io.Reader, mediaType string) (result *MaterialID, err error) {
 	params := url.Values{}
 	params.Add("type", mediaType)
 	r, w := io.Pipe()
@@ -86,7 +87,7 @@ func (api *MaterialApi) Upload(filename string, content io.Reader, mediaType str
 	}()
 
 	var resp []byte
-	resp, err = api.Client.HTTPPost(apiUpload+"?"+params.Encode(), r, m.FormDataContentType())
+	resp, err = api.Client.HTTPPost(ctx, apiUpload+"?"+params.Encode(), r, m.FormDataContentType())
 	if err != nil {
 		return
 	}
@@ -109,7 +110,7 @@ type MaterialUrl struct {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90256
 POST(@media) https://qyapi.weixin.qq.com/cgi-bin/media/uploadimg?access_token=ACCESS_TOKEN
 */
-func (api *MaterialApi) UploadImg(filename string, content io.Reader) (url string, err error) {
+func (api *MaterialApi) UploadImg(ctx context.Context, filename string, content io.Reader) (url string, err error) {
 	r, w := io.Pipe()
 	m := multipart.NewWriter(w)
 	go func() {
@@ -128,7 +129,7 @@ func (api *MaterialApi) UploadImg(filename string, content io.Reader) (url strin
 	}()
 
 	var resp []byte
-	resp, err = api.Client.HTTPPost(apiUploadImg, r, m.FormDataContentType())
+	resp, err = api.Client.HTTPPost(ctx, apiUploadImg, r, m.FormDataContentType())
 	if err != nil {
 		return
 	}
@@ -145,11 +146,11 @@ func (api *MaterialApi) UploadImg(filename string, content io.Reader) (url strin
 See: https://work.weixin.qq.com/api/doc/90000/90135/90254
 GET https://qyapi.weixin.qq.com/cgi-bin/media/get?access_token=ACCESS_TOKEN&media_id=MEDIA_ID
 */
-func (api *MaterialApi) Get(mediaID string) (resp *http.Response, err error) {
+func (api *MaterialApi) Get(ctx context.Context, mediaID string) (resp *http.Response, err error) {
 	params := url.Values{}
 	params.Add("media_id", mediaID)
 
-	resp, err = api.Client.HTTPGetWithParamsRaw(apiGet, params)
+	resp, err = api.Client.HTTPGetWithParamsRaw(ctx, apiGet, params)
 	if err != nil {
 		return
 	}

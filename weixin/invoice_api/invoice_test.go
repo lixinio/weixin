@@ -1,6 +1,7 @@
 package invoice_api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -26,6 +27,7 @@ func newInvoiceApi() *InvoiceApi {
 
 func TestInvoiceUploadPdf(t *testing.T) {
 	api := newInvoiceApi()
+	ctx := context.Background()
 
 	file, err := os.Open(test.InvoicePdf)
 	require.Empty(t, err)
@@ -34,23 +36,24 @@ func TestInvoiceUploadPdf(t *testing.T) {
 	fi, err := file.Stat()
 	require.Empty(t, err)
 
-	mediaID, err := api.PlatformSetpdf("fapiao.pdf", fi.Size(), file)
+	mediaID, err := api.PlatformSetpdf(ctx, "fapiao.pdf", fi.Size(), file)
 	require.Equal(t, nil, err)
 	fmt.Printf("media id %s\n", mediaID)
 }
 
 func TestSetContact(t *testing.T) {
 	api := newInvoiceApi()
+	ctx := context.Background()
 
 	setbizattrObj := &SetbizattrObj{
 		Phone:   test.InvoicePhone,
 		TimeOut: 7200,
 	}
 
-	err := api.SetContact(setbizattrObj)
+	err := api.SetContact(ctx, setbizattrObj)
 	require.Equal(t, nil, err)
 
-	result, err := api.GetContact()
+	result, err := api.GetContact(ctx)
 	require.Equal(t, nil, err)
 	require.Equal(t, result.Phone, setbizattrObj.Phone)
 	require.Equal(t, result.TimeOut, setbizattrObj.TimeOut)
@@ -58,8 +61,9 @@ func TestSetContact(t *testing.T) {
 
 func TestPlatformCreateCard(t *testing.T) {
 	api := newInvoiceApi()
+	ctx := context.Background()
 
-	cardID, err := api.PlatformCreateCard(&CreateCardObj{
+	cardID, err := api.PlatformCreateCard(ctx, &CreateCardObj{
 		Payee: test.InvoicePayee,
 		Type:  test.InvoiceType,
 		BaseInfo: &CreateCardBaseInfo{
@@ -79,6 +83,7 @@ func TestPlatformCreateCard(t *testing.T) {
 
 func TestInvoiceInsert(t *testing.T) {
 	api := newInvoiceApi()
+	ctx := context.Background()
 
 	billingTime := 0
 	{
@@ -99,7 +104,7 @@ func TestInvoiceInsert(t *testing.T) {
 			}{
 				InvoiceUserData: &InvoiceInsertCardExtUser{
 					Fee:           10,
-					Title:         "邱金武",
+					Title:         "张三",
 					BillingTime:   billingTime,
 					BillingNO:     "044032000211",
 					BillingCode:   "62522141",
@@ -107,11 +112,11 @@ func TestInvoiceInsert(t *testing.T) {
 					FeeWithoutTax: 9,
 					Tax:           1,
 					SPdfMediaID:   "71381497449443328",
-					// Cashier:               "方婷",
-					// Maker:                 "朱芷娆",
-					// SellerNumber:          "91440300MA5EKEKU9G",
-					// SellerBankAccount:     "中国银行华润城支行 774469529787",
-					// SellerAddressAndPhone: "深圳市宝安区西乡街道蚝业社区宝安互联网产业基地A区1栋3B08 0755-26406220",
+					// Cashier:               "李四",
+					// Maker:                 "王五",
+					// SellerNumber:          "91440300M0123456789",
+					// SellerBankAccount:     "中国银行华润城支行 123456789",
+					// SellerAddressAndPhone: "深圳市宝安区西乡街道软件产业基地",
 					// Info: []InvoiceInsertCardExtItem{
 					// 	{
 					// 		Name:  "*信息技术服务*平台服务费",
@@ -128,7 +133,7 @@ func TestInvoiceInsert(t *testing.T) {
 	b, _ := json.Marshal(param)
 	fmt.Println(string(b))
 
-	result, err := api.Insert(param)
+	result, err := api.Insert(ctx, param)
 	require.Equal(t, nil, err)
 	fmt.Printf("code : %s, openid: %s, unionid: %s\n", result.Code, result.OpenID, result.UnionID)
 
@@ -136,8 +141,9 @@ func TestInvoiceInsert(t *testing.T) {
 
 func TestRejectInsert(t *testing.T) {
 	api := newInvoiceApi()
+	ctx := context.Background()
 
-	err := api.RejectInsert(&RejectInsertObj{
+	err := api.RejectInsert(ctx, &RejectInsertObj{
 		OrderID: "1624605258318629788",
 		SPappID: "d3gxMTY5NGJiNDI4YTMyZTg4X0jdlhfLZft3pZEI0pLVYp3CRPzlu2kW_06OUzJGyaZ3",
 		Reason:  "就是不开",
@@ -147,6 +153,8 @@ func TestRejectInsert(t *testing.T) {
 
 func TestSetAuthField(t *testing.T) {
 	api := newInvoiceApi()
+	ctx := context.Background()
+
 	param := &AuthFieldObj{
 		UserField: &AuthUserField{
 			ShowTitle:    1,
@@ -169,12 +177,13 @@ func TestSetAuthField(t *testing.T) {
 			RequireBankNO:   0,
 		},
 	}
-	err := api.SetAuthField(param)
+	err := api.SetAuthField(ctx, param)
 	require.Equal(t, nil, err)
 }
 
 func TestInvoice(t *testing.T) {
 	api := newInvoiceApi()
+	ctx := context.Background()
 
 	// {
 	// 	result, err := api.GetAuthData(&AuthDataObj{
@@ -188,7 +197,7 @@ func TestInvoice(t *testing.T) {
 
 	spappID := ""
 	{
-		result, err := api.SetUrl()
+		result, err := api.SetUrl(ctx)
 		require.Equal(t, nil, err)
 		fmt.Println(result)
 
@@ -209,7 +218,7 @@ func TestInvoice(t *testing.T) {
 		ticket, _, err := api.OfficialAccount.GetWxCardApiTicket()
 		require.Equal(t, nil, err)
 
-		result, err := api.GetAuthUrl(&AuthUrlObj{
+		result, err := api.GetAuthUrl(ctx, &AuthUrlObj{
 			SPappID:   spappID,
 			Money:     10,
 			Source:    "web",
@@ -223,7 +232,7 @@ func TestInvoice(t *testing.T) {
 	}
 
 	{
-		result, err := api.GetAuthData(&AuthDataObj{
+		result, err := api.GetAuthData(ctx, &AuthDataObj{
 			OrderID: orderID,
 			SPappID: spappID,
 		})

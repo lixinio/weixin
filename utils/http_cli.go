@@ -17,6 +17,7 @@ package utils
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -70,11 +71,11 @@ func NewClient(serverUrl string, accessTokenCache *AccessTokenCache) *Client {
 }
 
 // HTTPGet GET 请求
-func (client *Client) HTTPGet(uri string) (resp []byte, err error) {
-	return client.HTTPGetWithParams(uri, url.Values{})
+func (client *Client) HTTPGet(ctx context.Context, uri string) (resp []byte, err error) {
+	return client.HTTPGetWithParams(ctx, uri, url.Values{})
 }
 
-func (client *Client) HTTPGetWithParams(uri string, params url.Values) (resp []byte, err error) {
+func (client *Client) HTTPGetWithParams(ctx context.Context, uri string, params url.Values) (resp []byte, err error) {
 	newUrl, err := client.applyAccessToken(uri, params)
 	if err != nil {
 		return
@@ -85,23 +86,30 @@ func (client *Client) HTTPGetWithParams(uri string, params url.Values) (resp []b
 		return
 	}
 
-	return client.httpDo(req)
+	return client.httpDo(req.WithContext(ctx))
 }
 
 // 素材下载， 需要根据Content-Type来判断Body， 可以是json，可能是二进制
-func (client *Client) HTTPGetWithParamsRaw(uri string, params url.Values) (resp *http.Response, err error) {
+func (client *Client) HTTPGetWithParamsRaw(ctx context.Context, uri string, params url.Values) (resp *http.Response, err error) {
 	newUrl, err := client.applyAccessToken(uri, params)
 	if err != nil {
 		return
 	}
 
+	// 调用http请求
 	req, err := http.NewRequest(http.MethodGet, client.serverUrl+newUrl, nil)
+	if err != nil {
+		return
+	}
+
+	cli := &http.Client{Transport: newTransport()}
 	req.Header.Add("User-Agent", client.userAgent)
-	return http.DefaultClient.Do(req)
+	return cli.Do(req.WithContext(ctx))
 }
 
 //HTTPPost POST 请求
 func (client *Client) HTTPUpload(
+	ctx context.Context,
 	uri string,
 	payload io.Reader,
 	key, filename string,
@@ -131,40 +139,34 @@ func (client *Client) HTTPUpload(
 	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
 	req.ContentLength = length + int64(closeBuffer.Len()) + int64(bodyBuffer.Len())
 
-	return client.httpDo(req)
+	return client.httpDo(req.WithContext(ctx))
 }
 
 //HTTPPost POST 请求
-func (client *Client) HTTPPost(uri string, payload io.Reader, contentType string) (resp []byte, err error) {
-	buf := &bytes.Buffer{}
-	tee := io.TeeReader(payload, buf)
-	reader1, _ := ioutil.ReadAll(tee)
-	fmt.Println("debug: ", string(reader1))
-
+func (client *Client) HTTPPost(
+	ctx context.Context, uri string, payload io.Reader, contentType string,
+) (resp []byte, err error) {
 	newUrl, err := client.applyAccessToken(uri, url.Values{})
 	if err != nil {
 		return
 	}
 
-	req, err := http.NewRequest(http.MethodPost, client.serverUrl+newUrl, buf)
+	req, err := http.NewRequest(http.MethodPost, client.serverUrl+newUrl, payload)
 	if err != nil {
 		return
 	}
 
 	req.Header.Add("Content-Type", contentType)
 
-	return client.httpDo(req)
+	return client.httpDo(req.WithContext(ctx))
 }
 
 //httpDo 执行 请求
 func (client *Client) httpDo(req *http.Request) (resp []byte, err error) {
 	req.Header.Add("User-Agent", client.userAgent)
 
-	// if client.Ctx.Corporation.Logger != nil {
-	// 	client.Ctx.Corporation.Logger.Printf("%s %s Headers %v", req.Method, req.URL.String(), req.Header)
-	// }
-
-	response, err := http.DefaultClient.Do(req)
+	cli := &http.Client{Transport: newTransport()}
+	response, err := cli.Do(req)
 	if err != nil {
 		return
 	}
@@ -198,10 +200,6 @@ func (client *Client) httpDo(req *http.Request) (resp []byte, err error) {
 	// -1 系统繁忙，此时请开发者稍候再试
 	// 重试一次
 	if err == ErrorSystemBusy {
-
-		// if client.Ctx.Corporation.Logger != nil {
-		// 	client.Ctx.Corporation.Logger.Printf("%v : retry %s %s Headers %v", ErrorSystemBusy, req.Method, req.URL.String(), req.Header)
-		// }
 
 		response, err = http.DefaultClient.Do(req)
 		if err != nil {
@@ -241,7 +239,7 @@ func (client *Client) applyAccessToken(oldUrl string, params url.Values) (newUrl
 */
 func ResponseFilter(response *http.Response) (resp []byte, err error) {
 	if response.StatusCode != http.StatusOK {
-		err = fmt.Errorf("Status %s", response.Status)
+		err = fmt.Errorf("status %s", response.Status)
 		return
 	}
 
@@ -275,4 +273,74 @@ func ResponseFilter(response *http.Response) (resp []byte, err error) {
 		return
 	}
 	return
+}
+
+/// 工具方法
+func (client *Client) ApiGetWrapper(ctx context.Context, urlPath string, paramFunc func(url.Values), result interface{}) error {
+	params := url.Values{}
+	paramFunc(params)
+	resp, err := client.HTTPGetWithParams(ctx, urlPath, params)
+	if err != nil {
+		return err
+	}
+
+	if result != nil {
+		return json.Unmarshal(resp, result)
+	}
+	return nil
+}
+
+func (client *Client) ApiGetNullWrapper(ctx context.Context, urlPath string, result interface{}) error {
+	resp, err := client.HTTPGet(ctx, urlPath)
+	if err != nil {
+		return err
+	}
+
+	if result != nil {
+		return json.Unmarshal(resp, result)
+	}
+	return nil
+}
+
+func (client *Client) ApiPostWrapper(ctx context.Context, urlPath string, payload interface{}, result interface{}) error {
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.HTTPPost(ctx, urlPath, bytes.NewReader(body), "application/json;charset=utf-8")
+	if err != nil {
+		return err
+	}
+
+	if result != nil {
+		return json.Unmarshal(resp, result)
+	}
+	return nil
+}
+
+func (client *Client) ApiPostWrapperEx(
+	context context.Context,
+	urlPath string, obj interface{},
+	paramFunc func(url.Values), result interface{},
+) error {
+	body, err := json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+
+	params := url.Values{}
+	paramFunc(params)
+	resp, err := client.HTTPPost(
+		context, urlPath+"?"+params.Encode(),
+		bytes.NewReader(body), "application/json;charset=utf-8",
+	)
+	if err != nil {
+		return err
+	}
+
+	if result != nil {
+		return json.Unmarshal(resp, result)
+	}
+	return nil
 }

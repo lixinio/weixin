@@ -19,6 +19,7 @@ package tag_api
 
 import (
 	"bytes"
+	"context"
 	"net/url"
 
 	"github.com/lixinio/weixin/utils"
@@ -50,8 +51,8 @@ func NewAgentApi(agent *agent.Agent) *TagApi {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90210
 POST https://qyapi.weixin.qq.com/cgi-bin/tag/create?access_token=ACCESS_TOKEN
 */
-func (api *TagApi) Create(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiCreate, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *TagApi) Create(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return api.Client.HTTPPost(ctx, apiCreate, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -59,8 +60,8 @@ func (api *TagApi) Create(payload []byte) (resp []byte, err error) {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90211
 POST https://qyapi.weixin.qq.com/cgi-bin/tag/update?access_token=ACCESS_TOKEN
 */
-func (api *TagApi) Update(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiUpdate, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *TagApi) Update(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return api.Client.HTTPPost(ctx, apiUpdate, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -68,8 +69,8 @@ func (api *TagApi) Update(payload []byte) (resp []byte, err error) {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90212
 GET https://qyapi.weixin.qq.com/cgi-bin/tag/delete?access_token=ACCESS_TOKEN&tagid=TAGID
 */
-func (api *TagApi) Delete(params url.Values) (resp []byte, err error) {
-	return api.Client.HTTPGet(apiDelete + "?" + params.Encode())
+func (api *TagApi) Delete(ctx context.Context, params url.Values) (resp []byte, err error) {
+	return api.Client.HTTPGet(ctx, apiDelete+"?"+params.Encode())
 }
 
 /*
@@ -77,8 +78,8 @@ func (api *TagApi) Delete(params url.Values) (resp []byte, err error) {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90213
 GET https://qyapi.weixin.qq.com/cgi-bin/tag/get?access_token=ACCESS_TOKEN&tagid=TAGID
 */
-func (api *TagApi) Get(params url.Values) (resp []byte, err error) {
-	return api.Client.HTTPGet(apiGet + "?" + params.Encode())
+func (api *TagApi) Get(ctx context.Context, params url.Values) (resp []byte, err error) {
+	return api.Client.HTTPGet(ctx, apiGet+"?"+params.Encode())
 }
 
 /*
@@ -86,8 +87,8 @@ func (api *TagApi) Get(params url.Values) (resp []byte, err error) {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90214
 POST https://qyapi.weixin.qq.com/cgi-bin/tag/addtagusers?access_token=ACCESS_TOKEN
 */
-func (api *TagApi) AddTagUsers(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiAddTagUsers, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *TagApi) AddTagUsers(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return api.Client.HTTPPost(ctx, apiAddTagUsers, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -95,8 +96,8 @@ func (api *TagApi) AddTagUsers(payload []byte) (resp []byte, err error) {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90215
 POST https://qyapi.weixin.qq.com/cgi-bin/tag/deltagusers?access_token=ACCESS_TOKEN
 */
-func (api *TagApi) DelTagUsers(payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(apiDelTagUsers, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *TagApi) DelTagUsers(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return api.Client.HTTPPost(ctx, apiDelTagUsers, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -104,6 +105,6 @@ func (api *TagApi) DelTagUsers(payload []byte) (resp []byte, err error) {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90216
 GET https://qyapi.weixin.qq.com/cgi-bin/tag/list?access_token=ACCESS_TOKEN
 */
-func (api *TagApi) List() (resp []byte, err error) {
-	return api.Client.HTTPGet(apiList)
+func (api *TagApi) List(ctx context.Context) (resp []byte, err error) {
+	return api.Client.HTTPGet(ctx, apiList)
 }

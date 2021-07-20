@@ -1,6 +1,7 @@
 package material_api
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -29,6 +30,7 @@ func TestMaterialUrl(t *testing.T) {
 		AgentId: test.AgentID,
 		Secret:  test.AgentSecret,
 	})
+	ctx := context.Background()
 
 	materialApi := NewAgentApi(agent)
 
@@ -36,7 +38,7 @@ func TestMaterialUrl(t *testing.T) {
 	require.Empty(t, err)
 	defer file.Close()
 
-	url, err := materialApi.UploadImg(test.ImagePath, file)
+	url, err := materialApi.UploadImg(ctx, test.ImagePath, file)
 	require.Empty(t, err)
 	fmt.Print(url)
 
@@ -58,6 +60,7 @@ func TestMaterialID(t *testing.T) {
 		AgentId: test.AgentID,
 		Secret:  test.AgentSecret,
 	})
+	ctx := context.Background()
 
 	materialApi := NewAgentApi(agent)
 
@@ -65,7 +68,7 @@ func TestMaterialID(t *testing.T) {
 	require.Empty(t, err)
 	defer file.Close()
 
-	result, err := materialApi.Upload(test.ImagePath, file, MediaTypeImage)
+	result, err := materialApi.Upload(ctx, test.ImagePath, file, MediaTypeImage)
 	require.Empty(t, err)
 	require.Equal(t, result.Type, MediaTypeImage)
 	fmt.Println(result.MediaID, result.CreatedAt, result.Type)
@@ -81,7 +84,7 @@ func TestMaterialID(t *testing.T) {
 	}
 
 	{
-		resp, err := materialApi.Get(result.MediaID)
+		resp, err := materialApi.Get(ctx, result.MediaID)
 		require.Empty(t, err)
 
 		// 计算hash
@@ -95,7 +98,7 @@ func TestMaterialID(t *testing.T) {
 
 	{
 		mediaID := fmt.Sprintf("0%s", result.MediaID)
-		_, err := materialApi.Get(mediaID)
+		_, err := materialApi.Get(ctx, mediaID)
 		require.NotEmpty(t, err)
 	}
 }

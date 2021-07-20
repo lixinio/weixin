@@ -19,9 +19,8 @@ package agent
 
 import (
 	"bytes"
+	"context"
 	"net/url"
-
-	"github.com/lixinio/weixin/utils"
 )
 
 const (
@@ -63,8 +62,8 @@ type MenuEntryObj struct {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90227
 GET https://qyapi.weixin.qq.com/cgi-bin/agent/get?access_token=ACCESS_TOKEN&agentid=AGENTID参数说明
 */
-func (agent *Agent) AgentGet(params url.Values) (resp []byte, err error) {
-	return agent.Client.HTTPGet(apiAgentGet + "?" + params.Encode())
+func (agent *Agent) AgentGet(ctx context.Context, params url.Values) (resp []byte, err error) {
+	return agent.Client.HTTPGet(ctx, apiAgentGet+"?"+params.Encode())
 }
 
 /*
@@ -72,8 +71,8 @@ func (agent *Agent) AgentGet(params url.Values) (resp []byte, err error) {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90227
 GET https://qyapi.weixin.qq.com/cgi-bin/agent/list?access_token=ACCESS_TOKEN
 */
-func (agent *Agent) AgentList() (resp []byte, err error) {
-	return agent.Client.HTTPGet(apiAgentList)
+func (agent *Agent) AgentList(ctx context.Context) (resp []byte, err error) {
+	return agent.Client.HTTPGet(ctx, apiAgentList)
 }
 
 /*
@@ -81,8 +80,8 @@ func (agent *Agent) AgentList() (resp []byte, err error) {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90228
 POST https://qyapi.weixin.qq.com/cgi-bin/agent/set?access_token=ACCESS_TOKEN
 */
-func (agent *Agent) AgentSet(payload []byte) (resp []byte, err error) {
-	return agent.Client.HTTPPost(apiAgentSet, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (agent *Agent) AgentSet(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return agent.Client.HTTPPost(ctx, apiAgentSet, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -90,19 +89,15 @@ func (agent *Agent) AgentSet(payload []byte) (resp []byte, err error) {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90231
 POST https://qyapi.weixin.qq.com/cgi-bin/menu/create?access_token=ACCESS_TOKEN&agentid=AGENTID
 */
-func (agent *Agent) MenuCreateRaw(payload []byte, params url.Values) (resp []byte, err error) {
-	return agent.Client.HTTPPost(apiMenuCreate+"?"+params.Encode(), bytes.NewReader(payload), "application/json;charset=utf-8")
-}
-func (agent *Agent) MenuCreate(agentid string, menus []MenuEntryObj) error {
-	params := url.Values{}
-	params.Add("agentid", agentid)
-
+func (agent *Agent) MenuCreate(ctx context.Context, agentid string, menus []MenuEntryObj) error {
 	payload := struct {
 		Buttons []MenuEntryObj `json:"button,omitempty"`
 	}{
 		Buttons: menus,
 	}
-	return utils.ApiPostWrapperEx(agent.MenuCreateRaw, payload, params, nil)
+	return agent.Client.ApiPostWrapperEx(ctx, apiMenuCreate, payload, func(params url.Values) {
+		params.Add("agentid", agentid)
+	}, nil)
 }
 
 /*
@@ -110,8 +105,8 @@ func (agent *Agent) MenuCreate(agentid string, menus []MenuEntryObj) error {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90232
 GET https://qyapi.weixin.qq.com/cgi-bin/menu/get?access_token=ACCESS_TOKEN&agentid=AGENTID
 */
-func (agent *Agent) MenuGet(params url.Values) (resp []byte, err error) {
-	return agent.Client.HTTPGet(apiMenuGet + "?" + params.Encode())
+func (agent *Agent) MenuGet(ctx context.Context, params url.Values) (resp []byte, err error) {
+	return agent.Client.HTTPGet(ctx, apiMenuGet+"?"+params.Encode())
 }
 
 /*
@@ -119,11 +114,8 @@ func (agent *Agent) MenuGet(params url.Values) (resp []byte, err error) {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90233
 GET https://qyapi.weixin.qq.com/cgi-bin/menu/delete?access_token=ACCESS_TOKEN&agentid=AGENTID
 */
-func (agent *Agent) MenuDeleteRaw(params url.Values) (resp []byte, err error) {
-	return agent.Client.HTTPGet(apiMenuDelete + "?" + params.Encode())
-}
-func (agent *Agent) MenuDelete(agentid string) error {
-	return utils.ApiGetWrapper(agent.MenuDeleteRaw, func(params url.Values) {
+func (agent *Agent) MenuDelete(ctx context.Context, agentid string) error {
+	return agent.Client.ApiGetWrapper(ctx, apiMenuDelete, func(params url.Values) {
 		params.Add("agentid", agentid)
 	}, nil)
 }
@@ -133,8 +125,8 @@ func (agent *Agent) MenuDelete(agentid string) error {
 See: https://work.weixin.qq.com/api/doc/90000/90135/92535
 POST https://qyapi.weixin.qq.com/cgi-bin/agent/set_workbench_template?access_token=ACCESS_TOKEN
 */
-func (agent *Agent) SetWorkbenchTemplate(payload []byte) (resp []byte, err error) {
-	return agent.Client.HTTPPost(apiSetWorkbenchTemplate, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (agent *Agent) SetWorkbenchTemplate(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return agent.Client.HTTPPost(ctx, apiSetWorkbenchTemplate, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -142,8 +134,8 @@ func (agent *Agent) SetWorkbenchTemplate(payload []byte) (resp []byte, err error
 See: https://work.weixin.qq.com/api/doc/90000/90135/92535
 POST https://qyapi.weixin.qq.com/cgi-bin/agent/get_workbench_template?access_token=ACCESS_TOKEN
 */
-func (agent *Agent) GetWorkbenchTemplate(payload []byte) (resp []byte, err error) {
-	return agent.Client.HTTPPost(apiGetWorkbenchTemplate, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (agent *Agent) GetWorkbenchTemplate(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return agent.Client.HTTPPost(ctx, apiGetWorkbenchTemplate, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
 
 /*
@@ -151,6 +143,6 @@ func (agent *Agent) GetWorkbenchTemplate(payload []byte) (resp []byte, err error
 See: https://work.weixin.qq.com/api/doc/90000/90135/92535
 POST https://qyapi.weixin.qq.com/cgi-bin/agent/set_workbench_data?access_token=ACCESS_TOKEN
 */
-func (agent *Agent) SetWorkbenchData(payload []byte) (resp []byte, err error) {
-	return agent.Client.HTTPPost(apiSetWorkbenchData, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (agent *Agent) SetWorkbenchData(ctx context.Context, payload []byte) (resp []byte, err error) {
+	return agent.Client.HTTPPost(ctx, apiSetWorkbenchData, bytes.NewReader(payload), "application/json;charset=utf-8")
 }
