@@ -18,7 +18,7 @@ type Agent struct {
 	Client *utils.Client
 }
 
-func New(corp *work.WxWork, locker utils.Lock, cache utils.Cache, config *Config) *Agent {
+func New(corp *work.WxWork, cache utils.Cache, locker utils.Lock, config *Config) *Agent {
 	instance := &Agent{
 		Config: config,
 		wxwork: corp,
