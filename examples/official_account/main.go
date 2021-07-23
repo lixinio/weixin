@@ -39,14 +39,14 @@ func login(oa *official_account.OfficialAccount) http.HandlerFunc {
 func callback(oa *official_account.OfficialAccount) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		code := r.URL.Query().Get("code")
-		snsAccessToken, err := oa.GetSnsAccessToken(code)
+		snsAccessToken, err := oa.GetSnsAccessToken(r.Context(), code)
 		if err != nil {
 			fmt.Println(err)
 			httpAbort(w, http.StatusForbidden)
 			return
 		}
 
-		user_info, err := oa.GetUserInfo(snsAccessToken.AccessToken, snsAccessToken.Openid, "")
+		user_info, err := oa.GetUserInfo(r.Context(), snsAccessToken.AccessToken, snsAccessToken.Openid, "")
 		if err != nil {
 			fmt.Println(err)
 			httpAbort(w, http.StatusForbidden)
@@ -58,8 +58,8 @@ func callback(oa *official_account.OfficialAccount) http.HandlerFunc {
 }
 
 func main() {
-	cache := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
-	officialAccount := official_account.New(cache, &official_account.Config{
+	redis := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
+	officialAccount := official_account.New(redis, redis, &official_account.Config{
 		Appid:  test.OfficialAccountAppid,
 		Secret: test.OfficialAccountSecret,
 	})

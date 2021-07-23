@@ -22,11 +22,11 @@ import (
 )
 
 func TestMaterialUrl(t *testing.T) {
-	cache := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
+	redis := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
 	corp := wxwork.New(&wxwork.Config{
 		Corpid: test.CorpID,
 	})
-	agent := agentApi.New(corp, cache, &agentApi.Config{
+	agent := agentApi.New(corp, redis, redis, &agentApi.Config{
 		AgentId: test.AgentID,
 		Secret:  test.AgentSecret,
 	})
@@ -52,11 +52,11 @@ func TestMaterialUrl(t *testing.T) {
 }
 
 func TestMaterialID(t *testing.T) {
-	cache := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
+	redis := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
 	corp := wxwork.New(&wxwork.Config{
 		Corpid: test.CorpID,
 	})
-	agent := agentApi.New(corp, cache, &agentApi.Config{
+	agent := agentApi.New(corp, redis, redis, &agentApi.Config{
 		AgentId: test.AgentID,
 		Secret:  test.AgentSecret,
 	})

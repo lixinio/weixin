@@ -16,8 +16,8 @@ import (
 )
 
 func newInvoiceApi() *InvoiceApi {
-	cache := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
-	officialAccount := official_account.New(cache, &official_account.Config{
+	redis := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
+	officialAccount := official_account.New(redis, redis, &official_account.Config{
 		Appid:  test.OfficialAccountAppid,
 		Secret: test.OfficialAccountSecret,
 	})
@@ -215,7 +215,7 @@ func TestInvoice(t *testing.T) {
 	orderID := fmt.Sprintf("%d", time.Now().UnixNano())
 	fmt.Printf("order id %s\n", orderID)
 	{
-		ticket, _, err := api.OfficialAccount.GetWxCardApiTicket()
+		ticket, _, err := api.OfficialAccount.GetWxCardApiTicket(ctx)
 		require.Equal(t, nil, err)
 
 		result, err := api.GetAuthUrl(ctx, &AuthUrlObj{

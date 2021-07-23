@@ -45,7 +45,7 @@ func login(agent *agent.Agent, sso bool) http.HandlerFunc {
 func callback(agent *agent.Agent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		code := r.URL.Query().Get("code")
-		user, err := agent.GetUserInfo(code)
+		user, err := agent.GetUserInfo(r.Context(), code)
 		if err != nil {
 			panic(err)
 		}
@@ -55,11 +55,11 @@ func callback(agent *agent.Agent) http.HandlerFunc {
 }
 
 func main() {
-	cache := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
+	redis := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
 	corp := wxwork.New(&wxwork.Config{
 		Corpid: test.CorpID,
 	})
-	agent := agent.New(corp, cache, &agent.Config{
+	agent := agent.New(corp, redis, redis, &agent.Config{
 		AgentId: test.AgentID,
 		Secret:  test.AgentSecret,
 	})

@@ -23,11 +23,11 @@ type OfficialAccount struct {
 	Client *utils.Client
 }
 
-func New(cache utils.Cache, config *Config) *OfficialAccount {
+func New(cache utils.Cache, locker utils.Lock, config *Config) *OfficialAccount {
 	instance := &OfficialAccount{
 		Config: config,
 	}
-	instance.Client = utils.NewClient(WXServerUrl, utils.NewAccessTokenCache(instance, cache, 0))
+	instance.Client = utils.NewClient(WXServerUrl, utils.NewAccessTokenCache(instance, cache, locker, 0))
 	return instance
 }
 
@@ -41,6 +41,14 @@ func (officialAccount *OfficialAccount) GetAccessToken() (accessToken string, ex
 func (officialAccount *OfficialAccount) GetAccessTokenKey() string {
 	return fmt.Sprintf(
 		"access-token:officialaccount:%s",
+		officialAccount.Config.Appid,
+	)
+}
+
+// GetAccessTokenLockKey 接口 weixin.AccessTokenGetter 实现
+func (officialAccount *OfficialAccount) GetAccessTokenLockKey() string {
+	return fmt.Sprintf(
+		"access-token:officialaccount:%s.lock",
 		officialAccount.Config.Appid,
 	)
 }
