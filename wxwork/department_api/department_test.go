@@ -14,15 +14,15 @@ import (
 )
 
 func TestDepartment(t *testing.T) {
-	cache := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
+	redis := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
 	corp := wxwork.New(&wxwork.Config{
 		Corpid: test.CorpID,
 	})
-	agent := agentApi.New(corp, cache, &agentApi.Config{
+	agent := agentApi.New(corp, redis, redis, &agentApi.Config{
 		AgentId: test.AgentID,
 		Secret:  test.AgentSecret,
 	})
-	agentContact := agentApi.New(corp, cache, &agentApi.Config{
+	agentContact := agentApi.New(corp, redis, redis, &agentApi.Config{
 		AgentId: "0",
 		Secret:  test.AgentContactSecret,
 	})

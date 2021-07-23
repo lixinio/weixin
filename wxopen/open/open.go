@@ -26,12 +26,17 @@ type Open struct {
 	component_verify_ticket_getter ComponentVerifyTicketGetter
 }
 
-func New(cache utils.Cache, config *Config, component_verify_ticket_getter ComponentVerifyTicketGetter) *Open {
+func New(
+	cache utils.Cache,
+	locker utils.Lock,
+	config *Config,
+	component_verify_ticket_getter ComponentVerifyTicketGetter,
+) *Open {
 	instance := &Open{
 		Config:                         config,
 		component_verify_ticket_getter: component_verify_ticket_getter,
 	}
-	instance.Client = utils.NewClient(WXServerUrl, utils.NewAccessTokenCache(instance, cache, 0))
+	instance.Client = utils.NewClient(WXServerUrl, utils.NewAccessTokenCache(instance, cache, locker, 0))
 	return instance
 }
 
@@ -45,6 +50,14 @@ func (open *Open) GetAccessToken() (accessToken string, expiresIn int, err error
 func (open *Open) GetAccessTokenKey() string {
 	return fmt.Sprintf(
 		"access-token:wxopen:%s",
+		open.Config.ComponentAppid,
+	)
+}
+
+// GetAccessTokenLockKey 接口 weixin.AccessTokenGetter 实现
+func (open *Open) GetAccessTokenLockKey() string {
+	return fmt.Sprintf(
+		"access-token:wxopen:%s.lock",
 		open.Config.ComponentAppid,
 	)
 }

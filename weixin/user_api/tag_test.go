@@ -13,8 +13,8 @@ import (
 )
 
 func TestUserTag(t *testing.T) {
-	cache := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
-	officialAccount := official_account.New(cache, &official_account.Config{
+	redis := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
+	officialAccount := official_account.New(redis, redis, &official_account.Config{
 		Appid:  test.OfficialAccountAppid,
 		Secret: test.OfficialAccountSecret,
 	})

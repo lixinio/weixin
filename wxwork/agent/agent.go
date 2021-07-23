@@ -18,12 +18,12 @@ type Agent struct {
 	Client *utils.Client
 }
 
-func New(corp *work.WxWork, cache utils.Cache, config *Config) *Agent {
+func New(corp *work.WxWork, locker utils.Lock, cache utils.Cache, config *Config) *Agent {
 	instance := &Agent{
 		Config: config,
 		wxwork: corp,
 	}
-	instance.Client = corp.NewClient(utils.NewAccessTokenCache(instance, cache, 0))
+	instance.Client = corp.NewClient(utils.NewAccessTokenCache(instance, cache, locker, 0))
 	return instance
 }
 
@@ -37,6 +37,15 @@ func (agent *Agent) GetAccessToken() (accessToken string, expiresIn int, err err
 func (agent *Agent) GetAccessTokenKey() string {
 	return fmt.Sprintf(
 		"access-token:qywx-agent:%s:%s",
+		agent.wxwork.Config.Corpid,
+		agent.Config.AgentId,
+	)
+}
+
+// GetAccessTokenLockKey 接口 weixin.AccessTokenGetter 实现
+func (agent *Agent) GetAccessTokenLockKey() string {
+	return fmt.Sprintf(
+		"access-token:qywx-agent:%s:%s.lock",
 		agent.wxwork.Config.Corpid,
 		agent.Config.AgentId,
 	)

@@ -1,7 +1,6 @@
 package redis
 
 // https://github.com/silenceper/wechat/blob/master/cache/redis.go
-
 import (
 	"encoding/json"
 	"time"
@@ -20,10 +19,6 @@ type Config struct {
 	MaxIdle     int   `yml:"max_idle" json:"max_idle"`
 	MaxActive   int   `yml:"max_active" json:"max_active"`
 	IdleTimeout int32 `yml:"idle_timeout" json:"idle_timeout"` //second
-
-	// Host        string `yml:"host" json:"host"`
-	// Password    string `yml:"password" json:"password"`
-	// Database    int    `yml:"database" json:"database"`
 }
 
 //NewRedis 实例化
@@ -60,21 +55,24 @@ func (r *Redis) SetConn(conn *redis.Pool) {
 }
 
 //Get 获取一个值
-func (r *Redis) Get(key string) interface{} {
+func (r *Redis) Get(key string, value interface{}) (exist bool, err error) {
 	conn := r.conn.Get()
 	defer conn.Close()
 
 	var data []byte
-	var err error
 	if data, err = redis.Bytes(conn.Do("GET", key)); err != nil {
-		return nil
-	}
-	var reply interface{}
-	if err = json.Unmarshal(data, &reply); err != nil {
-		return nil
+		if err == redis.ErrNil {
+			// 不存在特殊处理
+			return false, nil
+		}
 	}
 
-	return reply
+	// 序列化
+	if err = json.Unmarshal(data, value); err != nil {
+		return
+	}
+
+	return true, nil
 }
 
 //Set 设置一个值
@@ -111,5 +109,55 @@ func (r *Redis) Delete(key string) error {
 		return err
 	}
 
+	return nil
+}
+
+// https://www.programmersought.com/article/85921351841/
+// http://xiaorui.cc/archives/3028
+func (r *Redis) Lock(key string, expire time.Duration) (bool, error) {
+	conn := r.conn.Get()
+	defer conn.Close()
+
+	_, err := redis.String(conn.Do("set", key, 1, "ex", int(expire/time.Second), "nx"))
+	if err != nil {
+		if err == redis.ErrNil {
+			// The lock was not successful, it already exists.
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
+func (r *Redis) LockTimeout(key string, expire, timeout, sleep time.Duration) (bool, error) {
+	var total time.Duration = 0
+	for total < timeout {
+		result, err := r.Lock(key, expire)
+		if err == nil {
+			if result {
+				// lock success
+				return result, err
+			} else {
+				// lock fail
+				time.Sleep(sleep)
+				total += sleep
+			}
+		} else {
+			// error
+			return result, err
+		}
+	}
+	// lock fail
+	return false, nil
+}
+
+func (r *Redis) UnLock(key string) error {
+	conn := r.conn.Get()
+	defer conn.Close()
+
+	_, err := conn.Do("del", key)
+	if err != nil {
+		return err
+	}
 	return nil
 }

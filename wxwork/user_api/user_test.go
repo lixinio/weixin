@@ -12,11 +12,11 @@ import (
 )
 
 func TestUser(t *testing.T) {
-	cache := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
+	redis := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
 	corp := wxwork.New(&wxwork.Config{
 		Corpid: test.CorpID,
 	})
-	agent := agent.New(corp, cache, &agent.Config{
+	agent := agent.New(corp, redis, redis, &agent.Config{
 		AgentId: test.AgentID,
 		Secret:  test.AgentSecret,
 	})

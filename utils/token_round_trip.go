@@ -8,7 +8,8 @@ import (
 	"go.opencensus.io/trace"
 )
 
-// 在Trace的时候， 移除access-token
+// 在Trace的时候， 移除access-token / secret
+// 	secret : https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage_authorization.html
 
 type AccessTokenStripTransport struct {
 	Base http.RoundTripper
@@ -24,10 +25,19 @@ func (t *AccessTokenStripTransport) RoundTrip(req *http.Request) (*http.Response
 
 	u := req.URL
 	q := u.Query()
+
 	// 如果存在， 重置
+	edit := false
 	if q.Get("access_token") != "" {
 		q.Set("access_token", "")
+		edit = true
+	}
+	if q.Get("secret") != "" {
+		q.Set("secret", "")
+		edit = true
+	}
 
+	if edit {
 		// 覆盖原来的Url
 		span.AddAttributes(trace.StringAttribute(
 			ochttp.URLAttribute,
