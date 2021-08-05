@@ -27,6 +27,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -35,6 +36,15 @@ var (
 	ErrorSystemBusy  = errors.New("system busy")
 	UserAgent        = "lixinio/weixin"
 )
+
+type WeixinError struct {
+	Errcode int64  `json:"errcode"`
+	Errmsg  string `json:"errmsg"`
+}
+
+func (we WeixinError) Error() string {
+	return we.Errmsg
+}
 
 func filterFlags(content string) string {
 	for i, char := range content {
@@ -140,6 +150,24 @@ func (client *Client) HTTPUpload(
 	req.ContentLength = length + int64(closeBuffer.Len()) + int64(bodyBuffer.Len())
 
 	return client.httpDo(req.WithContext(ctx))
+}
+
+// Upload 上传文件
+func (client *Client) Upload(ctx context.Context, uri string, key string, filename string, content io.Reader) (resp []byte, err error) {
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	part, err := writer.CreateFormFile(key, filepath.Base(filename))
+	if err != nil {
+		return
+	}
+
+	if _, err = io.Copy(part, content); err != nil {
+		return
+	}
+	writer.Close()
+
+	return client.HTTPPost(ctx, uri, body, writer.FormDataContentType())
 }
 
 //HTTPPost POST 请求
@@ -248,10 +276,7 @@ func ResponseFilter(response *http.Response) (resp []byte, err error) {
 		return
 	}
 
-	errorResponse := struct {
-		Errcode int64  `json:"errcode"`
-		Errmsg  string `json:"errmsg"`
-	}{}
+	errorResponse := WeixinError{}
 	err = json.Unmarshal(resp, &errorResponse)
 	if err != nil {
 		return
@@ -269,9 +294,10 @@ func ResponseFilter(response *http.Response) (resp []byte, err error) {
 	}
 
 	if errorResponse.Errcode != 0 {
-		err = errors.New(string(resp))
+		err = errorResponse
 		return
 	}
+
 	return
 }
 
