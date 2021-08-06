@@ -93,7 +93,7 @@ func (api *ContentCheckApi) CheckMsg(ctx context.Context, openid string, scene i
 // CheckImg 过滤敏感图片
 // https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/sec-check/security.imgSecCheck.html
 func (api *ContentCheckApi) CheckImg(ctx context.Context, imgURL string) (sensitive bool, err error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, imgURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, imgURL, nil)
 	if err != nil {
 		return true, err
 	}
