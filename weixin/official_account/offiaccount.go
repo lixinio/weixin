@@ -40,7 +40,7 @@ func (officialAccount *OfficialAccount) GetAccessToken() (accessToken string, ex
 // GetAccessTokenKey 接口 weixin.AccessTokenGetter 实现
 func (officialAccount *OfficialAccount) GetAccessTokenKey() string {
 	return fmt.Sprintf(
-		"weixin.access_token:%s",
+		"weixin.access_token.%s",
 		officialAccount.Config.Appid,
 	)
 }
@@ -48,7 +48,7 @@ func (officialAccount *OfficialAccount) GetAccessTokenKey() string {
 // GetAccessTokenLockKey 接口 weixin.AccessTokenGetter 实现
 func (officialAccount *OfficialAccount) GetAccessTokenLockKey() string {
 	return fmt.Sprintf(
-		"weixin.access_token:%s.lock",
+		"weixin.access_token.%s.lock",
 		officialAccount.Config.Appid,
 	)
 }
