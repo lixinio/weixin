@@ -2,7 +2,7 @@ package redis
 
 // https://github.com/silenceper/wechat/blob/master/cache/redis.go
 import (
-	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
@@ -67,10 +67,12 @@ func (r *Redis) Get(key string, value interface{}) (exist bool, err error) {
 		}
 	}
 
-	// 序列化
-	if err = json.Unmarshal(data, value); err != nil {
+	v, ok := value.(*string)
+	if !ok {
+		err = fmt.Errorf("value must be pointer to string")
 		return
 	}
+	*v = string(data)
 
 	return true, nil
 }
@@ -80,8 +82,9 @@ func (r *Redis) Set(key string, val interface{}, timeout time.Duration) (err err
 	conn := r.conn.Get()
 	defer conn.Close()
 
-	var data []byte
-	if data, err = json.Marshal(val); err != nil {
+	data, ok := val.(string)
+	if !ok {
+		err = fmt.Errorf("val must be string")
 		return
 	}
 
