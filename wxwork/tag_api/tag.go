@@ -23,7 +23,6 @@ import (
 	"net/url"
 
 	"github.com/lixinio/weixin/utils"
-	"github.com/lixinio/weixin/wxwork/agent"
 )
 
 const (
@@ -40,10 +39,8 @@ type TagApi struct {
 	*utils.Client
 }
 
-func NewAgentApi(agent *agent.Agent) *TagApi {
-	return &TagApi{
-		Client: agent.Client,
-	}
+func NewApi(client *utils.Client) *TagApi {
+	return &TagApi{Client: client}
 }
 
 /*

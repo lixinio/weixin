@@ -20,7 +20,6 @@ import (
 	"net/url"
 
 	"github.com/lixinio/weixin/utils"
-	"github.com/lixinio/weixin/weixin/official_account"
 )
 
 const (
@@ -37,10 +36,8 @@ type UserApi struct {
 	*utils.Client
 }
 
-func NewOfficialAccountApi(officialAccount *official_account.OfficialAccount) *UserApi {
-	return &UserApi{
-		Client: officialAccount.Client,
-	}
+func NewApi(client *utils.Client) *UserApi {
+	return &UserApi{Client: client}
 }
 
 /*

@@ -28,7 +28,6 @@ import (
 	"path"
 
 	"github.com/lixinio/weixin/utils"
-	"github.com/lixinio/weixin/wxwork/agent"
 )
 
 const (
@@ -49,10 +48,8 @@ type MaterialApi struct {
 	*utils.Client
 }
 
-func NewAgentApi(agent *agent.Agent) *MaterialApi {
-	return &MaterialApi{
-		Client: agent.Client,
-	}
+func NewApi(client *utils.Client) *MaterialApi {
+	return &MaterialApi{Client: client}
 }
 
 type MaterialID struct {

@@ -23,7 +23,6 @@ import (
 	"net/url"
 
 	"github.com/lixinio/weixin/utils"
-	"github.com/lixinio/weixin/wxwork/agent"
 )
 
 const (
@@ -41,10 +40,8 @@ type MessageApi struct {
 	*utils.Client
 }
 
-func NewAgentApi(agent *agent.Agent) *MessageApi {
-	return &MessageApi{
-		Client: agent.Client,
-	}
+func NewApi(client *utils.Client) *MessageApi {
+	return &MessageApi{Client: client}
 }
 
 /*

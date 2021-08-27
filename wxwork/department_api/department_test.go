@@ -29,8 +29,8 @@ func TestDepartment(t *testing.T) {
 	ctx := context.Background()
 
 	departmentName := time.Now().Format("20060201150405")
-	departmentApi := NewAgentApi(agent)
-	departmentContactApi := NewAgentApi(agentContact)
+	departmentApi := NewApi(agent.Client)
+	departmentContactApi := NewApi(agentContact.Client)
 
 	rootDepartmentID := 0
 	{

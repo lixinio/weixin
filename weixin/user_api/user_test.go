@@ -19,7 +19,7 @@ func TestUser(t *testing.T) {
 	})
 	ctx := context.Background()
 
-	userApi := NewOfficialAccountApi(officialAccount)
+	userApi := NewApi(officialAccount.Client)
 	// 用户列表
 	resp, err := userApi.Get(ctx, "")
 	require.Equal(t, nil, err)

@@ -25,7 +25,6 @@ import (
 	"net/url"
 
 	"github.com/lixinio/weixin/utils"
-	"github.com/lixinio/weixin/weixin/official_account"
 )
 
 const (
@@ -53,14 +52,10 @@ const (
 
 type InvoiceApi struct {
 	*utils.Client
-	OfficialAccount *official_account.OfficialAccount
 }
 
-func NewOfficialAccountApi(officialAccount *official_account.OfficialAccount) *InvoiceApi {
-	return &InvoiceApi{
-		Client:          officialAccount.Client,
-		OfficialAccount: officialAccount,
-	}
+func NewApi(client *utils.Client) *InvoiceApi {
+	return &InvoiceApi{Client: client}
 }
 
 // https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/Vendor_API_List.html#17
