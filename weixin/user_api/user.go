@@ -20,7 +20,6 @@ import (
 	"net/url"
 
 	"github.com/lixinio/weixin/utils"
-	"github.com/lixinio/weixin/weixin/official_account"
 )
 
 const (
@@ -37,10 +36,8 @@ type UserApi struct {
 	*utils.Client
 }
 
-func NewOfficialAccountApi(officialAccount *official_account.OfficialAccount) *UserApi {
-	return &UserApi{
-		Client: officialAccount.Client,
-	}
+func NewApi(client *utils.Client) *UserApi {
+	return &UserApi{Client: client}
 }
 
 /*
@@ -124,7 +121,10 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Get_users_
 
 POST https://api.weixin.qq.com/cgi-bin/user/info/batchget?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) BatchGetUserInfo(ctx context.Context, param *BatchGetUserParams) (*UserInfoList, error) {
+func (api *UserApi) BatchGetUserInfo(
+	ctx context.Context,
+	param *BatchGetUserParams,
+) (*UserInfoList, error) {
 	var result UserInfoList
 	err := api.Client.ApiPostWrapper(ctx, apiBatchGetUserInfo, param, &result)
 	if err != nil {

@@ -24,7 +24,6 @@ import (
 	"strconv"
 
 	"github.com/lixinio/weixin/utils"
-	"github.com/lixinio/weixin/wxwork/agent"
 )
 
 const (
@@ -38,10 +37,8 @@ type DepartmentApi struct {
 	*utils.Client
 }
 
-func NewAgentApi(agent *agent.Agent) *DepartmentApi {
-	return &DepartmentApi{
-		Client: agent.Client,
-	}
+func NewApi(client *utils.Client) *DepartmentApi {
+	return &DepartmentApi{Client: client}
 }
 
 type CreateParam struct {

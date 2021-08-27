@@ -42,7 +42,7 @@ func (agent *Agent) refreshAccessTokenFromWXServer() (accessToken string, expire
 
 	err = json.Unmarshal(resp, &result)
 	if err != nil {
-		err = fmt.Errorf("Unmarshal error %s", string(resp))
+		err = fmt.Errorf("unmarshal error %s", string(resp))
 		return
 	}
 

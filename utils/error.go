@@ -22,7 +22,12 @@ func DecodeWithCommonError(response []byte, apiName string) (err error) {
 		return
 	}
 	if commError.ErrCode != 0 {
-		return fmt.Errorf("%s Error , errcode=%d , errmsg=%s", apiName, commError.ErrCode, commError.ErrMsg)
+		return fmt.Errorf(
+			"%s Error , errcode=%d , errmsg=%s",
+			apiName,
+			commError.ErrCode,
+			commError.ErrMsg,
+		)
 	}
 	return nil
 }
@@ -47,7 +52,12 @@ func DecodeWithError(response []byte, obj interface{}, apiName string) error {
 		return fmt.Errorf("errcode or errmsg is invalid")
 	}
 	if errCode.Int() != 0 {
-		return fmt.Errorf("%s Error , errcode=%d , errmsg=%s", apiName, errCode.Int(), errMsg.String())
+		return fmt.Errorf(
+			"%s Error , errcode=%d , errmsg=%s",
+			apiName,
+			errCode.Int(),
+			errMsg.String(),
+		)
 	}
 	return nil
 }

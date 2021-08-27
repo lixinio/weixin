@@ -22,7 +22,7 @@ func TestUser(t *testing.T) {
 	})
 	ctx := context.Background()
 
-	userApi := NewAgentApi(agent)
+	userApi := NewApi(agent.Client)
 	{
 		resp, err := userApi.Get(ctx, test.AgentUserID)
 		require.Equal(t, nil, err)

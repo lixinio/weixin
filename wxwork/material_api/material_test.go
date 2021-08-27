@@ -32,7 +32,7 @@ func TestMaterialUrl(t *testing.T) {
 	})
 	ctx := context.Background()
 
-	materialApi := NewAgentApi(agent)
+	materialApi := NewApi(agent.Client)
 
 	file, err := os.Open(test.ImagePath)
 	require.Empty(t, err)
@@ -62,7 +62,7 @@ func TestMaterialID(t *testing.T) {
 	})
 	ctx := context.Background()
 
-	materialApi := NewAgentApi(agent)
+	materialApi := NewApi(agent.Client)
 
 	file, err := os.Open(test.ImagePath)
 	require.Empty(t, err)

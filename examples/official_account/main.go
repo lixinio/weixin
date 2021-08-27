@@ -24,7 +24,7 @@ func index(oa *official_account.OfficialAccount) http.HandlerFunc {
 	`
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		fmt.Fprintf(w, html)
+		fmt.Fprint(w, html)
 	}
 }
 
@@ -46,7 +46,12 @@ func callback(oa *official_account.OfficialAccount) http.HandlerFunc {
 			return
 		}
 
-		user_info, err := oa.GetUserInfo(r.Context(), snsAccessToken.AccessToken, snsAccessToken.Openid, "")
+		user_info, err := oa.GetUserInfo(
+			r.Context(),
+			snsAccessToken.AccessToken,
+			snsAccessToken.Openid,
+			"",
+		)
 		if err != nil {
 			fmt.Println(err)
 			httpAbort(w, http.StatusForbidden)
@@ -72,9 +77,12 @@ func main() {
 	http.HandleFunc("/", index(officialAccount))
 	http.HandleFunc("/login", login(officialAccount))
 	http.HandleFunc("/login/callback", callback(officialAccount))
-	http.HandleFunc(fmt.Sprintf("/%s", test.OfficialAccountAuthKey), func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, test.OfficialAccountAuthValue)
-	})
+	http.HandleFunc(
+		fmt.Sprintf("/%s", test.OfficialAccountAuthKey),
+		func(w http.ResponseWriter, r *http.Request) {
+			io.WriteString(w, test.OfficialAccountAuthValue)
+		},
+	)
 	http.HandleFunc(fmt.Sprintf("/weixin/%s", test.OfficialAccountAppid), weixinCallback(serverApi))
 
 	err := http.ListenAndServe(":5000", nil)

@@ -6,9 +6,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/lixinio/weixin/utils"
-	"github.com/lixinio/weixin/weixin/official_account"
 	"net/http"
+
+	"github.com/lixinio/weixin/utils"
 )
 
 const (
@@ -25,7 +25,6 @@ const (
 // ContentCheckApi 内容检测api
 type ContentCheckApi struct {
 	*utils.Client
-	OfficialAccount *official_account.OfficialAccount
 }
 
 // MsgCheckResult 文本检测结果
@@ -53,16 +52,21 @@ type ImgCheckResult struct {
 	ErrMsg  string
 }
 
-func NewOfficialAccountApi(officialAccount *official_account.OfficialAccount) *ContentCheckApi {
-	return &ContentCheckApi{
-		officialAccount.Client,
-		officialAccount,
-	}
+func NewApi(client *utils.Client) *ContentCheckApi {
+	return &ContentCheckApi{Client: client}
 }
 
 // CheckMsg 过滤敏感信息
 // https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/sec-check/security.msgSecCheck.html
-func (api *ContentCheckApi) CheckMsg(ctx context.Context, openid string, scene int, content string, nickname string, title string, signature string) (*MsgCheckResult, error) {
+func (api *ContentCheckApi) CheckMsg(
+	ctx context.Context,
+	openid string,
+	scene int,
+	content string,
+	nickname string,
+	title string,
+	signature string,
+) (*MsgCheckResult, error) {
 	result := MsgCheckResult{}
 	payload := struct {
 		Version   int    `json:"version"`
@@ -92,7 +96,10 @@ func (api *ContentCheckApi) CheckMsg(ctx context.Context, openid string, scene i
 
 // CheckImg 过滤敏感图片
 // https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/sec-check/security.imgSecCheck.html
-func (api *ContentCheckApi) CheckImg(ctx context.Context, imgURL string) (sensitive bool, err error) {
+func (api *ContentCheckApi) CheckImg(
+	ctx context.Context,
+	imgURL string,
+) (sensitive bool, err error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, imgURL, nil)
 	if err != nil {
 		return true, err
@@ -104,7 +111,13 @@ func (api *ContentCheckApi) CheckImg(ctx context.Context, imgURL string) (sensit
 		return true, err
 	}
 
-	resp, err := api.Client.Upload(ctx, apiImgSecCheck, imgCheckFieldName, imgCheckFileName, imgResp.Body)
+	resp, err := api.Client.Upload(
+		ctx,
+		apiImgSecCheck,
+		imgCheckFieldName,
+		imgCheckFileName,
+		imgResp.Body,
+	)
 	if err != nil {
 		weixinErr := utils.WeixinError{}
 		if errors.As(err, &weixinErr) && weixinErr.Errcode == SensitiveImgErrCode {

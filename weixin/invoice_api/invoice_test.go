@@ -15,18 +15,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func newInvoiceApi() *InvoiceApi {
+func newInvoiceApi() (*InvoiceApi, *official_account.OfficialAccount) {
 	redis := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
 	officialAccount := official_account.New(redis, redis, &official_account.Config{
 		Appid:  test.OfficialAccountAppid,
 		Secret: test.OfficialAccountSecret,
 	})
 
-	return NewOfficialAccountApi(officialAccount)
+	return NewApi(officialAccount.Client), officialAccount
 }
 
 func TestInvoiceUploadPdf(t *testing.T) {
-	api := newInvoiceApi()
+	api, _ := newInvoiceApi()
 	ctx := context.Background()
 
 	file, err := os.Open(test.InvoicePdf)
@@ -42,7 +42,7 @@ func TestInvoiceUploadPdf(t *testing.T) {
 }
 
 func TestSetContact(t *testing.T) {
-	api := newInvoiceApi()
+	api, _ := newInvoiceApi()
 	ctx := context.Background()
 
 	setbizattrObj := &SetbizattrObj{
@@ -60,7 +60,7 @@ func TestSetContact(t *testing.T) {
 }
 
 func TestPlatformCreateCard(t *testing.T) {
-	api := newInvoiceApi()
+	api, _ := newInvoiceApi()
 	ctx := context.Background()
 
 	cardID, err := api.PlatformCreateCard(ctx, &CreateCardObj{
@@ -82,7 +82,7 @@ func TestPlatformCreateCard(t *testing.T) {
 }
 
 func TestInvoiceInsert(t *testing.T) {
-	api := newInvoiceApi()
+	api, _ := newInvoiceApi()
 	ctx := context.Background()
 
 	billingTime := 0
@@ -140,7 +140,7 @@ func TestInvoiceInsert(t *testing.T) {
 }
 
 func TestRejectInsert(t *testing.T) {
-	api := newInvoiceApi()
+	api, _ := newInvoiceApi()
 	ctx := context.Background()
 
 	err := api.RejectInsert(ctx, &RejectInsertObj{
@@ -152,7 +152,7 @@ func TestRejectInsert(t *testing.T) {
 }
 
 func TestSetAuthField(t *testing.T) {
-	api := newInvoiceApi()
+	api, _ := newInvoiceApi()
 	ctx := context.Background()
 
 	param := &AuthFieldObj{
@@ -182,7 +182,7 @@ func TestSetAuthField(t *testing.T) {
 }
 
 func TestInvoice(t *testing.T) {
-	api := newInvoiceApi()
+	api, officialAccount := newInvoiceApi()
 	ctx := context.Background()
 
 	// {
@@ -215,7 +215,7 @@ func TestInvoice(t *testing.T) {
 	orderID := fmt.Sprintf("%d", time.Now().UnixNano())
 	fmt.Printf("order id %s\n", orderID)
 	{
-		ticket, _, err := api.OfficialAccount.GetWxCardApiTicket(ctx)
+		ticket, _, err := officialAccount.GetWxCardApiTicket(ctx)
 		require.Equal(t, nil, err)
 
 		result, err := api.GetAuthUrl(ctx, &AuthUrlObj{

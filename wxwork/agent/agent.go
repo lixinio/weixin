@@ -36,7 +36,7 @@ func (agent *Agent) GetAccessToken() (accessToken string, expiresIn int, err err
 // GetAccessTokenKey 接口 weixin.AccessTokenGetter 实现
 func (agent *Agent) GetAccessTokenKey() string {
 	return fmt.Sprintf(
-		"access-token:qywx-agent:%s:%s",
+		"qywx_%s_%s.access_token",
 		agent.wxwork.Config.Corpid,
 		agent.Config.AgentId,
 	)
@@ -45,7 +45,7 @@ func (agent *Agent) GetAccessTokenKey() string {
 // GetAccessTokenLockKey 接口 weixin.AccessTokenGetter 实现
 func (agent *Agent) GetAccessTokenLockKey() string {
 	return fmt.Sprintf(
-		"access-token:qywx-agent:%s:%s.lock",
+		"qywx_%s_%s.access_token.lock",
 		agent.wxwork.Config.Corpid,
 		agent.Config.AgentId,
 	)

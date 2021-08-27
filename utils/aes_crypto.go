@@ -79,7 +79,10 @@ func AESEncryptMsg(random, rawXMLMsg []byte, appId string, encodingAESKey string
 
 // AESDecryptMsg 消息解密
 // ciphertext = AES_Encrypt[random(16B) + msg_len(4B) + rawXMLMsg + appId]
-func AESDecryptMsg(base64CipherText string, encodingAESKey string) (random, rawXMLMsg, appId []byte, err error) {
+func AESDecryptMsg(
+	base64CipherText string,
+	encodingAESKey string,
+) (random, rawXMLMsg, appId []byte, err error) {
 	ciphertext, err := base64.StdEncoding.DecodeString(base64CipherText)
 	if err != nil {
 		return
@@ -100,7 +103,10 @@ func AESDecryptMsg(base64CipherText string, encodingAESKey string) (random, rawX
 		return
 	}
 	if len(ciphertext)&BLOCK_MASK != 0 {
-		err = fmt.Errorf("ciphertext is not a multiple of the block size, the length is %d", len(ciphertext))
+		err = fmt.Errorf(
+			"ciphertext is not a multiple of the block size, the length is %d",
+			len(ciphertext),
+		)
 		return
 	}
 

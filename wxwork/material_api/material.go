@@ -28,7 +28,6 @@ import (
 	"path"
 
 	"github.com/lixinio/weixin/utils"
-	"github.com/lixinio/weixin/wxwork/agent"
 )
 
 const (
@@ -49,10 +48,8 @@ type MaterialApi struct {
 	*utils.Client
 }
 
-func NewAgentApi(agent *agent.Agent) *MaterialApi {
-	return &MaterialApi{
-		Client: agent.Client,
-	}
+func NewApi(client *utils.Client) *MaterialApi {
+	return &MaterialApi{Client: client}
 }
 
 type MaterialID struct {
@@ -67,7 +64,12 @@ type MaterialID struct {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90253
 POST(@media) https://qyapi.weixin.qq.com/cgi-bin/media/upload?access_token=ACCESS_TOKEN&type=TYPE
 */
-func (api *MaterialApi) Upload(ctx context.Context, filename string, content io.Reader, mediaType string) (result *MaterialID, err error) {
+func (api *MaterialApi) Upload(
+	ctx context.Context,
+	filename string,
+	content io.Reader,
+	mediaType string,
+) (result *MaterialID, err error) {
 	params := url.Values{}
 	params.Add("type", mediaType)
 	r, w := io.Pipe()
@@ -110,7 +112,11 @@ type MaterialUrl struct {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90256
 POST(@media) https://qyapi.weixin.qq.com/cgi-bin/media/uploadimg?access_token=ACCESS_TOKEN
 */
-func (api *MaterialApi) UploadImg(ctx context.Context, filename string, content io.Reader) (url string, err error) {
+func (api *MaterialApi) UploadImg(
+	ctx context.Context,
+	filename string,
+	content io.Reader,
+) (url string, err error) {
 	r, w := io.Pipe()
 	m := multipart.NewWriter(w)
 	go func() {
@@ -156,7 +162,8 @@ func (api *MaterialApi) Get(ctx context.Context, mediaID string) (resp *http.Res
 	}
 
 	ct := utils.ContentType(resp)
-	if ct != "application/json" && (resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusPartialContent) {
+	if ct != "application/json" &&
+		(resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusPartialContent) {
 		return resp, nil
 	}
 

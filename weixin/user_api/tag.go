@@ -142,7 +142,11 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/User_Tag_M
 
 POST https://api.weixin.qq.com/cgi-bin/user/tag/get?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) GetUsersByTag(ctx context.Context, tagID int, nextOpenid string) (*TagOpenIDList, error) {
+func (api *UserApi) GetUsersByTag(
+	ctx context.Context,
+	tagID int,
+	nextOpenid string,
+) (*TagOpenIDList, error) {
 	params := &struct {
 		TagID      int    `json:"tagid"`
 		NextOpenid string `json:"next_openid"`

@@ -20,7 +20,7 @@ func TestUserTag(t *testing.T) {
 	})
 	ctx := context.Background()
 
-	userApi := NewOfficialAccountApi(officialAccount)
+	userApi := NewApi(officialAccount.Client)
 	// 获得第一个用户
 	resp, err := userApi.Get(ctx, "")
 	require.Equal(t, nil, err)
