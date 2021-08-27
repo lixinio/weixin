@@ -110,6 +110,7 @@ func (s *ServerApi) ServeData(w http.ResponseWriter, r *http.Request, processor 
 
 	if msgSignature := r.URL.Query().Get("msg_signature"); signature != msgSignature {
 		err = fmt.Errorf("%s != %s", signature, msgSignature)
+		fmt.Println(err)
 		return
 	}
 

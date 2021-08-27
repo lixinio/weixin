@@ -24,7 +24,7 @@ func index(oa *official_account.OfficialAccount) http.HandlerFunc {
 	`
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		fmt.Fprintf(w, html)
+		fmt.Fprint(w, html)
 	}
 }
 

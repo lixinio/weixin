@@ -117,7 +117,6 @@ func serveData(serverApi *server_api.ServerApi) http.HandlerFunc {
 		}
 
 		io.WriteString(w, "success")
-		return
 	}
 }
 

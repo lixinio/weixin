@@ -170,7 +170,6 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 		}
 
 		io.WriteString(w, "success")
-		return
 	}
 }
 
