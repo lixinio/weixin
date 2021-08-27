@@ -87,7 +87,11 @@ func (s *ServerApi) ServeEcho(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *ServerApi) ServeData(w http.ResponseWriter, r *http.Request, processor utils.XmlHandlerFunc) {
+func (s *ServerApi) ServeData(
+	w http.ResponseWriter,
+	r *http.Request,
+	processor utils.XmlHandlerFunc,
+) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return
@@ -393,7 +397,11 @@ func parseEvent(body []byte) (m interface{}, err error) {
 }
 
 // Response 响应微信消息
-func (s *ServerApi) response(w http.ResponseWriter, r *http.Request, reply interface{}) (err error) {
+func (s *ServerApi) response(
+	w http.ResponseWriter,
+	r *http.Request,
+	reply interface{},
+) (err error) {
 
 	output := []byte("") // 默认回复
 	if reply != nil {
@@ -422,7 +430,9 @@ func (s *ServerApi) response(w http.ResponseWriter, r *http.Request, reply inter
 }
 
 // encryptReplyMessage 加密回复消息
-func (s *ServerApi) encryptReplyMessage(rawXmlMsg []byte) (replyEncryptMessage *ReplyEncryptMessage, err error) {
+func (s *ServerApi) encryptReplyMessage(
+	rawXmlMsg []byte,
+) (replyEncryptMessage *ReplyEncryptMessage, err error) {
 	cipherText, err := utils.AESEncryptMsg(
 		[]byte(utils.GetRandString(16)),
 		rawXmlMsg,
@@ -454,26 +464,50 @@ func (s *ServerApi) encryptReplyMessage(rawXmlMsg []byte) (replyEncryptMessage *
 	}, nil
 }
 
-func (s *ServerApi) ResponseText(w http.ResponseWriter, r *http.Request, message *ReplyMessageText) (err error) {
+func (s *ServerApi) ResponseText(
+	w http.ResponseWriter,
+	r *http.Request,
+	message *ReplyMessageText,
+) (err error) {
 	return s.response(w, r, message)
 }
 
-func (s *ServerApi) ResponseImage(w http.ResponseWriter, r *http.Request, message *ReplyMessageImage) (err error) {
+func (s *ServerApi) ResponseImage(
+	w http.ResponseWriter,
+	r *http.Request,
+	message *ReplyMessageImage,
+) (err error) {
 	return s.response(w, r, message)
 }
 
-func (s *ServerApi) ResponseVoice(w http.ResponseWriter, r *http.Request, message *ReplyMessageVoice) (err error) {
+func (s *ServerApi) ResponseVoice(
+	w http.ResponseWriter,
+	r *http.Request,
+	message *ReplyMessageVoice,
+) (err error) {
 	return s.response(w, r, message)
 }
 
-func (s *ServerApi) ResponseVideo(w http.ResponseWriter, r *http.Request, message *ReplyMessageVideo) (err error) {
+func (s *ServerApi) ResponseVideo(
+	w http.ResponseWriter,
+	r *http.Request,
+	message *ReplyMessageVideo,
+) (err error) {
 	return s.response(w, r, message)
 }
 
-func (s *ServerApi) ResponseTaskCard(w http.ResponseWriter, r *http.Request, message *ReplyMessageTaskCard) (err error) {
+func (s *ServerApi) ResponseTaskCard(
+	w http.ResponseWriter,
+	r *http.Request,
+	message *ReplyMessageTaskCard,
+) (err error) {
 	return s.response(w, r, message)
 }
 
-func (s *ServerApi) ResponseNews(w http.ResponseWriter, r *http.Request, message *ReplyMessageNews) (err error) {
+func (s *ServerApi) ResponseNews(
+	w http.ResponseWriter,
+	r *http.Request,
+	message *ReplyMessageNews,
+) (err error) {
 	return s.response(w, r, message)
 }

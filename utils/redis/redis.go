@@ -16,8 +16,8 @@ type Redis struct {
 // Config redis 连接属性
 type Config struct {
 	RedisUrl    string
-	MaxIdle     int   `yml:"max_idle" json:"max_idle"`
-	MaxActive   int   `yml:"max_active" json:"max_active"`
+	MaxIdle     int   `yml:"max_idle"     json:"max_idle"`
+	MaxActive   int   `yml:"max_active"   json:"max_active"`
 	IdleTimeout int32 `yml:"idle_timeout" json:"idle_timeout"` //second
 }
 

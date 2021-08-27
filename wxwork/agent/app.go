@@ -81,7 +81,12 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90228
 POST https://qyapi.weixin.qq.com/cgi-bin/agent/set?access_token=ACCESS_TOKEN
 */
 func (agent *Agent) AgentSet(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return agent.Client.HTTPPost(ctx, apiAgentSet, bytes.NewReader(payload), "application/json;charset=utf-8")
+	return agent.Client.HTTPPost(
+		ctx,
+		apiAgentSet,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -125,8 +130,16 @@ func (agent *Agent) MenuDelete(ctx context.Context, agentid string) error {
 See: https://work.weixin.qq.com/api/doc/90000/90135/92535
 POST https://qyapi.weixin.qq.com/cgi-bin/agent/set_workbench_template?access_token=ACCESS_TOKEN
 */
-func (agent *Agent) SetWorkbenchTemplate(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return agent.Client.HTTPPost(ctx, apiSetWorkbenchTemplate, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (agent *Agent) SetWorkbenchTemplate(
+	ctx context.Context,
+	payload []byte,
+) (resp []byte, err error) {
+	return agent.Client.HTTPPost(
+		ctx,
+		apiSetWorkbenchTemplate,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -134,8 +147,16 @@ func (agent *Agent) SetWorkbenchTemplate(ctx context.Context, payload []byte) (r
 See: https://work.weixin.qq.com/api/doc/90000/90135/92535
 POST https://qyapi.weixin.qq.com/cgi-bin/agent/get_workbench_template?access_token=ACCESS_TOKEN
 */
-func (agent *Agent) GetWorkbenchTemplate(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return agent.Client.HTTPPost(ctx, apiGetWorkbenchTemplate, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (agent *Agent) GetWorkbenchTemplate(
+	ctx context.Context,
+	payload []byte,
+) (resp []byte, err error) {
+	return agent.Client.HTTPPost(
+		ctx,
+		apiGetWorkbenchTemplate,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -144,5 +165,10 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/92535
 POST https://qyapi.weixin.qq.com/cgi-bin/agent/set_workbench_data?access_token=ACCESS_TOKEN
 */
 func (agent *Agent) SetWorkbenchData(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return agent.Client.HTTPPost(ctx, apiSetWorkbenchData, bytes.NewReader(payload), "application/json;charset=utf-8")
+	return agent.Client.HTTPPost(
+		ctx,
+		apiSetWorkbenchData,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }

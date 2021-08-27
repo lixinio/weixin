@@ -85,7 +85,11 @@ func (client *Client) HTTPGet(ctx context.Context, uri string) (resp []byte, err
 	return client.HTTPGetWithParams(ctx, uri, url.Values{})
 }
 
-func (client *Client) HTTPGetWithParams(ctx context.Context, uri string, params url.Values) (resp []byte, err error) {
+func (client *Client) HTTPGetWithParams(
+	ctx context.Context,
+	uri string,
+	params url.Values,
+) (resp []byte, err error) {
 	newUrl, err := client.applyAccessToken(uri, params)
 	if err != nil {
 		return
@@ -100,7 +104,11 @@ func (client *Client) HTTPGetWithParams(ctx context.Context, uri string, params 
 }
 
 // 素材下载， 需要根据Content-Type来判断Body， 可以是json，可能是二进制
-func (client *Client) HTTPGetWithParamsRaw(ctx context.Context, uri string, params url.Values) (resp *http.Response, err error) {
+func (client *Client) HTTPGetWithParamsRaw(
+	ctx context.Context,
+	uri string,
+	params url.Values,
+) (resp *http.Response, err error) {
 	newUrl, err := client.applyAccessToken(uri, params)
 	if err != nil {
 		return
@@ -153,7 +161,13 @@ func (client *Client) HTTPUpload(
 }
 
 // Upload 上传文件
-func (client *Client) Upload(ctx context.Context, uri string, key string, filename string, content io.Reader) (resp []byte, err error) {
+func (client *Client) Upload(
+	ctx context.Context,
+	uri string,
+	key string,
+	filename string,
+	content io.Reader,
+) (resp []byte, err error) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
@@ -244,7 +258,10 @@ func (client *Client) httpDo(req *http.Request) (resp []byte, err error) {
 /*
 在请求地址上附加上 access_token
 */
-func (client *Client) applyAccessToken(oldUrl string, params url.Values) (newUrl string, err error) {
+func (client *Client) applyAccessToken(
+	oldUrl string,
+	params url.Values,
+) (newUrl string, err error) {
 	accessToken, err := client.accessTokenCache.GetAccessToken()
 	if err != nil {
 		return
@@ -302,7 +319,12 @@ func ResponseFilter(response *http.Response) (resp []byte, err error) {
 }
 
 /// 工具方法
-func (client *Client) ApiGetWrapper(ctx context.Context, urlPath string, paramFunc func(url.Values), result interface{}) error {
+func (client *Client) ApiGetWrapper(
+	ctx context.Context,
+	urlPath string,
+	paramFunc func(url.Values),
+	result interface{},
+) error {
 	params := url.Values{}
 	paramFunc(params)
 	resp, err := client.HTTPGetWithParams(ctx, urlPath, params)
@@ -316,7 +338,11 @@ func (client *Client) ApiGetWrapper(ctx context.Context, urlPath string, paramFu
 	return nil
 }
 
-func (client *Client) ApiGetNullWrapper(ctx context.Context, urlPath string, result interface{}) error {
+func (client *Client) ApiGetNullWrapper(
+	ctx context.Context,
+	urlPath string,
+	result interface{},
+) error {
 	resp, err := client.HTTPGet(ctx, urlPath)
 	if err != nil {
 		return err
@@ -328,13 +354,23 @@ func (client *Client) ApiGetNullWrapper(ctx context.Context, urlPath string, res
 	return nil
 }
 
-func (client *Client) ApiPostWrapper(ctx context.Context, urlPath string, payload interface{}, result interface{}) error {
+func (client *Client) ApiPostWrapper(
+	ctx context.Context,
+	urlPath string,
+	payload interface{},
+	result interface{},
+) error {
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.HTTPPost(ctx, urlPath, bytes.NewReader(body), "application/json;charset=utf-8")
+	resp, err := client.HTTPPost(
+		ctx,
+		urlPath,
+		bytes.NewReader(body),
+		"application/json;charset=utf-8",
+	)
 	if err != nil {
 		return err
 	}

@@ -51,7 +51,12 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90236
 POST https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=ACCESS_TOKEN
 */
 func (api *MessageApi) Send(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(ctx, apiSend, bytes.NewReader(payload), "application/json;charset=utf-8")
+	return api.Client.HTTPPost(
+		ctx,
+		apiSend,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -60,8 +65,16 @@ func (api *MessageApi) Send(ctx context.Context, payload []byte) (resp []byte, e
 See: https://work.weixin.qq.com/api/doc/90000/90135/91579
 POST https://qyapi.weixin.qq.com/cgi-bin/message/update_taskcard?access_token=ACCESS_TOKEN
 */
-func (api *MessageApi) UpdateTaskcard(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(ctx, apiUpdateTaskcard, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *MessageApi) UpdateTaskcard(
+	ctx context.Context,
+	payload []byte,
+) (resp []byte, err error) {
+	return api.Client.HTTPPost(
+		ctx,
+		apiUpdateTaskcard,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -70,7 +83,12 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90245
 POST https://qyapi.weixin.qq.com/cgi-bin/appchat/create?access_token=ACCESS_TOKEN
 */
 func (api *MessageApi) AppchatCreate(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(ctx, apiAppchatCreate, bytes.NewReader(payload), "application/json;charset=utf-8")
+	return api.Client.HTTPPost(
+		ctx,
+		apiAppchatCreate,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -79,7 +97,12 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90246
 POST https://qyapi.weixin.qq.com/cgi-bin/appchat/update?access_token=ACCESS_TOKEN
 */
 func (api *MessageApi) AppchatUpdate(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(ctx, apiAppchatUpdate, bytes.NewReader(payload), "application/json;charset=utf-8")
+	return api.Client.HTTPPost(
+		ctx,
+		apiAppchatUpdate,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -98,7 +121,12 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90248
 POST https://qyapi.weixin.qq.com/cgi-bin/appchat/send?access_token=ACCESS_TOKEN
 */
 func (api *MessageApi) AppchatSend(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(ctx, apiAppchatSend, bytes.NewReader(payload), "application/json;charset=utf-8")
+	return api.Client.HTTPPost(
+		ctx,
+		apiAppchatSend,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -107,8 +135,16 @@ func (api *MessageApi) AppchatSend(ctx context.Context, payload []byte) (resp []
 See: https://work.weixin.qq.com/api/doc/90000/90135/90250
 POST https://qyapi.weixin.qq.com/cgi-bin/linkedcorp/message/send?access_token=ACCESS_TOKEN
 */
-func (api *MessageApi) LinkedcorpMessageSend(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(ctx, apiLinkedcorpMessageSend, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *MessageApi) LinkedcorpMessageSend(
+	ctx context.Context,
+	payload []byte,
+) (resp []byte, err error) {
+	return api.Client.HTTPPost(
+		ctx,
+		apiLinkedcorpMessageSend,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -117,5 +153,10 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/92369
 POST https://qyapi.weixin.qq.com/cgi-bin/message/get_statistics?access_token=ACCESS_TOKEN
 */
 func (api *MessageApi) GetStatistics(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(ctx, apiGetStatistics, bytes.NewReader(payload), "application/json;charset=utf-8")
+	return api.Client.HTTPPost(
+		ctx,
+		apiGetStatistics,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }

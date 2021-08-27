@@ -49,7 +49,12 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90210
 POST https://qyapi.weixin.qq.com/cgi-bin/tag/create?access_token=ACCESS_TOKEN
 */
 func (api *TagApi) Create(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(ctx, apiCreate, bytes.NewReader(payload), "application/json;charset=utf-8")
+	return api.Client.HTTPPost(
+		ctx,
+		apiCreate,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -58,7 +63,12 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90211
 POST https://qyapi.weixin.qq.com/cgi-bin/tag/update?access_token=ACCESS_TOKEN
 */
 func (api *TagApi) Update(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(ctx, apiUpdate, bytes.NewReader(payload), "application/json;charset=utf-8")
+	return api.Client.HTTPPost(
+		ctx,
+		apiUpdate,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -85,7 +95,12 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90214
 POST https://qyapi.weixin.qq.com/cgi-bin/tag/addtagusers?access_token=ACCESS_TOKEN
 */
 func (api *TagApi) AddTagUsers(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(ctx, apiAddTagUsers, bytes.NewReader(payload), "application/json;charset=utf-8")
+	return api.Client.HTTPPost(
+		ctx,
+		apiAddTagUsers,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -94,7 +109,12 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90215
 POST https://qyapi.weixin.qq.com/cgi-bin/tag/deltagusers?access_token=ACCESS_TOKEN
 */
 func (api *TagApi) DelTagUsers(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(ctx, apiDelTagUsers, bytes.NewReader(payload), "application/json;charset=utf-8")
+	return api.Client.HTTPPost(
+		ctx,
+		apiDelTagUsers,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*

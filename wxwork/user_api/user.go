@@ -57,7 +57,12 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90195
 POST https://qyapi.weixin.qq.com/cgi-bin/user/create?access_token=ACCESS_TOKEN
 */
 func (api *UserApi) Create(context context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(context, apiCreate, bytes.NewReader(payload), "application/json;charset=utf-8")
+	return api.Client.HTTPPost(
+		context,
+		apiCreate,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -88,7 +93,12 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90197
 POST https://qyapi.weixin.qq.com/cgi-bin/user/update?access_token=ACCESS_TOKEN
 */
 func (api *UserApi) Update(context context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(context, apiUpdate, bytes.NewReader(payload), "application/json;charset=utf-8")
+	return api.Client.HTTPPost(
+		context,
+		apiUpdate,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -110,7 +120,12 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90199
 POST https://qyapi.weixin.qq.com/cgi-bin/user/batchdelete?access_token=ACCESS_TOKEN
 */
 func (api *UserApi) BatchDelete(context context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(context, apiBatchDelete, bytes.NewReader(payload), "application/json;charset=utf-8")
+	return api.Client.HTTPPost(
+		context,
+		apiBatchDelete,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -120,7 +135,10 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90200
 
 GET https://qyapi.weixin.qq.com/cgi-bin/user/simplelist?access_token=ACCESS_TOKEN&department_id=DEPARTMENT_ID&fetch_child=FETCH_CHILD
 */
-func (api *UserApi) SimpleList(context context.Context, params url.Values) (resp []byte, err error) {
+func (api *UserApi) SimpleList(
+	context context.Context,
+	params url.Values,
+) (resp []byte, err error) {
 	return api.Client.HTTPGet(context, apiSimpleList+"?"+params.Encode())
 }
 
@@ -144,8 +162,16 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90202
 
 POST https://qyapi.weixin.qq.com/cgi-bin/user/convert_to_openid?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) ConvertToOpenId(context context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(context, apiConvertToOpenId, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *UserApi) ConvertToOpenId(
+	context context.Context,
+	payload []byte,
+) (resp []byte, err error) {
+	return api.Client.HTTPPost(
+		context,
+		apiConvertToOpenId,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -157,8 +183,16 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90202
 
 POST https://qyapi.weixin.qq.com/cgi-bin/user/convert_to_userid?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) ConvertToUserId(context context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(context, apiConvertToUserId, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *UserApi) ConvertToUserId(
+	context context.Context,
+	payload []byte,
+) (resp []byte, err error) {
+	return api.Client.HTTPPost(
+		context,
+		apiConvertToUserId,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -184,7 +218,12 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90975
 POST https://qyapi.weixin.qq.com/cgi-bin/batch/invite?access_token=ACCESS_TOKEN
 */
 func (api *UserApi) Invite(context context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(context, apiInvite, bytes.NewReader(payload), "application/json;charset=utf-8")
+	return api.Client.HTTPPost(
+		context,
+		apiInvite,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }
 
 /*
@@ -196,7 +235,10 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/91714
 
 GET https://qyapi.weixin.qq.com/cgi-bin/corp/get_join_qrcode?access_token=ACCESS_TOKEN&size_type=SIZE_TYPE
 */
-func (api *UserApi) GetJoinQrcode(context context.Context, params url.Values) (resp []byte, err error) {
+func (api *UserApi) GetJoinQrcode(
+	context context.Context,
+	params url.Values,
+) (resp []byte, err error) {
 	return api.Client.HTTPGet(context, apiGetJoinQrcode+"?"+params.Encode())
 }
 
@@ -207,6 +249,14 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/92714
 
 POST https://qyapi.weixin.qq.com/cgi-bin/user/get_active_stat?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) GetActiveStat(context context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(context, apiGetActiveStat, bytes.NewReader(payload), "application/json;charset=utf-8")
+func (api *UserApi) GetActiveStat(
+	context context.Context,
+	payload []byte,
+) (resp []byte, err error) {
+	return api.Client.HTTPPost(
+		context,
+		apiGetActiveStat,
+		bytes.NewReader(payload),
+		"application/json;charset=utf-8",
+	)
 }

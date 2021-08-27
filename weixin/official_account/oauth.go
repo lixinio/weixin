@@ -63,7 +63,11 @@ See: https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage
 
 GET https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxf0e81c3bee622d60&redirect_uri=http%3A%2F%2Fnba.bluewebgame.com%2Foauth_response.php&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect
 */
-func (officialAccount *OfficialAccount) GetAuthorizeUrl(redirectUri string, scope string, state string) (authorizeUrl string) {
+func (officialAccount *OfficialAccount) GetAuthorizeUrl(
+	redirectUri string,
+	scope string,
+	state string,
+) (authorizeUrl string) {
 	params := url.Values{}
 	params.Add("appid", officialAccount.Config.Appid)
 	params.Add("redirect_uri", redirectUri)
@@ -90,7 +94,10 @@ See: https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage
 
 GET https://api.weixin.qq.com/sns/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code
 */
-func (officialAccount *OfficialAccount) GetSnsAccessToken(ctx context.Context, code string) (oauthAccessToken OauthAccessToken, err error) {
+func (officialAccount *OfficialAccount) GetSnsAccessToken(
+	ctx context.Context,
+	code string,
+) (oauthAccessToken OauthAccessToken, err error) {
 	params := url.Values{}
 	params.Add("appid", officialAccount.Config.Appid)
 	params.Add("secret", officialAccount.Config.Secret)
@@ -121,7 +128,10 @@ See: https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage
 
 POST https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=APPID&grant_type=refresh_token&refresh_token=REFRESH_TOKEN
 */
-func (officialAccount *OfficialAccount) RefreshToken(ctx context.Context, refresh_token string) (oauthAccessToken OauthAccessToken, err error) {
+func (officialAccount *OfficialAccount) RefreshToken(
+	ctx context.Context,
+	refresh_token string,
+) (oauthAccessToken OauthAccessToken, err error) {
 	params := url.Values{}
 	params.Add("appid", officialAccount.Config.Appid)
 	params.Add("refresh_token", refresh_token)

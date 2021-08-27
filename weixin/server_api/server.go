@@ -38,7 +38,10 @@ type ServerApi struct {
 	EncodingAESKey string
 }
 
-func NewOfficialAccountApi(token, encodingAESKey string, officialAccount *official_account.OfficialAccount) *ServerApi {
+func NewOfficialAccountApi(
+	token, encodingAESKey string,
+	officialAccount *official_account.OfficialAccount,
+) *ServerApi {
 	return &ServerApi{
 		Client:         officialAccount.Client,
 		OAConfig:       officialAccount.Config,
@@ -451,7 +454,11 @@ func parseEvent(body []byte) (m interface{}, err error) {
 }
 
 // Response 响应微信消息 (自动判断是否要加密)
-func (s *ServerApi) response(w http.ResponseWriter, r *http.Request, reply interface{}) (err error) {
+func (s *ServerApi) response(
+	w http.ResponseWriter,
+	r *http.Request,
+	reply interface{},
+) (err error) {
 
 	// 如果 开启加密，微信服务器 发过来的请求 带有 如下参数
 	//signature=c44d29564aa1d57bd0e274c37baa92bd5b3da5bd
@@ -490,7 +497,12 @@ func (s *ServerApi) response(w http.ResponseWriter, r *http.Request, reply inter
 
 // encryptReplyMessage 加密回复消息
 func (s *ServerApi) encryptReplyMessage(rawXmlMsg []byte) (*ReplyEncryptMessage, error) {
-	cipherText, err := utils.AESEncryptMsg([]byte(utils.GetRandString(16)), rawXmlMsg, s.OAConfig.Appid, s.EncodingAESKey)
+	cipherText, err := utils.AESEncryptMsg(
+		[]byte(utils.GetRandString(16)),
+		rawXmlMsg,
+		s.OAConfig.Appid,
+		s.EncodingAESKey,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -516,27 +528,51 @@ func (s *ServerApi) encryptReplyMessage(rawXmlMsg []byte) (*ReplyEncryptMessage,
 	}, nil
 }
 
-func (s *ServerApi) ResponseText(w http.ResponseWriter, r *http.Request, message *ReplyMessageText) (err error) {
+func (s *ServerApi) ResponseText(
+	w http.ResponseWriter,
+	r *http.Request,
+	message *ReplyMessageText,
+) (err error) {
 	return s.response(w, r, message)
 }
 
-func (s *ServerApi) ResponseImage(w http.ResponseWriter, r *http.Request, message *ReplyMessageImage) (err error) {
+func (s *ServerApi) ResponseImage(
+	w http.ResponseWriter,
+	r *http.Request,
+	message *ReplyMessageImage,
+) (err error) {
 	return s.response(w, r, message)
 }
 
-func (s *ServerApi) ResponseVoice(w http.ResponseWriter, r *http.Request, message *ReplyMessageVoice) (err error) {
+func (s *ServerApi) ResponseVoice(
+	w http.ResponseWriter,
+	r *http.Request,
+	message *ReplyMessageVoice,
+) (err error) {
 	return s.response(w, r, message)
 }
 
-func (s *ServerApi) ResponseVideo(w http.ResponseWriter, r *http.Request, message *ReplyMessageVideo) (err error) {
+func (s *ServerApi) ResponseVideo(
+	w http.ResponseWriter,
+	r *http.Request,
+	message *ReplyMessageVideo,
+) (err error) {
 	return s.response(w, r, message)
 }
 
-func (s *ServerApi) ResponseMusic(w http.ResponseWriter, r *http.Request, message *ReplyMessageMusic) (err error) {
+func (s *ServerApi) ResponseMusic(
+	w http.ResponseWriter,
+	r *http.Request,
+	message *ReplyMessageMusic,
+) (err error) {
 	return s.response(w, r, message)
 }
 
-func (s *ServerApi) ResponseNews(w http.ResponseWriter, r *http.Request, message *ReplyMessageNews) (err error) {
+func (s *ServerApi) ResponseNews(
+	w http.ResponseWriter,
+	r *http.Request,
+	message *ReplyMessageNews,
+) (err error) {
 	return s.response(w, r, message)
 }
 
