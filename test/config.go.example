@@ -28,4 +28,23 @@ const (
 	InvoiceCustomURL         = "https://www.xxx.com"
 	InvoiceCustomUrlSubTitle = "XXX"
 	InvoicePdf               = "fapiao.pdf"
+
+	//===================================== 微信开放平台 =====================================
+	WxOpenAppid          = "abcd"
+	WxOpenSecret         = "efghi"
+	WxOpenToken          = "jklmn"
+	WxOpenEncodingAESKey = "opqrst"
+)
+
+var (
+	//===================================== 微信开放平台 =====================================
+	WxOpenDomainVer = []struct {
+		Filename string
+		Content  string
+	}{
+		{
+			Filename: "2576848698.txt",
+			Content:  "65f48d80e5c86c1d357ca439d9e7d83e",
+		},
+	}
 )
