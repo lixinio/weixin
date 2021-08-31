@@ -68,10 +68,11 @@ func main() {
 		Appid:  test.OfficialAccountAppid,
 		Secret: test.OfficialAccountSecret,
 	})
-	serverApi := server_api.NewOfficialAccountApi(
+	serverApi := server_api.NewApi(
+		officialAccount.Config.Appid,
 		test.OfficialAccountToken,
 		test.OfficialAccountAESKey,
-		officialAccount,
+		officialAccount.Client,
 	)
 
 	http.HandleFunc("/", index(officialAccount))

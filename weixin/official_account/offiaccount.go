@@ -6,7 +6,7 @@ import (
 	"github.com/lixinio/weixin/utils"
 )
 
-var (
+const (
 	WXServerUrl = "https://api.weixin.qq.com" // 微信 api 服务器地址
 )
 

@@ -2,9 +2,8 @@ package wxwork
 
 import "github.com/lixinio/weixin/utils"
 
-var (
+const (
 	QyWXServerUrl = "https://qyapi.weixin.qq.com"
-	UserAgent     = "lixinio/wxwork"
 )
 
 type Config struct {
