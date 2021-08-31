@@ -34,7 +34,11 @@ import (
 var (
 	ErrorAccessToken = errors.New("access token error")
 	ErrorSystemBusy  = errors.New("system busy")
-	UserAgent        = "lixinio/weixin"
+)
+
+const (
+	defaultTokenKey = "access_token"   // 默认的access token的参数名称
+	userAgent       = "lixinio/weixin" // 自定义user agent
 )
 
 type WeixinError struct {
@@ -69,15 +73,21 @@ HttpClient 用于向微信接口发送请求
 type Client struct {
 	serverUrl        string
 	userAgent        string
+	accessTokenKey   string
 	accessTokenCache *AccessTokenCache
 }
 
 func NewClient(serverUrl string, accessTokenCache *AccessTokenCache) *Client {
 	return &Client{
 		serverUrl:        serverUrl,
-		userAgent:        UserAgent,
+		userAgent:        userAgent,
+		accessTokenKey:   defaultTokenKey,
 		accessTokenCache: accessTokenCache,
 	}
+}
+
+func (client *Client) UpdateAccessTokenKey(accessTokenKey string) {
+	client.accessTokenKey = accessTokenKey
 }
 
 // HTTPGet GET 请求
@@ -100,7 +110,7 @@ func (client *Client) HTTPGetWithParams(
 		return
 	}
 
-	return client.httpDo(req.WithContext(ctx))
+	return client.httpDo(req, ctx)
 }
 
 // 素材下载， 需要根据Content-Type来判断Body， 可以是json，可能是二进制
@@ -157,7 +167,7 @@ func (client *Client) HTTPUpload(
 	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
 	req.ContentLength = length + int64(closeBuffer.Len()) + int64(bodyBuffer.Len())
 
-	return client.httpDo(req.WithContext(ctx))
+	return client.httpDo(req, ctx)
 }
 
 // Upload 上传文件
@@ -200,14 +210,35 @@ func (client *Client) HTTPPost(
 
 	req.Header.Add("Content-Type", contentType)
 
-	return client.httpDo(req.WithContext(ctx))
+	return client.httpDo(req, ctx)
+}
+
+//HTTPPost POST 请求(不带access token 凭据)
+func (client *Client) HTTPPostWithoutCredential(
+	ctx context.Context, uri string, payload io.Reader, contentType string,
+) (resp []byte, err error) {
+	req, err := http.NewRequest(http.MethodPost, client.serverUrl+uri, payload)
+	if err != nil {
+		return
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return client.httpDo(req, ctx)
 }
 
 //httpDo 执行 请求
-func (client *Client) httpDo(req *http.Request) (resp []byte, err error) {
+func (client *Client) httpDo(req *http.Request, ctx context.Context) (resp []byte, err error) {
 	req.Header.Add("User-Agent", client.userAgent)
 
-	cli := &http.Client{Transport: newTransport()}
+	var cli *http.Client = nil
+	if ctx != context.TODO() {
+		req = req.WithContext(ctx)
+		cli = &http.Client{Transport: newTransport()}
+	} else {
+		cli = http.DefaultClient
+	}
+
 	response, err := cli.Do(req)
 	if err != nil {
 		return
@@ -227,10 +258,10 @@ func (client *Client) httpDo(req *http.Request) (resp []byte, err error) {
 
 		// 换新
 		q := req.URL.Query()
-		q.Set("access_token", accessToken)
+		q.Set(client.accessTokenKey, accessToken)
 		req.URL.RawQuery = q.Encode()
 
-		response, err = http.DefaultClient.Do(req)
+		response, err = cli.Do(req)
 		if err != nil {
 			return
 		}
@@ -243,7 +274,7 @@ func (client *Client) httpDo(req *http.Request) (resp []byte, err error) {
 	// 重试一次
 	if err == ErrorSystemBusy {
 
-		response, err = http.DefaultClient.Do(req)
+		response, err = cli.Do(req)
 		if err != nil {
 			return
 		}
@@ -266,7 +297,7 @@ func (client *Client) applyAccessToken(
 	if err != nil {
 		return
 	}
-	params.Add("access_token", accessToken)
+	params.Add(client.accessTokenKey, accessToken)
 	if strings.Contains(oldUrl, "?") {
 		newUrl = oldUrl + "&" + params.Encode()
 	} else {

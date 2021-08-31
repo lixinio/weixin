@@ -17,49 +17,39 @@ package server_api
 // limitations under the License.
 
 import (
-	"crypto/sha1"
 	"encoding/xml"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"sort"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/lixinio/weixin/utils"
-	"github.com/lixinio/weixin/wxwork/agent"
 )
 
 type ServerApi struct {
 	*utils.Client
-	AgentConfig    *agent.Config
+	AgentID        string
 	Token          string // 接收消息服务器配置（Token）
 	EncodingAESKey string // 接收消息服务器配置（EncodingAESKey）
 }
 
-func NewAgentApi(token, encodingAESKey string, agent *agent.Agent) *ServerApi {
+func NewApi(
+	agentID, token, encodingAESKey string,
+	client *utils.Client,
+) *ServerApi {
 	return &ServerApi{
-		Client:         agent.Client,
-		AgentConfig:    agent.Config,
+		Client:         client,
+		AgentID:        agentID,
 		Token:          token,
 		EncodingAESKey: encodingAESKey,
 	}
 }
 
-func calcSignature(timestamp, nonce, echostr, token string) string {
-	strs := []string{timestamp, nonce, token, echostr}
-	sort.Strings(strs)
-
-	h := sha1.New()
-	_, _ = io.WriteString(h, strings.Join(strs, ""))
-	return fmt.Sprintf("%x", h.Sum(nil))
-}
-
 func calcSignatureFromHttp(r *http.Request, token string) (string, string) {
 	echostr := r.URL.Query().Get("echostr")
-	return calcSignature(
+	return utils.CalcSignature(
 		r.URL.Query().Get("timestamp"),
 		r.URL.Query().Get("nonce"),
 		echostr,
@@ -105,7 +95,7 @@ func (s *ServerApi) ServeData(
 	}
 
 	// 验证签名
-	signature := calcSignature(
+	signature := utils.CalcSignature(
 		r.URL.Query().Get("timestamp"),
 		r.URL.Query().Get("nonce"),
 		encryptMsg.Encrypt,
@@ -436,7 +426,7 @@ func (s *ServerApi) encryptReplyMessage(
 	cipherText, err := utils.AESEncryptMsg(
 		[]byte(utils.GetRandString(16)),
 		rawXmlMsg,
-		s.AgentConfig.AgentId,
+		s.AgentID,
 		s.EncodingAESKey,
 	)
 	if err != nil {
@@ -444,23 +434,13 @@ func (s *ServerApi) encryptReplyMessage(
 	}
 	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 	nonce := utils.GetRandString(6)
-
-	strs := []string{
-		timestamp,
-		nonce,
-		s.Token,
-		cipherText,
-	}
-	sort.Strings(strs)
-	h := sha1.New()
-	_, _ = io.WriteString(h, strings.Join(strs, ""))
-	signature := fmt.Sprintf("%x", h.Sum(nil))
+	signature := utils.CalcSignature(timestamp, nonce, s.Token, cipherText)
 
 	return &ReplyEncryptMessage{
-		Encrypt:      cipherText,
-		MsgSignature: signature,
+		Encrypt:      CDATA(cipherText),
+		MsgSignature: CDATA(signature),
 		TimeStamp:    timestamp,
-		Nonce:        nonce,
+		Nonce:        CDATA(nonce),
 	}, nil
 }
 

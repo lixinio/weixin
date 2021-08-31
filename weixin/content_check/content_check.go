@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/lixinio/weixin/utils"
+	"github.com/lixinio/weixin/weixin/official_account"
 )
 
 const (
@@ -25,6 +26,7 @@ const (
 // ContentCheckApi 内容检测api
 type ContentCheckApi struct {
 	*utils.Client
+	OfficialAccount *official_account.OfficialAccount
 }
 
 // MsgCheckResult 文本检测结果
@@ -52,8 +54,11 @@ type ImgCheckResult struct {
 	ErrMsg  string
 }
 
-func NewApi(client *utils.Client) *ContentCheckApi {
-	return &ContentCheckApi{Client: client}
+func NewOfficialAccountApi(officialAccount *official_account.OfficialAccount) *ContentCheckApi {
+	return &ContentCheckApi{
+		officialAccount.Client,
+		officialAccount,
+	}
 }
 
 // CheckMsg 过滤敏感信息

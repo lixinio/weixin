@@ -196,10 +196,11 @@ func main() {
 		AgentId: test.AgentID,
 		Secret:  test.AgentSecret,
 	})
-	serverApi := server_api.NewAgentApi(
+	serverApi := server_api.NewApi(
+		test.AgentID,
 		test.AgentToken,
 		test.AgentEncodingAESKey,
-		agent,
+		agent.Client,
 	)
 
 	http.HandleFunc(fmt.Sprintf("/weixin/%s/%s", test.CorpID, test.AgentID), callback(serverApi))

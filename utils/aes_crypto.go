@@ -19,8 +19,12 @@ package utils
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
+	"io"
+	"sort"
+	"strings"
 )
 
 // 把整数 n 格式化成 4 字节的网络字节序
@@ -191,4 +195,12 @@ func AESDecryptData(cipherText []byte, aesKey []byte, iv []byte) (rawData []byte
 
 	rawData = plaintext
 	return
+}
+
+func CalcSignature(datas ...string) string {
+	sort.Strings(datas)
+
+	h := sha1.New()
+	_, _ = io.WriteString(h, strings.Join(datas, ""))
+	return fmt.Sprintf("%x", h.Sum(nil))
 }

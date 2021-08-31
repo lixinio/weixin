@@ -11,11 +11,6 @@ import (
 	"github.com/lixinio/weixin/weixin/server_api"
 )
 
-// func httpAbort(w http.ResponseWriter, code int) {
-// 	w.WriteHeader(http.StatusBadRequest)
-// 	io.WriteString(w, http.StatusText(http.StatusBadRequest))
-// }
-
 func serveData(serverApi *server_api.ServerApi) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(r.Body)
@@ -24,7 +19,12 @@ func serveData(serverApi *server_api.ServerApi) http.HandlerFunc {
 			httpAbort(w, http.StatusBadRequest)
 			return
 		}
-		content, err := serverApi.ParseXML(body)
+		content, err := serverApi.ParseXML(
+			body,
+			r.URL.Query().Get("msg_signature"),
+			r.URL.Query().Get("timestamp"),
+			r.URL.Query().Get("nonce"),
+		)
 		if err != nil {
 			httpAbort(w, http.StatusBadRequest)
 			return

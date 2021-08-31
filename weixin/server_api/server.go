@@ -17,50 +17,38 @@ package server_api
 // limitations under the License.
 
 import (
-	"crypto/sha1"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"sort"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/lixinio/weixin/utils"
-	"github.com/lixinio/weixin/weixin/official_account"
 )
 
 type ServerApi struct {
 	*utils.Client
-	OAConfig       *official_account.Config
+	AppID          string
 	Token          string
 	EncodingAESKey string
 }
 
-func NewOfficialAccountApi(
-	token, encodingAESKey string,
-	officialAccount *official_account.OfficialAccount,
+func NewApi(
+	appid, token, encodingAESKey string,
+	client *utils.Client,
 ) *ServerApi {
 	return &ServerApi{
-		Client:         officialAccount.Client,
-		OAConfig:       officialAccount.Config,
+		Client:         client,
+		AppID:          appid,
 		Token:          token,
 		EncodingAESKey: encodingAESKey,
 	}
 }
 
-func calcSignature(timestamp, nonce, token string) string {
-	strs := []string{timestamp, nonce, token}
-	sort.Strings(strs)
-
-	h := sha1.New()
-	_, _ = io.WriteString(h, strings.Join(strs, ""))
-	return fmt.Sprintf("%x", h.Sum(nil))
-}
-
 func calcSignatureFromHttp(r *http.Request, token string) string {
-	return calcSignature(
+	return utils.CalcSignature(
 		r.URL.Query().Get("timestamp"),
 		r.URL.Query().Get("nonce"),
 		token,
@@ -92,7 +80,10 @@ func (s *ServerApi) ServeData(w http.ResponseWriter, r *http.Request, processor 
 }
 
 // ParseXML 解析微信推送过来的消息/事件
-func (s *ServerApi) ParseXML(body []byte) (m interface{}, err error) {
+func (s *ServerApi) ParseXML(
+	body []byte,
+	msgSignature, timestamp, nonce string,
+) (m interface{}, err error) {
 
 	// 是否加密消息
 	encryptMsg := EncryptMessage{}
@@ -103,13 +94,16 @@ func (s *ServerApi) ParseXML(body []byte) (m interface{}, err error) {
 
 	// 需要解密
 	if encryptMsg.Encrypt != "" {
+		if utils.CalcSignature(s.Token, timestamp, nonce, encryptMsg.Encrypt) != msgSignature {
+			return nil, errors.New("invalid msg signature")
+		}
+
 		var xmlMsg []byte
 		_, xmlMsg, _, err = utils.AESDecryptMsg(encryptMsg.Encrypt, s.EncodingAESKey)
 		if err != nil {
 			return
 		}
 		body = xmlMsg
-
 	}
 
 	message := Message{}
@@ -474,17 +468,18 @@ func (s *ServerApi) response(
 		if err != nil {
 			return
 		}
-		fmt.Println(string(output))
 
 		// 加密
 		if r.URL.Query().Get("encrypt_type") == "aes" {
 			var message *ReplyEncryptMessage
 			message, err = s.encryptReplyMessage(output)
 			if err != nil {
+				fmt.Println("encryptReplyMessage", err)
 				return
 			}
 			output, err = xml.Marshal(message)
 			if err != nil {
+				fmt.Println("marshal encryptReplyMessage", err)
 				return
 			}
 		}
@@ -500,7 +495,7 @@ func (s *ServerApi) encryptReplyMessage(rawXmlMsg []byte) (*ReplyEncryptMessage,
 	cipherText, err := utils.AESEncryptMsg(
 		[]byte(utils.GetRandString(16)),
 		rawXmlMsg,
-		s.OAConfig.Appid,
+		s.AppID,
 		s.EncodingAESKey,
 	)
 	if err != nil {
@@ -508,23 +503,13 @@ func (s *ServerApi) encryptReplyMessage(rawXmlMsg []byte) (*ReplyEncryptMessage,
 	}
 	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 	nonce := utils.GetRandString(6)
-
-	strs := []string{
-		timestamp,
-		nonce,
-		s.Token,
-		cipherText,
-	}
-	sort.Strings(strs)
-	h := sha1.New()
-	_, _ = io.WriteString(h, strings.Join(strs, ""))
-	signature := fmt.Sprintf("%x", h.Sum(nil))
+	signature := utils.CalcSignature(timestamp, nonce, s.Token, cipherText)
 
 	return &ReplyEncryptMessage{
-		Encrypt:      cipherText,
-		MsgSignature: signature,
+		Encrypt:      CDATA(cipherText),
+		MsgSignature: CDATA(signature),
 		TimeStamp:    timestamp,
-		Nonce:        nonce,
+		Nonce:        CDATA(nonce),
 	}, nil
 }
 

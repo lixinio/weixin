@@ -54,10 +54,10 @@ type ReplyMessage struct {
 */
 type ReplyEncryptMessage struct {
 	XMLName      xml.Name `xml:"xml"`
-	Encrypt      string
-	MsgSignature string
+	Encrypt      CDATA
+	MsgSignature CDATA
 	TimeStamp    string
-	Nonce        string
+	Nonce        CDATA
 }
 
 /*

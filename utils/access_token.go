@@ -26,6 +26,8 @@ type AccessTokenCache struct {
 	expireBefore      int               // 提前多少秒重刷
 }
 
+type refreshTokenHandler func() (string, int, error)
+
 func NewAccessTokenCache(
 	accessTokenGetter AccessTokenGetter,
 	cache Cache,
@@ -54,6 +56,16 @@ func (atc *AccessTokenCache) GetAccessToken() (accessToken string, err error) {
 		return "", err
 	}
 
+	return atc.updateAccessToken(
+		atc.accessTokenGetter.GetAccessToken,
+		true,
+	)
+}
+
+func (atc *AccessTokenCache) updateAccessToken(
+	handler refreshTokenHandler,
+	checkLatest bool,
+) (accessToken string, err error) {
 	//加上lock，是为了防止在并发获取token时，cache刚好失效，导致从服务器上获取到不同token
 	lockKey := atc.accessTokenGetter.GetAccessTokenLockKey()
 	locked, err := atc.accessTokenLock.LockTimeout(
@@ -65,16 +77,27 @@ func (atc *AccessTokenCache) GetAccessToken() (accessToken string, err error) {
 	}
 	defer atc.accessTokenLock.UnLock(lockKey)
 
-	// 是不是别人已经获取到Token了
-	accessToken, err = atc.getCachedAccessToken()
-	if err == nil && accessToken != "" {
-		return accessToken, nil
-	} else if err != nil {
-		return "", err
+	if checkLatest {
+		// 是不是别人已经获取到Token了
+		accessToken, err = atc.getCachedAccessToken()
+		if err == nil && accessToken != "" {
+			return accessToken, nil
+		} else if err != nil {
+			return "", err
+		}
 	}
 
 	// 直接从服务器刷新
-	return atc.refreshAccessToken()
+	return atc.refreshAccessToken(handler)
+}
+
+func (atc *AccessTokenCache) UpdateAccessToken(
+	token string,
+	expiresIn int,
+) (accessToken string, err error) {
+	return atc.updateAccessToken(func() (string, int, error) {
+		return token, expiresIn + atc.expireBefore, nil
+	}, false)
 }
 
 func (atc *AccessTokenCache) getCachedAccessToken() (accessToken string, err error) {
@@ -92,10 +115,12 @@ func (atc *AccessTokenCache) getCachedAccessToken() (accessToken string, err err
 	return "", err
 }
 
-func (atc *AccessTokenCache) refreshAccessToken() (accessToken string, err error) {
+func (atc *AccessTokenCache) refreshAccessToken(
+	handler refreshTokenHandler,
+) (accessToken string, err error) {
 	// 从服务器获取Token
 	expiresIn := 0
-	accessToken, expiresIn, err = atc.accessTokenGetter.GetAccessToken()
+	accessToken, expiresIn, err = handler()
 	if err != nil {
 		// 失败
 		return
