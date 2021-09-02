@@ -45,6 +45,7 @@ func callback(oa *official_account.OfficialAccount) http.HandlerFunc {
 			httpAbort(w, http.StatusForbidden)
 			return
 		}
+		fmt.Println(snsAccessToken.Scope, snsAccessToken.AccessToken, snsAccessToken.Openid)
 
 		user_info, err := oa.GetUserInfo(
 			r.Context(),
@@ -57,6 +58,15 @@ func callback(oa *official_account.OfficialAccount) http.HandlerFunc {
 			httpAbort(w, http.StatusForbidden)
 			return
 		}
+		fmt.Println(user_info.Nickname, user_info.Openid, user_info.Headimgurl)
+
+		snsAccessToken2, err := oa.RefreshToken(r.Context(), snsAccessToken.RefreshToken)
+		if err != nil {
+			fmt.Println(err)
+			httpAbort(w, http.StatusForbidden)
+			return
+		}
+		fmt.Println(snsAccessToken2.Scope, snsAccessToken2.AccessToken, snsAccessToken2.Openid)
 
 		fmt.Fprintf(w, user_info.Nickname)
 	}

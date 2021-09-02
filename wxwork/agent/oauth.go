@@ -19,9 +19,10 @@ package agent
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/url"
+	"strconv"
+
+	"github.com/lixinio/weixin/utils"
 )
 
 const (
@@ -31,8 +32,7 @@ const (
 )
 
 type UserInfo struct {
-	Errcode  int    `json:"errcode"`
-	Errmsg   string `json:"errmsg"`
+	utils.WeixinError
 	UserID   string `json:"UserId"`
 	DeviceID string `json:"DeviceId"`
 }
@@ -59,7 +59,7 @@ func (agent *Agent) GetAuthorizeUrl(redirectUri string, state string) (authorize
 func (agent *Agent) GetSSOAuthorizeUrl(redirectUri string, state string) (authorizeUrl string) {
 	params := url.Values{}
 	params.Add("appid", agent.wxwork.Config.Corpid)
-	params.Add("agentid", agent.Config.AgentId)
+	params.Add("agentid", strconv.Itoa(agent.Config.AgentID))
 	params.Add("redirect_uri", redirectUri)
 	params.Add("state", state)
 	return apiSSOAuthorize + "?" + params.Encode()
@@ -71,20 +71,13 @@ func (agent *Agent) GetSSOAuthorizeUrl(redirectUri string, state string) (author
 See: https://work.weixin.qq.com/api/doc/90000/90135/91023
 GET https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token=ACCESS_TOKEN&code=CODE
 */
-func (agent *Agent) GetUserInfo(ctx context.Context, code string) (userInfo UserInfo, err error) {
-	params := url.Values{}
-	params.Add("code", code)
-
-	body, err := agent.Client.HTTPGetWithParams(ctx, apiUserInfo, params)
-	if err != nil {
-		return
+func (agent *Agent) GetUserInfo(ctx context.Context, code string) (*UserInfo, error) {
+	userInfo := &UserInfo{}
+	if err := agent.Client.HTTPGetWithParams(ctx, apiUserInfo, func(params url.Values) {
+		params.Add("code", code)
+	}, userInfo); err != nil {
+		return nil, err
 	}
 
-	err = json.Unmarshal(body, &userInfo)
-	if err != nil {
-		err = fmt.Errorf("%s", string(body))
-		return
-	}
-
-	return
+	return userInfo, nil
 }

@@ -19,11 +19,11 @@ func TestDepartment(t *testing.T) {
 		Corpid: test.CorpID,
 	})
 	agent := agentApi.New(corp, redis, redis, &agentApi.Config{
-		AgentId: test.AgentID,
+		AgentID: test.AgentID,
 		Secret:  test.AgentSecret,
 	})
 	agentContact := agentApi.New(corp, redis, redis, &agentApi.Config{
-		AgentId: "0",
+		AgentID: 0,
 		Secret:  test.AgentContactSecret,
 	})
 	ctx := context.Background()

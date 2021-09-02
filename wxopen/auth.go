@@ -3,6 +3,8 @@ package wxopen
 import (
 	"context"
 	"net/url"
+
+	"github.com/lixinio/weixin/utils"
 )
 
 const (
@@ -25,11 +27,12 @@ func (api *WxOpen) CreatePreAuthCode(ctx context.Context) (string, int, error) {
 	}
 
 	result := struct {
+		utils.WeixinError
 		PreAuthCode string `json:"pre_auth_code"`
 		ExpiresIn   int    `json:"expires_in"`
 	}{}
 
-	err := api.Client.ApiPostWrapper(ctx, apiCreatePreAuthCode, payload, &result)
+	err := api.Client.HTTPPostJson(ctx, apiCreatePreAuthCode, payload, &result)
 	if err == nil {
 		return result.PreAuthCode, result.ExpiresIn, nil
 	} else {
@@ -73,9 +76,25 @@ func (api *WxOpen) GetComponentLoginPage(
 // See: https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/Authorization_Process_Technical_Description.html
 // GET https://mp.weixin.qq.com/safe/bindcomponent?action=bindcomponent&auth_type=3&no_scan=1&component_appid=xxxx&pre_auth_code=xxxxx&redirect_uri=xxxx&auth_type=xxx&biz_appid=xxxx#wechat_redirect
 // */
-// func (api *WxOpen) GetAuthorizationRedirectUri2(params url.Values) (uri string) {
-// 	return "https://mp.weixin.qq.com/safe/bindcomponent?" + params.Encode() + "#wechat_redirect"
-// }
+func (api *WxOpen) GetComponentLoginH5Page(
+	preAuthCode, redirectUri, authType, bizAppid string,
+) (uri string) {
+	params := url.Values{}
+	params.Add("component_appid", api.Config.Appid)
+	params.Add("pre_auth_code", preAuthCode)
+	params.Add("redirect_uri", redirectUri)
+	params.Add("action", "bindcomponent")
+	params.Add("no_scan", "1")
+
+	if authType != "" {
+		params.Add("auth_type", authType)
+	}
+	if bizAppid != "" {
+		params.Add("biz_appid", bizAppid)
+	}
+
+	return "https://mp.weixin.qq.com/safe/bindcomponent?" + params.Encode() + "#wechat_redirect"
+}
 
 /*
 拉取所有已授权的帐号信息
@@ -108,11 +127,12 @@ func (api *WxOpen) GetAuthorizerList(
 	}
 
 	result := struct {
+		utils.WeixinError
 		TotalCount int                 `json:"total_count"`
 		List       []AuthorizationLite `json:"list"`
 	}{}
 
-	err := api.Client.ApiPostWrapper(ctx, apiApiGetAuthorizerList, payload, &result)
+	err := api.Client.HTTPPostJson(ctx, apiApiGetAuthorizerList, payload, &result)
 	if err == nil {
 		return result.List, nil
 	} else {
@@ -133,12 +153,13 @@ func (api *WxOpen) GetAuthorizerOption(
 	}
 
 	result := struct {
+		utils.WeixinError
 		AuthorizerAppid string `json:"authorizer_appid"`
 		OptionName      string `json:"option_name"`
 		OptionValue     string `json:"option_value"`
 	}{}
 
-	err := api.Client.ApiPostWrapper(ctx, apiApiGetAuthorizerOption, payload, &result)
+	err := api.Client.HTTPPostJson(ctx, apiApiGetAuthorizerOption, payload, &result)
 	if err == nil {
 		return result.OptionValue, nil
 	} else {
@@ -159,7 +180,7 @@ func (api *WxOpen) SetAuthorizerOption(
 		"option_value":     optionValue,
 	}
 
-	return api.Client.ApiPostWrapper(ctx, apiApiGetAuthorizerOption, payload, nil)
+	return api.Client.HTTPPostJson(ctx, apiApiGetAuthorizerOption, payload, nil)
 }
 
 // 使用授权码获取授权信息
@@ -192,9 +213,10 @@ func (api *WxOpen) QueryAuth(
 	}
 
 	result := &struct {
+		utils.WeixinError
 		AuthorizationInfo *AuthorizationInfo `json:"authorization_info"`
 	}{}
-	err := api.Client.ApiPostWrapper(ctx, apiApiQueryAuth, payload, &result)
+	err := api.Client.HTTPPostJson(ctx, apiApiQueryAuth, payload, result)
 	if err == nil {
 		return result.AuthorizationInfo, nil
 	} else {
@@ -205,6 +227,7 @@ func (api *WxOpen) QueryAuth(
 // 获取/刷新接口调用令牌
 // https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/ThirdParty/token/api_authorizer_token.html
 type AuthorizerToken struct {
+	utils.WeixinError
 	AccessToken  string `json:"authorizer_access_token"`
 	RefreshToken string `json:"authorizer_refresh_token"`
 	ExpiresIn    int    `json:"expires_in"`
@@ -222,7 +245,7 @@ func (api *WxOpen) GetAuthorizerToken(
 	}
 
 	result := &AuthorizerToken{}
-	err := api.Client.ApiPostWrapper(ctx, apiApiAuthorizerToken, payload, &result)
+	err := api.Client.HTTPPostJson(ctx, apiApiAuthorizerToken, payload, result)
 	if err == nil {
 		return result, nil
 	} else {
@@ -248,6 +271,7 @@ type AuthorizerInfo struct {
 }
 
 type AuthorizerDetail struct {
+	utils.WeixinError
 	AuthorizationInfo *AuthorizationInfo `json:"authorization_info"`
 	AuthorizerInfo    *AuthorizerInfo    `json:"authorizer_info"`
 }
@@ -262,7 +286,7 @@ func (api *WxOpen) GetAuthorizerInfo(
 	}
 
 	result := &AuthorizerDetail{}
-	err := api.Client.ApiPostWrapper(ctx, apiApiGetAuthorizerInfo, payload, &result)
+	err := api.Client.HTTPPostJson(ctx, apiApiGetAuthorizerInfo, payload, result)
 	if err == nil {
 		return result, nil
 	} else {

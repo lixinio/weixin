@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	AgentId string // 企业（自建）应用ID
+	AgentID int    // 企业（自建）应用ID
 	Secret  string // 企业（自建）应用密钥
 }
 
@@ -36,17 +36,17 @@ func (agent *Agent) GetAccessToken() (accessToken string, expiresIn int, err err
 // GetAccessTokenKey 接口 weixin.AccessTokenGetter 实现
 func (agent *Agent) GetAccessTokenKey() string {
 	return fmt.Sprintf(
-		"qywx_%s_%s.access_token",
+		"qywx_%s_%d.access_token",
 		agent.wxwork.Config.Corpid,
-		agent.Config.AgentId,
+		agent.Config.AgentID,
 	)
 }
 
 // GetAccessTokenLockKey 接口 weixin.AccessTokenGetter 实现
 func (agent *Agent) GetAccessTokenLockKey() string {
 	return fmt.Sprintf(
-		"qywx_%s_%s.access_token.lock",
+		"qywx_%s_%d.access_token.lock",
 		agent.wxwork.Config.Corpid,
-		agent.Config.AgentId,
+		agent.Config.AgentID,
 	)
 }

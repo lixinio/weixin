@@ -6,7 +6,7 @@ const (
 	// 企业微信
 	CorpID = "wx7123451234512345" // 企业ID
 	// 自建H5应用， 回调配置参考 https://work.weixin.qq.com/api/doc/90000/90135/90237
-	AgentID             = "1012345"                                     // 企业（自建）应用ID
+	AgentID             = 1012345                                     // 企业（自建）应用ID
 	AgentSecret         = "eeRaquaec0nie7gughahC3xeobaethai8OoGh5DahSh" // 企业（自建）应用密钥
 	AgentContactSecret  = "Al6caeno4ooba5oi0Tha8yaec7ojaeshooh6Sooxem9" // 企业（自建）通讯录密钥， 只有这个才能写通讯录
 	AgentToken          = "othuiRi3beero0xut6ohquiewahthaixu7cor8OShai" // 接收消息服务器配置（Token）

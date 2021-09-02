@@ -1,7 +1,8 @@
-package user_api
+package tag_api
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/lixinio/weixin/test"
@@ -11,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestUser(t *testing.T) {
+func TestTag(t *testing.T) {
 	redis := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
 	corp := wxwork.New(&wxwork.Config{
 		Corpid: test.CorpID,
@@ -22,10 +23,10 @@ func TestUser(t *testing.T) {
 	})
 	ctx := context.Background()
 
-	userApi := NewApi(agent.Client)
-	{
-		resp, err := userApi.Get(ctx, test.AgentUserID)
-		require.Equal(t, nil, err)
-		require.Equal(t, test.AgentUserID, resp.UserID)
+	tagApi := NewApi(agent.Client)
+	taglist, err := tagApi.List(ctx)
+	require.Equal(t, nil, err)
+	for _, item := range taglist.TagList {
+		fmt.Println(item.TagID, item.TagName)
 	}
 }

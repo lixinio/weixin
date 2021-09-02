@@ -36,12 +36,13 @@ type ServerApi struct {
 }
 
 func NewApi(
-	agentID, token, encodingAESKey string,
+	agentID int,
+	token, encodingAESKey string,
 	client *utils.Client,
 ) *ServerApi {
 	return &ServerApi{
 		Client:         client,
-		AgentID:        agentID,
+		AgentID:        strconv.Itoa(agentID),
 		Token:          token,
 		EncodingAESKey: encodingAESKey,
 	}

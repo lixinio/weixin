@@ -8,6 +8,7 @@ import (
 	"github.com/lixinio/weixin/utils/redis"
 	"github.com/lixinio/weixin/wxwork"
 	"github.com/lixinio/weixin/wxwork/agent"
+	"github.com/lixinio/weixin/wxwork/server_api"
 )
 
 func index(agent *agent.Agent) http.HandlerFunc {
@@ -60,14 +61,24 @@ func main() {
 		Corpid: test.CorpID,
 	})
 	agent := agent.New(corp, redis, redis, &agent.Config{
-		AgentId: test.AgentID,
+		AgentID: test.AgentID,
 		Secret:  test.AgentSecret,
 	})
+
+	serverApi := server_api.NewApi(
+		test.AgentID,
+		test.AgentToken,
+		test.AgentEncodingAESKey,
+		agent.Client,
+	)
 
 	http.HandleFunc("/", index(agent))
 	http.HandleFunc("/login", login(agent, false))
 	http.HandleFunc("/login_sso", login(agent, true))
 	http.HandleFunc("/login/callback", callback(agent))
+
+	http.HandleFunc(fmt.Sprintf("/weixin/%s/%d", test.CorpID, test.AgentID), msgCallback(serverApi))
+	http.HandleFunc(fmt.Sprintf("/weixin/%s/%s", test.CorpID, "0"), msgCallback(serverApi))
 
 	err := http.ListenAndServe(":5000", nil)
 	if err != nil {

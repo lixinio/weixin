@@ -18,9 +18,9 @@ package agent
 // Package app 应用管理
 
 import (
-	"bytes"
 	"context"
 	"net/url"
+	"strconv"
 )
 
 const (
@@ -62,47 +62,47 @@ type MenuEntryObj struct {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90227
 GET https://qyapi.weixin.qq.com/cgi-bin/agent/get?access_token=ACCESS_TOKEN&agentid=AGENTID参数说明
 */
-func (agent *Agent) AgentGet(ctx context.Context, params url.Values) (resp []byte, err error) {
-	return agent.Client.HTTPGet(ctx, apiAgentGet+"?"+params.Encode())
-}
+// func (agent *Agent) AgentGet(ctx context.Context, params url.Values) (resp []byte, err error) {
+// 	return agent.Client.HTTPGet(ctx, apiAgentGet+"?"+params.Encode())
+// }
 
 /*
 获取access_token对应的应用列表
 See: https://work.weixin.qq.com/api/doc/90000/90135/90227
 GET https://qyapi.weixin.qq.com/cgi-bin/agent/list?access_token=ACCESS_TOKEN
 */
-func (agent *Agent) AgentList(ctx context.Context) (resp []byte, err error) {
-	return agent.Client.HTTPGet(ctx, apiAgentList)
-}
+// func (agent *Agent) AgentList(ctx context.Context) (resp []byte, err error) {
+// 	return agent.Client.HTTPGet(ctx, apiAgentList)
+// }
 
 /*
 设置应用
 See: https://work.weixin.qq.com/api/doc/90000/90135/90228
 POST https://qyapi.weixin.qq.com/cgi-bin/agent/set?access_token=ACCESS_TOKEN
 */
-func (agent *Agent) AgentSet(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return agent.Client.HTTPPost(
-		ctx,
-		apiAgentSet,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
-}
+// func (agent *Agent) AgentSet(ctx context.Context, payload []byte) (resp []byte, err error) {
+// 	return agent.Client.HTTPPost(
+// 		ctx,
+// 		apiAgentSet,
+// 		bytes.NewReader(payload),
+// 		"application/json;charset=utf-8",
+// 	)
+// }
 
 /*
 创建菜单
 See: https://work.weixin.qq.com/api/doc/90000/90135/90231
 POST https://qyapi.weixin.qq.com/cgi-bin/menu/create?access_token=ACCESS_TOKEN&agentid=AGENTID
 */
-func (agent *Agent) MenuCreate(ctx context.Context, agentid string, menus []MenuEntryObj) error {
+func (agent *Agent) MenuCreate(ctx context.Context, agentID int, menus []MenuEntryObj) error {
 	payload := struct {
 		Buttons []MenuEntryObj `json:"button,omitempty"`
 	}{
 		Buttons: menus,
 	}
-	return agent.Client.ApiPostWrapperEx(ctx, apiMenuCreate, payload, func(params url.Values) {
-		params.Add("agentid", agentid)
-	}, nil)
+	return agent.Client.HTTPPost(ctx, apiMenuCreate, payload, func(params url.Values) {
+		params.Add("agentid", strconv.Itoa(agentID))
+	}, nil, "")
 }
 
 /*
@@ -110,18 +110,18 @@ func (agent *Agent) MenuCreate(ctx context.Context, agentid string, menus []Menu
 See: https://work.weixin.qq.com/api/doc/90000/90135/90232
 GET https://qyapi.weixin.qq.com/cgi-bin/menu/get?access_token=ACCESS_TOKEN&agentid=AGENTID
 */
-func (agent *Agent) MenuGet(ctx context.Context, params url.Values) (resp []byte, err error) {
-	return agent.Client.HTTPGet(ctx, apiMenuGet+"?"+params.Encode())
-}
+// func (agent *Agent) MenuGet(ctx context.Context, params url.Values) (resp []byte, err error) {
+// 	return agent.Client.HTTPGet(ctx, apiMenuGet+"?"+params.Encode())
+// }
 
 /*
 删除菜单
 See: https://work.weixin.qq.com/api/doc/90000/90135/90233
 GET https://qyapi.weixin.qq.com/cgi-bin/menu/delete?access_token=ACCESS_TOKEN&agentid=AGENTID
 */
-func (agent *Agent) MenuDelete(ctx context.Context, agentid string) error {
-	return agent.Client.ApiGetWrapper(ctx, apiMenuDelete, func(params url.Values) {
-		params.Add("agentid", agentid)
+func (agent *Agent) MenuDelete(ctx context.Context, agentID int) error {
+	return agent.Client.HTTPGetWithParams(ctx, apiMenuDelete, func(params url.Values) {
+		params.Add("agentid", strconv.Itoa(agentID))
 	}, nil)
 }
 
@@ -130,45 +130,45 @@ func (agent *Agent) MenuDelete(ctx context.Context, agentid string) error {
 See: https://work.weixin.qq.com/api/doc/90000/90135/92535
 POST https://qyapi.weixin.qq.com/cgi-bin/agent/set_workbench_template?access_token=ACCESS_TOKEN
 */
-func (agent *Agent) SetWorkbenchTemplate(
-	ctx context.Context,
-	payload []byte,
-) (resp []byte, err error) {
-	return agent.Client.HTTPPost(
-		ctx,
-		apiSetWorkbenchTemplate,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
-}
+// func (agent *Agent) SetWorkbenchTemplate(
+// 	ctx context.Context,
+// 	payload []byte,
+// ) (resp []byte, err error) {
+// 	return agent.Client.HTTPPost(
+// 		ctx,
+// 		apiSetWorkbenchTemplate,
+// 		bytes.NewReader(payload),
+// 		"application/json;charset=utf-8",
+// 	)
+// }
 
 /*
 获取应用在工作台展示的模版
 See: https://work.weixin.qq.com/api/doc/90000/90135/92535
 POST https://qyapi.weixin.qq.com/cgi-bin/agent/get_workbench_template?access_token=ACCESS_TOKEN
 */
-func (agent *Agent) GetWorkbenchTemplate(
-	ctx context.Context,
-	payload []byte,
-) (resp []byte, err error) {
-	return agent.Client.HTTPPost(
-		ctx,
-		apiGetWorkbenchTemplate,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
-}
+// func (agent *Agent) GetWorkbenchTemplate(
+// 	ctx context.Context,
+// 	payload []byte,
+// ) (resp []byte, err error) {
+// 	return agent.Client.HTTPPost(
+// 		ctx,
+// 		apiGetWorkbenchTemplate,
+// 		bytes.NewReader(payload),
+// 		"application/json;charset=utf-8",
+// 	)
+// }
 
 /*
 设置应用在用户工作台展示的数据
 See: https://work.weixin.qq.com/api/doc/90000/90135/92535
 POST https://qyapi.weixin.qq.com/cgi-bin/agent/set_workbench_data?access_token=ACCESS_TOKEN
 */
-func (agent *Agent) SetWorkbenchData(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return agent.Client.HTTPPost(
-		ctx,
-		apiSetWorkbenchData,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
-}
+// func (agent *Agent) SetWorkbenchData(ctx context.Context, payload []byte) (resp []byte, err error) {
+// 	return agent.Client.HTTPPost(
+// 		ctx,
+// 		apiSetWorkbenchData,
+// 		bytes.NewReader(payload),
+// 		"application/json;charset=utf-8",
+// 	)
+// }

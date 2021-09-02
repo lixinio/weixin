@@ -16,7 +16,7 @@ func TestUser(t *testing.T) {
 		Corpid: test.CorpID,
 	})
 	agent := New(corp, redis, redis, &Config{
-		AgentId: test.AgentID,
+		AgentID: test.AgentID,
 		Secret:  test.AgentSecret,
 	})
 	ctx := context.Background()
@@ -79,6 +79,6 @@ func TestUser(t *testing.T) {
 		},
 	}
 
-	require.Equal(t, nil, agent.MenuDelete(ctx, agent.Config.AgentId))
-	require.Equal(t, nil, agent.MenuCreate(ctx, agent.Config.AgentId, menu))
+	require.Equal(t, nil, agent.MenuDelete(ctx, agent.Config.AgentID))
+	require.Equal(t, nil, agent.MenuCreate(ctx, agent.Config.AgentID, menu))
 }
