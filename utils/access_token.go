@@ -140,8 +140,7 @@ func (atc *AccessTokenCache) refreshAccessToken(
 
 // TokenResponse 刷新token相应体
 type TokenResponse struct {
-	AccessToken string  `json:"access_token"`
-	ExpiresIn   int     `json:"expires_in"`
-	Errcode     float64 `json:"errcode"`
-	Errmsg      string  `json:"errmsg"`
+	WeixinError
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int    `json:"expires_in"`
 }

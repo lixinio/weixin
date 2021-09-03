@@ -19,13 +19,9 @@ package material_api
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"io"
-	"mime/multipart"
-	"net/http"
+	"io/ioutil"
 	"net/url"
-	"path"
 
 	"github.com/lixinio/weixin/utils"
 )
@@ -53,7 +49,7 @@ func NewApi(client *utils.Client) *MaterialApi {
 }
 
 type MaterialID struct {
-	utils.CommonError
+	utils.WeixinError
 	MediaID   string `json:"media_id"`
 	Type      string `json:"type"`
 	CreatedAt string `json:"created_at"`
@@ -70,40 +66,19 @@ func (api *MaterialApi) Upload(
 	content io.Reader,
 	mediaType string,
 ) (result *MaterialID, err error) {
-	params := url.Values{}
-	params.Add("type", mediaType)
-	r, w := io.Pipe()
-	m := multipart.NewWriter(w)
-	go func() {
-		defer w.Close()
-		defer m.Close()
-
-		part, err := m.CreateFormFile("media", path.Base(filename))
-		if err != nil {
-			return
-		}
-		if _, err = io.Copy(part, content); err != nil {
-			return
-		}
-
-	}()
-
-	var resp []byte
-	resp, err = api.Client.HTTPPost(ctx, apiUpload+"?"+params.Encode(), r, m.FormDataContentType())
-	if err != nil {
-		return
-	}
-
 	result = &MaterialID{}
-	err = json.Unmarshal(resp, result)
-	if err != nil {
-		return
+	if err := api.Client.HttpFile(
+		ctx, apiUpload, "media", filename, content, func(params url.Values) {
+			params.Add("type", mediaType)
+		}, result,
+	); err != nil {
+		return nil, err
 	}
-	return
+	return result, nil
 }
 
 type MaterialUrl struct {
-	utils.CommonError
+	utils.WeixinError
 	URL string `json:"url"`
 }
 
@@ -117,32 +92,11 @@ func (api *MaterialApi) UploadImg(
 	filename string,
 	content io.Reader,
 ) (url string, err error) {
-	r, w := io.Pipe()
-	m := multipart.NewWriter(w)
-	go func() {
-		defer w.Close()
-		defer m.Close()
-
-		part, err := m.CreateFormFile("media", path.Base(filename))
-		if err != nil {
-			return
-		}
-
-		if _, err = io.Copy(part, content); err != nil {
-			return
-		}
-
-	}()
-
-	var resp []byte
-	resp, err = api.Client.HTTPPost(ctx, apiUploadImg, r, m.FormDataContentType())
-	if err != nil {
-		return
-	}
-	var result MaterialUrl
-	err = json.Unmarshal(resp, &result)
-	if err != nil {
-		return
+	result := &MaterialUrl{}
+	if err := api.Client.HttpFile(
+		ctx, apiUploadImg, "media", filename, content, nil, result,
+	); err != nil {
+		return "", err
 	}
 	return result.URL, nil
 }
@@ -152,29 +106,36 @@ func (api *MaterialApi) UploadImg(
 See: https://work.weixin.qq.com/api/doc/90000/90135/90254
 GET https://qyapi.weixin.qq.com/cgi-bin/media/get?access_token=ACCESS_TOKEN&media_id=MEDIA_ID
 */
-func (api *MaterialApi) Get(ctx context.Context, mediaID string) (resp *http.Response, err error) {
-	params := url.Values{}
-	params.Add("media_id", mediaID)
-
-	resp, err = api.Client.HTTPGetWithParamsRaw(ctx, apiGet, params)
+func (api *MaterialApi) Get(ctx context.Context, mediaID string) ([]byte, error) {
+	resp, err := api.Client.HTTPGetRaw(ctx, apiGet, func(params url.Values) {
+		params.Add("media_id", mediaID)
+	})
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	ct := utils.ContentType(resp)
-	if ct != "application/json" &&
-		(resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusPartialContent) {
-		return resp, nil
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
 	}
+	return body, nil
+}
 
-	var body []byte
-	body, err = utils.ResponseFilter(resp)
-	if err == nil {
-		// 不应该走到这里来
-		err = fmt.Errorf("unknown error %s(%s)", ct, string(body))
+func (api *MaterialApi) Save(ctx context.Context, mediaID string, saver io.Writer) error {
+	resp, err := api.Client.HTTPGetRaw(ctx, apiGet, func(params url.Values) {
+		params.Add("media_id", mediaID)
+	})
+	if err != nil {
+		return err
 	}
-	return
+	defer resp.Body.Close()
 
+	_, err = io.Copy(saver, resp.Body)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // /*

@@ -22,6 +22,9 @@ func index(wo *wxopen.WxOpen) http.HandlerFunc {
 <form method="get" action="/auth">
     <button type="submit">PC扫码授权</button>
 </form>
+<form method="get" action="/auth/mobile">
+    <button type="submit">H5扫码授权</button>
+</form>
 	`
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -29,14 +32,20 @@ func index(wo *wxopen.WxOpen) http.HandlerFunc {
 	}
 }
 
-func auth(wo *wxopen.WxOpen) http.HandlerFunc {
+func auth(wo *wxopen.WxOpen, mobile bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		url := fmt.Sprintf("http://%s/auth/callback", r.Host)
 		preAuthCode, _, err := wo.CreatePreAuthCode(r.Context())
 		if err != nil {
 			panic(err)
 		}
-		redirectUri := wo.GetComponentLoginPage(preAuthCode, url, wxopen.AuthTypeOaOnly, "")
+		redirectUri := ""
+		if !mobile {
+			redirectUri = wo.GetComponentLoginPage(preAuthCode, url, wxopen.AuthTypeAll, "")
+		} else {
+			redirectUri = wo.GetComponentLoginH5Page(preAuthCode, url, wxopen.AuthTypeAll, "")
+		}
+
 		http.Redirect(w, r, redirectUri, http.StatusFound)
 	}
 }
@@ -152,7 +161,8 @@ func main() {
 		authorizerCallback(serverApi),
 	)
 	http.HandleFunc("/", index(wxopen))
-	http.HandleFunc("/auth", auth(wxopen))
+	http.HandleFunc("/auth", auth(wxopen, false))
+	http.HandleFunc("/auth/mobile", auth(wxopen, true))
 	http.HandleFunc("/auth/callback", callback(wxopen, manager))
 
 	err = http.ListenAndServe(":5000", nil)

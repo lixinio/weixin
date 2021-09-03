@@ -50,11 +50,10 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Configurin
 POST https://api.weixin.qq.com/cgi-bin/user/info/updateremark?access_token=ACCESS_TOKEN
 */
 func (api *UserApi) UpdateRemark(ctx context.Context, openID, remark string) error {
-	var result utils.CommonError
-	return api.Client.ApiPostWrapper(ctx, apiUpdateRemark, map[string]string{
+	return api.Client.HTTPPostJson(ctx, apiUpdateRemark, map[string]string{
 		"openid": openID,
 		"remark": remark,
-	}, &result)
+	}, nil)
 }
 
 type User struct {
@@ -78,6 +77,7 @@ type User struct {
 }
 
 type UserInfo struct {
+	utils.WeixinError
 	User
 }
 
@@ -92,11 +92,10 @@ GET https://api.weixin.qq.com/cgi-bin/user/info?access_token=ACCESS_TOKEN&openid
 */
 func (api *UserApi) GetUserInfo(ctx context.Context, openid, lang string) (*UserInfo, error) {
 	var result UserInfo
-	err := api.Client.ApiGetWrapper(ctx, apiGetUserInfo, func(params url.Values) {
+	if err := api.Client.HTTPGetWithParams(ctx, apiGetUserInfo, func(params url.Values) {
 		params.Add("openid", openid)
 		params.Add("lang", lang)
-	}, &result)
-	if err != nil {
+	}, &result); err != nil {
 		return nil, err
 	}
 	return &result, nil
@@ -109,6 +108,7 @@ type BatchGetUserParams struct {
 	} `json:"user_list"`
 }
 type UserInfoList struct {
+	utils.WeixinError
 	UserInfoList []User `json:"user_info_list"`
 }
 
@@ -126,8 +126,7 @@ func (api *UserApi) BatchGetUserInfo(
 	param *BatchGetUserParams,
 ) (*UserInfoList, error) {
 	var result UserInfoList
-	err := api.Client.ApiPostWrapper(ctx, apiBatchGetUserInfo, param, &result)
-	if err != nil {
+	if err := api.Client.HTTPPostJson(ctx, apiBatchGetUserInfo, param, &result); err != nil {
 		return nil, err
 	}
 	return &result, nil
@@ -135,6 +134,7 @@ func (api *UserApi) BatchGetUserInfo(
 
 // OpenidList 用户列表
 type OpenidList struct {
+	utils.WeixinError
 	Total int `json:"total"`
 	Count int `json:"count"`
 	Data  struct {
@@ -154,16 +154,16 @@ GET https://api.weixin.qq.com/cgi-bin/user/get?access_token=ACCESS_TOKEN&next_op
 */
 func (api *UserApi) Get(ctx context.Context, next_openid string) (*OpenidList, error) {
 	var result OpenidList
-	err := api.Client.ApiGetWrapper(ctx, apiGet, func(params url.Values) {
+	if err := api.Client.HTTPGetWithParams(ctx, apiGet, func(params url.Values) {
 		params.Add("next_openid", next_openid)
-	}, &result)
-	if err != nil {
+	}, &result); err != nil {
 		return nil, err
 	}
 	return &result, nil
 }
 
 type BlackList struct {
+	utils.WeixinError
 	Total int `json:"total"`
 	Count int `json:"count"`
 	Data  struct {
@@ -183,10 +183,9 @@ POST https://api.weixin.qq.com/cgi-bin/tags/members/getblacklist?access_token=AC
 */
 func (api *UserApi) GetBlackList(ctx context.Context, beginOpenid string) (*BlackList, error) {
 	var result BlackList
-	err := api.Client.ApiPostWrapper(ctx, apiGetBlackList, map[string]string{
+	if err := api.Client.HTTPPostJson(ctx, apiGetBlackList, map[string]string{
 		"begin_openid": beginOpenid,
-	}, &result)
-	if err != nil {
+	}, &result); err != nil {
 		return nil, err
 	}
 	return &result, nil
@@ -202,7 +201,7 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Manage_bla
 POST https://api.weixin.qq.com/cgi-bin/tags/members/batchblacklist?access_token=ACCESS_TOKEN
 */
 func (api *UserApi) BatchBlackList(ctx context.Context, openidList []string) (err error) {
-	return api.Client.ApiPostWrapper(ctx, apiBatchBlackList, map[string][]string{
+	return api.Client.HTTPPostJson(ctx, apiBatchBlackList, map[string][]string{
 		"openid_list": openidList,
 	}, nil)
 }
@@ -217,7 +216,7 @@ See: https://developers.weixin.qq.com/doc/offiaccount/User_Management/Manage_bla
 POST https://api.weixin.qq.com/cgi-bin/tags/members/batchunblacklist?access_token=ACCESS_TOKEN
 */
 func (api *UserApi) BatchUnBlackList(ctx context.Context, openidList []string) (err error) {
-	return api.Client.ApiPostWrapper(ctx, apiBatchUnBlackList, map[string][]string{
+	return api.Client.HTTPPostJson(ctx, apiBatchUnBlackList, map[string][]string{
 		"openid_list": openidList,
 	}, nil)
 }

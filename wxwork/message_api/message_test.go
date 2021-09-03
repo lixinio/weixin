@@ -1,7 +1,8 @@
-package user_api
+package message_api
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/lixinio/weixin/test"
@@ -11,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestUser(t *testing.T) {
+func TestSendMessage(t *testing.T) {
 	redis := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
 	corp := wxwork.New(&wxwork.Config{
 		Corpid: test.CorpID,
@@ -22,10 +23,12 @@ func TestUser(t *testing.T) {
 	})
 	ctx := context.Background()
 
-	userApi := NewApi(agent.Client)
-	{
-		resp, err := userApi.Get(ctx, test.AgentUserID)
-		require.Equal(t, nil, err)
-		require.Equal(t, test.AgentUserID, resp.UserID)
-	}
+	messageApi := NewApi(agent.Client, agent.Config.AgentID)
+	result, err := messageApi.SendTextMessage(
+		ctx,
+		&MessageHeader{ToUser: test.AgentUserID},
+		"你的快递已到，请携带工卡前往邮件中心领取。\n出发前可查看<a href=\"http://work.weixin.qq.com\">邮件中心视频实况</a>，聪明避开排队。",
+	)
+	require.Equal(t, nil, err)
+	fmt.Println(result.MsgID)
 }

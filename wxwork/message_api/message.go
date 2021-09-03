@@ -18,9 +18,7 @@ package message_api
 // Package message 消息推送
 
 import (
-	"bytes"
 	"context"
-	"net/url"
 
 	"github.com/lixinio/weixin/utils"
 )
@@ -38,10 +36,39 @@ const (
 
 type MessageApi struct {
 	*utils.Client
+	AgentID int
 }
 
-func NewApi(client *utils.Client) *MessageApi {
-	return &MessageApi{Client: client}
+func NewApi(client *utils.Client, agentID int) *MessageApi {
+	return &MessageApi{Client: client, AgentID: agentID}
+}
+
+type MessageHeader struct {
+	ToUser                 string `json:"touser,omitempty"`
+	ToParty                string `json:"toparty,omitempty"`
+	ToTag                  string `json:"totag,omitempty"`
+	MsgType                string `json:"msgtype"`
+	AgentID                int    `json:"agentid"`
+	Safe                   int    `json:"safe,omitempty"`
+	EnableIDTrans          int    `json:"enable_id_trans,omitempty"`
+	EnableDuplicateCheck   int    `json:"enable_duplicate_check,omitempty"`
+	DuplicateCheckInterval int    `json:"duplicate_check_interval,omitempty"`
+}
+
+type MessageResponse struct {
+	utils.WeixinError
+	InvalidUser  string `json:"invaliduser"`
+	InvalidParty string `json:"invalidparty"`
+	InvalidTag   string `json:"invalidtag"`
+	MsgID        string `json:"msgid"`
+	ResponseCode string `json:"response_code"`
+}
+
+type TextMessage struct {
+	*MessageHeader
+	Text struct {
+		Content string `json:"content"`
+	} `json:"text"`
 }
 
 /*
@@ -50,13 +77,23 @@ func NewApi(client *utils.Client) *MessageApi {
 See: https://work.weixin.qq.com/api/doc/90000/90135/90236
 POST https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=ACCESS_TOKEN
 */
-func (api *MessageApi) Send(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(
-		ctx,
-		apiSend,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
+func (api *MessageApi) SendTextMessage(
+	ctx context.Context, header *MessageHeader, content string,
+) (*MessageResponse, error) {
+	header.MsgType = "text"
+	header.AgentID = api.AgentID
+	result := &MessageResponse{}
+	if err := api.Client.HTTPPostJson(ctx, apiSend, &TextMessage{
+		MessageHeader: header,
+		Text: struct {
+			Content string `json:"content"`
+		}{
+			Content: content,
+		},
+	}, result); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 /*
@@ -65,54 +102,54 @@ func (api *MessageApi) Send(ctx context.Context, payload []byte) (resp []byte, e
 See: https://work.weixin.qq.com/api/doc/90000/90135/91579
 POST https://qyapi.weixin.qq.com/cgi-bin/message/update_taskcard?access_token=ACCESS_TOKEN
 */
-func (api *MessageApi) UpdateTaskcard(
-	ctx context.Context,
-	payload []byte,
-) (resp []byte, err error) {
-	return api.Client.HTTPPost(
-		ctx,
-		apiUpdateTaskcard,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
-}
+// func (api *MessageApi) UpdateTaskcard(
+// 	ctx context.Context,
+// 	payload []byte,
+// ) (resp []byte, err error) {
+// 	return api.Client.HTTPPost(
+// 		ctx,
+// 		apiUpdateTaskcard,
+// 		bytes.NewReader(payload),
+// 		"application/json;charset=utf-8",
+// 	)
+// }
 
 /*
 创建群聊会话
 See: https://work.weixin.qq.com/api/doc/90000/90135/90245
 POST https://qyapi.weixin.qq.com/cgi-bin/appchat/create?access_token=ACCESS_TOKEN
 */
-func (api *MessageApi) AppchatCreate(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(
-		ctx,
-		apiAppchatCreate,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
-}
+// func (api *MessageApi) AppchatCreate(ctx context.Context, payload []byte) (resp []byte, err error) {
+// 	return api.Client.HTTPPost(
+// 		ctx,
+// 		apiAppchatCreate,
+// 		bytes.NewReader(payload),
+// 		"application/json;charset=utf-8",
+// 	)
+// }
 
 /*
 修改群聊会话
 See: https://work.weixin.qq.com/api/doc/90000/90135/90246
 POST https://qyapi.weixin.qq.com/cgi-bin/appchat/update?access_token=ACCESS_TOKEN
 */
-func (api *MessageApi) AppchatUpdate(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(
-		ctx,
-		apiAppchatUpdate,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
-}
+// func (api *MessageApi) AppchatUpdate(ctx context.Context, payload []byte) (resp []byte, err error) {
+// 	return api.Client.HTTPPost(
+// 		ctx,
+// 		apiAppchatUpdate,
+// 		bytes.NewReader(payload),
+// 		"application/json;charset=utf-8",
+// 	)
+// }
 
 /*
 获取群聊会话
 See: https://work.weixin.qq.com/api/doc/90000/90135/90247
 GET https://qyapi.weixin.qq.com/cgi-bin/appchat/get?access_token=ACCESS_TOKEN&chatid=CHATID
 */
-func (api *MessageApi) AppchatGet(ctx context.Context, params url.Values) (resp []byte, err error) {
-	return api.Client.HTTPGet(ctx, apiAppchatGet+"?"+params.Encode())
-}
+// func (api *MessageApi) AppchatGet(ctx context.Context, params url.Values) (resp []byte, err error) {
+// 	return api.Client.HTTPGet(ctx, apiAppchatGet+"?"+params.Encode())
+// }
 
 /*
 应用推送消息
@@ -120,14 +157,14 @@ func (api *MessageApi) AppchatGet(ctx context.Context, params url.Values) (resp 
 See: https://work.weixin.qq.com/api/doc/90000/90135/90248
 POST https://qyapi.weixin.qq.com/cgi-bin/appchat/send?access_token=ACCESS_TOKEN
 */
-func (api *MessageApi) AppchatSend(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(
-		ctx,
-		apiAppchatSend,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
-}
+// func (api *MessageApi) AppchatSend(ctx context.Context, payload []byte) (resp []byte, err error) {
+// 	return api.Client.HTTPPost(
+// 		ctx,
+// 		apiAppchatSend,
+// 		bytes.NewReader(payload),
+// 		"application/json;charset=utf-8",
+// 	)
+// }
 
 /*
 互联企业消息推送
@@ -135,28 +172,28 @@ func (api *MessageApi) AppchatSend(ctx context.Context, payload []byte) (resp []
 See: https://work.weixin.qq.com/api/doc/90000/90135/90250
 POST https://qyapi.weixin.qq.com/cgi-bin/linkedcorp/message/send?access_token=ACCESS_TOKEN
 */
-func (api *MessageApi) LinkedcorpMessageSend(
-	ctx context.Context,
-	payload []byte,
-) (resp []byte, err error) {
-	return api.Client.HTTPPost(
-		ctx,
-		apiLinkedcorpMessageSend,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
-}
+// func (api *MessageApi) LinkedcorpMessageSend(
+// 	ctx context.Context,
+// 	payload []byte,
+// ) (resp []byte, err error) {
+// 	return api.Client.HTTPPost(
+// 		ctx,
+// 		apiLinkedcorpMessageSend,
+// 		bytes.NewReader(payload),
+// 		"application/json;charset=utf-8",
+// 	)
+// }
 
 /*
 查询应用消息发送统计
 See: https://work.weixin.qq.com/api/doc/90000/90135/92369
 POST https://qyapi.weixin.qq.com/cgi-bin/message/get_statistics?access_token=ACCESS_TOKEN
 */
-func (api *MessageApi) GetStatistics(ctx context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(
-		ctx,
-		apiGetStatistics,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
-}
+// func (api *MessageApi) GetStatistics(ctx context.Context, payload []byte) (resp []byte, err error) {
+// 	return api.Client.HTTPPost(
+// 		ctx,
+// 		apiGetStatistics,
+// 		bytes.NewReader(payload),
+// 		"application/json;charset=utf-8",
+// 	)
+// }

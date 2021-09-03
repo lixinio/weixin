@@ -1,9 +1,7 @@
 package wxopen
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -98,43 +96,23 @@ func (wxopen *WxOpen) refreshAccessTokenFromWXServer() (accessToken string, expi
 		return "", 0, fmt.Errorf("can NOT get wxopen access token without ticket, %w", err)
 	}
 
+	// AccessToken 和其他地方 字段不一致
+	result := struct {
+		utils.WeixinError
+		AccessToken string `json:"component_access_token"`
+		ExpiresIn   int    `json:"expires_in"`
+	}{}
+
 	payload := map[string]string{
 		"component_appid":         wxopen.Config.Appid,
 		"component_appsecret":     wxopen.Config.Secret,
 		"component_verify_ticket": ticket,
 	}
-	body, err := json.Marshal(payload)
-	if err != nil {
+	if err := wxopen.Client.HTTPPostToken(
+		context.TODO(), apiGetComponentToken, payload, &result,
+	); err != nil {
 		return "", 0, err
 	}
-
-	resp, err := wxopen.Client.HTTPPostWithoutCredential(
-		context.TODO(),
-		apiGetComponentToken,
-		bytes.NewReader(body),
-		"application/json;charset=utf-8",
-	)
-	if err != nil {
-		return "", 0, err
-	}
-
-	var result struct {
-		AccessToken string  `json:"component_access_token"`
-		ExpiresIn   int     `json:"expires_in"`
-		Errcode     float64 `json:"errcode"`
-		Errmsg      string  `json:"errmsg"`
-	}
-	err = json.Unmarshal(resp, &result)
-	if err != nil {
-		err = fmt.Errorf("unmarshal error %s", string(resp))
-		return
-	}
-
-	if result.AccessToken == "" {
-		err = fmt.Errorf("%s", string(resp))
-		return
-	}
-
 	return result.AccessToken, result.ExpiresIn, nil
 }
 
@@ -147,19 +125,10 @@ func (wxopen *WxOpen) StartPushTicket(ctx context.Context) error {
 		"component_appid":  wxopen.Config.Appid,
 		"component_secret": wxopen.Config.Secret,
 	}
-	body, err := json.Marshal(payload)
-	if err != nil {
-		return err
-	}
-	fmt.Println(string(body))
 
-	_, err = wxopen.Client.HTTPPostWithoutCredential(
-		context.TODO(), // 不要记录敏感数据
-		apiStartPushTicket,
-		bytes.NewReader(body),
-		"application/json;charset=utf-8",
+	return wxopen.Client.HTTPPostToken(
+		context.TODO(), apiStartPushTicket, payload, nil,
 	)
-	return err
 }
 
 // 当收到EventComponentVerifyTicket时， 用于更新ticket到cache

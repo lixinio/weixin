@@ -33,6 +33,7 @@ func (t *AccessTokenStripTransport) RoundTrip(req *http.Request) (*http.Response
 		edit = true
 	}
 	if q.Get("secret") != "" {
+		// https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage_authorization.html
 		q.Set("secret", "")
 		edit = true
 	}

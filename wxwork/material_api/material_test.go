@@ -27,7 +27,7 @@ func TestMaterialUrl(t *testing.T) {
 		Corpid: test.CorpID,
 	})
 	agent := agentApi.New(corp, redis, redis, &agentApi.Config{
-		AgentId: test.AgentID,
+		AgentID: test.AgentID,
 		Secret:  test.AgentSecret,
 	})
 	ctx := context.Background()
@@ -57,7 +57,7 @@ func TestMaterialID(t *testing.T) {
 		Corpid: test.CorpID,
 	})
 	agent := agentApi.New(corp, redis, redis, &agentApi.Config{
-		AgentId: test.AgentID,
+		AgentID: test.AgentID,
 		Secret:  test.AgentSecret,
 	})
 	ctx := context.Background()
@@ -89,7 +89,24 @@ func TestMaterialID(t *testing.T) {
 
 		// 计算hash
 		hasher := sha256.New()
-		_, err = io.Copy(hasher, resp.Body)
+		_, err = hasher.Write(resp)
+		require.Empty(t, err)
+
+		thisHash := hex.EncodeToString(hasher.Sum(nil))
+		require.Equal(t, thisHash, originHash)
+	}
+
+	{
+		r, w := io.Pipe()
+		go func(t *testing.T) {
+			defer w.Close()
+			err := materialApi.Save(ctx, result.MediaID, w)
+			require.Empty(t, err)
+		}(t)
+
+		// 计算hash
+		hasher := sha256.New()
+		_, err = io.Copy(hasher, r)
 		require.Empty(t, err)
 
 		thisHash := hex.EncodeToString(hasher.Sum(nil))

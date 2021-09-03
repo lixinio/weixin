@@ -18,7 +18,6 @@ package user_api
 // Package user 通讯录管理/成员管理
 
 import (
-	"bytes"
 	"context"
 	"net/url"
 
@@ -56,14 +55,14 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90195
 
 POST https://qyapi.weixin.qq.com/cgi-bin/user/create?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) Create(context context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(
-		context,
-		apiCreate,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
-}
+// func (api *UserApi) Create(context context.Context, payload []byte) (resp []byte, err error) {
+// 	return api.Client.HTTPPost(
+// 		context,
+// 		apiCreate,
+// 		bytes.NewReader(payload),
+// 		"application/json;charset=utf-8",
+// 	)
+// }
 
 /*
 读取成员
@@ -76,7 +75,7 @@ GET https://qyapi.weixin.qq.com/cgi-bin/user/get?access_token=ACCESS_TOKEN&useri
 */
 func (api *UserApi) Get(context context.Context, userid string) (*UserInfo, error) {
 	var result UserInfo
-	err := api.Client.ApiGetWrapper(context, apiGet, func(params url.Values) {
+	err := api.Client.HTTPGetWithParams(context, apiGet, func(params url.Values) {
 		params.Add("userid", userid)
 	}, &result)
 	if err == nil {
@@ -92,14 +91,14 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90197
 
 POST https://qyapi.weixin.qq.com/cgi-bin/user/update?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) Update(context context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(
-		context,
-		apiUpdate,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
-}
+// func (api *UserApi) Update(context context.Context, payload []byte) (resp []byte, err error) {
+// 	return api.Client.HTTPPost(
+// 		context,
+// 		apiUpdate,
+// 		bytes.NewReader(payload),
+// 		"application/json;charset=utf-8",
+// 	)
+// }
 
 /*
 删除成员
@@ -108,9 +107,9 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90198
 
 GET https://qyapi.weixin.qq.com/cgi-bin/user/delete?access_token=ACCESS_TOKEN&userid=USERID
 */
-func (api *UserApi) Delete(context context.Context, params url.Values) (resp []byte, err error) {
-	return api.Client.HTTPGet(context, apiDelete+"?"+params.Encode())
-}
+// func (api *UserApi) Delete(context context.Context, params url.Values) (resp []byte, err error) {
+// 	return api.Client.HTTPGet(context, apiDelete+"?"+params.Encode())
+// }
 
 /*
 批量删除成员
@@ -119,14 +118,14 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90199
 
 POST https://qyapi.weixin.qq.com/cgi-bin/user/batchdelete?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) BatchDelete(context context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(
-		context,
-		apiBatchDelete,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
-}
+// func (api *UserApi) BatchDelete(context context.Context, payload []byte) (resp []byte, err error) {
+// 	return api.Client.HTTPPost(
+// 		context,
+// 		apiBatchDelete,
+// 		bytes.NewReader(payload),
+// 		"application/json;charset=utf-8",
+// 	)
+// }
 
 /*
 获取部门成员
@@ -135,12 +134,12 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90200
 
 GET https://qyapi.weixin.qq.com/cgi-bin/user/simplelist?access_token=ACCESS_TOKEN&department_id=DEPARTMENT_ID&fetch_child=FETCH_CHILD
 */
-func (api *UserApi) SimpleList(
-	context context.Context,
-	params url.Values,
-) (resp []byte, err error) {
-	return api.Client.HTTPGet(context, apiSimpleList+"?"+params.Encode())
-}
+// func (api *UserApi) SimpleList(
+// 	context context.Context,
+// 	params url.Values,
+// ) (resp []byte, err error) {
+// 	return api.Client.HTTPGet(context, apiSimpleList+"?"+params.Encode())
+// }
 
 /*
 获取部门成员详情
@@ -149,9 +148,9 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90201
 
 GET https://qyapi.weixin.qq.com/cgi-bin/user/list?access_token=ACCESS_TOKEN&department_id=DEPARTMENT_ID&fetch_child=FETCH_CHILD
 */
-func (api *UserApi) List(context context.Context, params url.Values) (resp []byte, err error) {
-	return api.Client.HTTPGet(context, apiList+"?"+params.Encode())
-}
+// func (api *UserApi) List(context context.Context, params url.Values) (resp []byte, err error) {
+// 	return api.Client.HTTPGet(context, apiList+"?"+params.Encode())
+// }
 
 /*
 userid与openid互换
@@ -162,17 +161,17 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90202
 
 POST https://qyapi.weixin.qq.com/cgi-bin/user/convert_to_openid?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) ConvertToOpenId(
-	context context.Context,
-	payload []byte,
-) (resp []byte, err error) {
-	return api.Client.HTTPPost(
-		context,
-		apiConvertToOpenId,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
-}
+// func (api *UserApi) ConvertToOpenId(
+// 	context context.Context,
+// 	payload []byte,
+// ) (resp []byte, err error) {
+// 	return api.Client.HTTPPost(
+// 		context,
+// 		apiConvertToOpenId,
+// 		bytes.NewReader(payload),
+// 		"application/json;charset=utf-8",
+// 	)
+// }
 
 /*
 openid转userid
@@ -183,17 +182,17 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90202
 
 POST https://qyapi.weixin.qq.com/cgi-bin/user/convert_to_userid?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) ConvertToUserId(
-	context context.Context,
-	payload []byte,
-) (resp []byte, err error) {
-	return api.Client.HTTPPost(
-		context,
-		apiConvertToUserId,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
-}
+// func (api *UserApi) ConvertToUserId(
+// 	context context.Context,
+// 	payload []byte,
+// ) (resp []byte, err error) {
+// 	return api.Client.HTTPPost(
+// 		context,
+// 		apiConvertToUserId,
+// 		bytes.NewReader(payload),
+// 		"application/json;charset=utf-8",
+// 	)
+// }
 
 /*
 二次验证
@@ -204,9 +203,9 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90203
 
 GET https://qyapi.weixin.qq.com/cgi-bin/user/authsucc?access_token=ACCESS_TOKEN&userid=USERID
 */
-func (api *UserApi) AuthSucc(context context.Context, params url.Values) (resp []byte, err error) {
-	return api.Client.HTTPGet(context, apiAuthSucc+"?"+params.Encode())
-}
+// func (api *UserApi) AuthSucc(context context.Context, params url.Values) (resp []byte, err error) {
+// 	return api.Client.HTTPGet(context, apiAuthSucc+"?"+params.Encode())
+// }
 
 /*
 邀请成员
@@ -217,14 +216,14 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90975
 
 POST https://qyapi.weixin.qq.com/cgi-bin/batch/invite?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) Invite(context context.Context, payload []byte) (resp []byte, err error) {
-	return api.Client.HTTPPost(
-		context,
-		apiInvite,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
-}
+// func (api *UserApi) Invite(context context.Context, payload []byte) (resp []byte, err error) {
+// 	return api.Client.HTTPPost(
+// 		context,
+// 		apiInvite,
+// 		bytes.NewReader(payload),
+// 		"application/json;charset=utf-8",
+// 	)
+// }
 
 /*
 获取加入企业二维码
@@ -235,12 +234,12 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/91714
 
 GET https://qyapi.weixin.qq.com/cgi-bin/corp/get_join_qrcode?access_token=ACCESS_TOKEN&size_type=SIZE_TYPE
 */
-func (api *UserApi) GetJoinQrcode(
-	context context.Context,
-	params url.Values,
-) (resp []byte, err error) {
-	return api.Client.HTTPGet(context, apiGetJoinQrcode+"?"+params.Encode())
-}
+// func (api *UserApi) GetJoinQrcode(
+// 	context context.Context,
+// 	params url.Values,
+// ) (resp []byte, err error) {
+// 	return api.Client.HTTPGet(context, apiGetJoinQrcode+"?"+params.Encode())
+// }
 
 /*
 获取企业活跃成员数
@@ -249,14 +248,14 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/92714
 
 POST https://qyapi.weixin.qq.com/cgi-bin/user/get_active_stat?access_token=ACCESS_TOKEN
 */
-func (api *UserApi) GetActiveStat(
-	context context.Context,
-	payload []byte,
-) (resp []byte, err error) {
-	return api.Client.HTTPPost(
-		context,
-		apiGetActiveStat,
-		bytes.NewReader(payload),
-		"application/json;charset=utf-8",
-	)
-}
+// func (api *UserApi) GetActiveStat(
+// 	context context.Context,
+// 	payload []byte,
+// ) (resp []byte, err error) {
+// 	return api.Client.HTTPPost(
+// 		context,
+// 		apiGetActiveStat,
+// 		bytes.NewReader(payload),
+// 		"application/json;charset=utf-8",
+// 	)
+// }

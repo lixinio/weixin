@@ -4,12 +4,10 @@ package content_check
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 
 	"github.com/lixinio/weixin/utils"
-	"github.com/lixinio/weixin/weixin/official_account"
 )
 
 const (
@@ -26,13 +24,11 @@ const (
 // ContentCheckApi 内容检测api
 type ContentCheckApi struct {
 	*utils.Client
-	OfficialAccount *official_account.OfficialAccount
 }
 
 // MsgCheckResult 文本检测结果
 type MsgCheckResult struct {
-	ErrCode int64
-	ErrMsg  string
+	utils.WeixinError
 	TraceID int64 // 唯一请求标识，标记单次请求
 	Result  struct {
 		Suggest string // 建议, 有risky、pass、review三种值
@@ -48,17 +44,8 @@ type MsgCheckResult struct {
 	} // 详细检测结果
 }
 
-// ImgCheckResult 图片检测结果
-type ImgCheckResult struct {
-	ErrCode int64
-	ErrMsg  string
-}
-
-func NewOfficialAccountApi(officialAccount *official_account.OfficialAccount) *ContentCheckApi {
-	return &ContentCheckApi{
-		officialAccount.Client,
-		officialAccount,
-	}
+func NewApi(client *utils.Client) *ContentCheckApi {
+	return &ContentCheckApi{client}
 }
 
 // CheckMsg 过滤敏感信息
@@ -72,7 +59,7 @@ func (api *ContentCheckApi) CheckMsg(
 	title string,
 	signature string,
 ) (*MsgCheckResult, error) {
-	result := MsgCheckResult{}
+	result := &MsgCheckResult{}
 	payload := struct {
 		Version   int    `json:"version"`
 		OpenID    string `json:"openid"`
@@ -91,12 +78,11 @@ func (api *ContentCheckApi) CheckMsg(
 		Signature: signature,
 	}
 
-	err := api.Client.ApiPostWrapper(ctx, apiMsgSecCheck, payload, &result)
-	if err != nil {
+	if err := api.Client.HTTPPostJson(ctx, apiMsgSecCheck, payload, result); err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 // CheckImg 过滤敏感图片
@@ -110,30 +96,21 @@ func (api *ContentCheckApi) CheckImg(
 		return true, err
 	}
 
-	client := http.Client{}
-	imgResp, err := client.Do(req)
+	imgResp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return true, err
 	}
 
-	resp, err := api.Client.Upload(
-		ctx,
-		apiImgSecCheck,
-		imgCheckFieldName,
-		imgCheckFileName,
-		imgResp.Body,
+	defer imgResp.Body.Close()
+
+	weixinErr := &utils.WeixinError{}
+	err = api.Client.HttpFile(
+		ctx, apiImgSecCheck, "media", imgCheckFileName, imgResp.Body, nil, weixinErr,
 	)
 	if err != nil {
-		weixinErr := utils.WeixinError{}
-		if errors.As(err, &weixinErr) && weixinErr.Errcode == SensitiveImgErrCode {
+		if errors.As(err, &weixinErr) && weixinErr.ErrCode == SensitiveImgErrCode {
 			return true, nil
 		}
-		return true, err
-	}
-
-	result := ImgCheckResult{}
-	err = json.Unmarshal(resp, &result)
-	if err != nil {
 		return true, err
 	}
 

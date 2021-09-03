@@ -36,7 +36,7 @@ func TestInvoiceUploadPdf(t *testing.T) {
 	fi, err := file.Stat()
 	require.Empty(t, err)
 
-	mediaID, err := api.PlatformSetpdf(ctx, "fapiao.pdf", fi.Size(), file)
+	mediaID, err := api.PlatformSetPdf(ctx, "fapiao.pdf", fi.Size(), file)
 	require.Equal(t, nil, err)
 	fmt.Printf("media id %s\n", mediaID)
 }

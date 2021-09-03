@@ -3,7 +3,7 @@ package user_api
 import "github.com/lixinio/weixin/utils"
 
 type UserInfo struct {
-	utils.CommonError
+	utils.WeixinError
 
 	UserID     string `json:"userid"`
 	Name       string `json:"name"`

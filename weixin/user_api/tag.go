@@ -15,7 +15,11 @@
 // Package tags 用户标签管理
 package user_api
 
-import "context"
+import (
+	"context"
+
+	"github.com/lixinio/weixin/utils"
+)
 
 const (
 	apiTagCreate         = "/cgi-bin/tags/create"
@@ -36,15 +40,18 @@ type TagItem struct {
 
 //TagInfo 标签信息
 type TagInfo struct {
+	utils.WeixinError
 	Tag TagItem `json:"tag"`
 }
 
 type TagList struct {
+	utils.WeixinError
 	Tags []TagItem
 }
 
 // TagOpenIDList 标签用户列表
 type TagOpenIDList struct {
+	utils.WeixinError
 	Count int `json:"count"`
 	Data  struct {
 		OpenIDs []string `json:"openid"`
@@ -53,6 +60,7 @@ type TagOpenIDList struct {
 }
 
 type UserTagList struct {
+	utils.WeixinError
 	TagIDList []int `json:"tagid_list"`
 }
 
@@ -70,14 +78,15 @@ func (api *UserApi) CreateTag(ctx context.Context, tagName string) (*TagInfo, er
 	tag := &struct {
 		Name string `json:"name"`
 	}{Name: tagName}
+
 	params := map[string]*struct {
 		Name string `json:"name"`
 	}{"tag": tag}
-	err := api.Client.ApiPostWrapper(ctx, apiTagCreate, params, &result)
 
-	if err != nil {
+	if err := api.Client.HTTPPostJson(ctx, apiTagCreate, params, &result); err != nil {
 		return nil, err
 	}
+
 	return &result, nil
 }
 
@@ -90,7 +99,7 @@ GET https://api.weixin.qq.com/cgi-bin/tags/get?access_token=ACCESS_TOKEN
 */
 func (api *UserApi) GetTag(ctx context.Context) (*TagList, error) {
 	var result TagList
-	err := api.Client.ApiGetNullWrapper(ctx, apiTagGet, &result)
+	err := api.Client.HTTPGet(ctx, apiTagGet, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -109,11 +118,13 @@ func (api *UserApi) UpdateTag(ctx context.Context, id int, name string) error {
 		ID   int    `json:"id"`
 		Name string `json:"name"`
 	}{ID: id, Name: name}
+
 	params := map[string]*struct {
 		ID   int    `json:"id"`
 		Name string `json:"name"`
 	}{"tag": tag}
-	return api.Client.ApiPostWrapper(ctx, apiTagUpdate, params, nil)
+
+	return api.Client.HTTPPostJson(ctx, apiTagUpdate, params, nil)
 }
 
 /*
@@ -132,7 +143,7 @@ func (api *UserApi) DeleteTag(ctx context.Context, id int) error {
 	params := map[string]*struct {
 		ID int `json:"id"`
 	}{"tag": tag}
-	return api.Client.ApiPostWrapper(ctx, apiTagDelete, params, nil)
+	return api.Client.HTTPPostJson(ctx, apiTagDelete, params, nil)
 }
 
 /*
@@ -154,11 +165,12 @@ func (api *UserApi) GetUsersByTag(
 		TagID:      tagID,
 		NextOpenid: nextOpenid,
 	}
+
 	var result TagOpenIDList
-	err := api.Client.ApiPostWrapper(ctx, apiTagGetUsersByTag, params, &result)
-	if err != nil {
+	if err := api.Client.HTTPPostJson(ctx, apiTagGetUsersByTag, params, &result); err != nil {
 		return nil, err
 	}
+
 	return &result, nil
 }
 
@@ -179,7 +191,7 @@ func (api *UserApi) BatchTagging(ctx context.Context, tagID int, openIDList []st
 		TagID:      tagID,
 		OpenIDList: openIDList,
 	}
-	return api.Client.ApiPostWrapper(ctx, apiTagBatchTagging, params, nil)
+	return api.Client.HTTPPostJson(ctx, apiTagBatchTagging, params, nil)
 }
 
 /*
@@ -199,7 +211,7 @@ func (api *UserApi) BatchUnTagging(ctx context.Context, tagID int, openIDList []
 		TagID:      tagID,
 		OpenIDList: openIDList,
 	}
-	return api.Client.ApiPostWrapper(ctx, apiTagBatchUnTagging, params, nil)
+	return api.Client.HTTPPostJson(ctx, apiTagBatchUnTagging, params, nil)
 }
 
 /*
@@ -213,10 +225,9 @@ POST https://api.weixin.qq.com/cgi-bin/tags/getidlist?access_token=ACCESS_TOKEN
 */
 func (api *UserApi) GetTagIdList(ctx context.Context, openID string) (*UserTagList, error) {
 	var result UserTagList
-	err := api.Client.ApiPostWrapper(ctx, apiTagGetTagIdList, map[string]string{
+	if err := api.Client.HTTPPostJson(ctx, apiTagGetTagIdList, map[string]string{
 		"openid": openID,
-	}, &result)
-	if err != nil {
+	}, &result); err != nil {
 		return nil, err
 	}
 	return &result, nil

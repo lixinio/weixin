@@ -29,9 +29,9 @@ package official_account
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/url"
+
+	"github.com/lixinio/weixin/utils"
 )
 
 var OauthAuthorizeServerUrl = "https://open.weixin.qq.com"
@@ -78,6 +78,7 @@ func (officialAccount *OfficialAccount) GetAuthorizeUrl(
 }
 
 type OauthAccessToken struct {
+	utils.WeixinError
 	AccessToken  string `json:"access_token"`
 	ExpiresIn    int    `json:"expires_in"`
 	RefreshToken string `json:"refresh_token"`
@@ -97,26 +98,18 @@ GET https://api.weixin.qq.com/sns/oauth2/access_token?appid=APPID&secret=SECRET&
 func (officialAccount *OfficialAccount) GetSnsAccessToken(
 	ctx context.Context,
 	code string,
-) (oauthAccessToken OauthAccessToken, err error) {
-	params := url.Values{}
-	params.Add("appid", officialAccount.Config.Appid)
-	params.Add("secret", officialAccount.Config.Secret)
-	params.Add("code", code)
-	params.Add("grant_type", "authorization_code")
-
-	var body []byte
-	body, err = officialAccount.Client.HTTPGetWithParams(ctx, apiAccessToken, params)
-	if err != nil {
-		return
+) (*OauthAccessToken, error) {
+	result := &OauthAccessToken{}
+	// 无需 access token
+	if err := officialAccount.Client.HTTPGetToken(context.TODO(), apiAccessToken, func(params url.Values) {
+		params.Add("appid", officialAccount.Config.Appid)
+		params.Add("secret", officialAccount.Config.Secret)
+		params.Add("code", code)
+		params.Add("grant_type", "authorization_code")
+	}, result); err != nil {
+		return nil, err
 	}
-
-	err = json.Unmarshal(body, &oauthAccessToken)
-	if err != nil {
-		err = fmt.Errorf("%s", string(body))
-		return
-	}
-
-	return
+	return result, nil
 }
 
 /*
@@ -131,25 +124,18 @@ POST https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=APPID&grant_type=r
 func (officialAccount *OfficialAccount) RefreshToken(
 	ctx context.Context,
 	refresh_token string,
-) (oauthAccessToken OauthAccessToken, err error) {
-	params := url.Values{}
-	params.Add("appid", officialAccount.Config.Appid)
-	params.Add("refresh_token", refresh_token)
-	params.Add("grant_type", "refresh_token")
-
-	var body []byte
-	body, err = officialAccount.Client.HTTPGetWithParams(ctx, apiRefreshToken, params)
-	if err != nil {
-		return
+) (*OauthAccessToken, error) {
+	result := &OauthAccessToken{}
+	// 无需 access token
+	if err := officialAccount.Client.HTTPGetToken(context.TODO(), apiRefreshToken, func(params url.Values) {
+		params.Add("appid", officialAccount.Config.Appid)
+		params.Add("grant_type", "refresh_token")
+		params.Add("refresh_token", refresh_token)
+	}, result); err != nil {
+		return nil, err
 	}
 
-	err = json.Unmarshal(body, &oauthAccessToken)
-	if err != nil {
-		err = fmt.Errorf("%s", string(body))
-		return
-	}
-
-	return
+	return result, nil
 }
 
 const (
@@ -159,6 +145,7 @@ const (
 )
 
 type OauthUserInfo struct {
+	utils.WeixinError
 	Openid     string   `json:"openid"`
 	Nickname   string   `json:"nickname"`
 	Sex        int64    `json:"sex"`
@@ -181,25 +168,17 @@ POST https://api.weixin.qq.com/sns/userinfo?access_token=ACCESS_TOKEN&openid=OPE
 */
 func (officialAccount *OfficialAccount) GetUserInfo(
 	ctx context.Context, access_token string, openid string, lang string,
-) (oauthUserInfo OauthUserInfo, err error) {
-	params := url.Values{}
-	params.Add("access_token", access_token)
-	params.Add("openid", openid)
-	params.Add("lang", lang)
-
-	var body []byte
-	body, err = officialAccount.Client.HTTPGetWithParams(ctx, apiUserInfo, params)
-	if err != nil {
-		return
+) (*OauthUserInfo, error) {
+	result := &OauthUserInfo{}
+	// 无需 access token
+	if err := officialAccount.Client.HTTPGetToken(context.TODO(), apiUserInfo, func(params url.Values) {
+		params.Add("access_token", access_token)
+		params.Add("openid", openid)
+		params.Add("lang", lang)
+	}, result); err != nil {
+		return nil, err
 	}
-
-	err = json.Unmarshal(body, &oauthUserInfo)
-	if err != nil {
-		err = fmt.Errorf("%s", string(body))
-		return
-	}
-
-	return
+	return result, nil
 }
 
 /*
@@ -210,34 +189,13 @@ See: https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage
 GET https://api.weixin.qq.com/sns/auth?access_token=ACCESS_TOKEN&openid=OPENID
 */
 func (officialAccount *OfficialAccount) Auth(
-	ctx context.Context, access_token string, openid string) (isValid bool, err error,
-) {
-	params := url.Values{}
-	params.Add("access_token", access_token)
-	params.Add("openid", openid)
-
-	var body []byte
-	body, err = officialAccount.Client.HTTPGetWithParams(ctx, apiAuth, params)
-	if err != nil {
-		return
-	}
-
-	s := struct {
-		Errcode int    `json:"errcode"`
-		Errmsg  string `json:"errmsg"`
-	}{}
-
-	err = json.Unmarshal(body, &s)
-	if err != nil {
-		err = fmt.Errorf("%s", string(body))
-		return
-	}
-
-	if s.Errcode == 0 {
-		isValid = true
-	}
-
-	return
+	ctx context.Context, access_token string, openid string,
+) error {
+	// 无需 access token
+	return officialAccount.Client.HTTPGetToken(context.TODO(), apiAuth, func(params url.Values) {
+		params.Add("access_token", access_token)
+		params.Add("openid", openid)
+	}, nil)
 }
 
 /*
@@ -273,24 +231,16 @@ func (officialAccount *OfficialAccount) GetWxCardApiTicket(
 func (officialAccount *OfficialAccount) getApiTicket(
 	ctx context.Context, tp string,
 ) (jsapiTicket string, expiresIn int64, err error) {
-
 	jsapiTicketResp := struct {
+		utils.WeixinError
 		Ticket    string `json:"ticket"`
 		ExpiresIn int64  `json:"expires_in"`
 	}{}
 
-	params := url.Values{}
-	params.Add("type", tp)
-
-	var body []byte
-	body, err = officialAccount.Client.HTTPGetWithParams(ctx, apiGetJSApiTicket, params)
-	if err != nil {
-		return
-	}
-
-	err = json.Unmarshal(body, &jsapiTicketResp)
-	if err != nil {
-		return
+	if err = officialAccount.Client.HTTPGetWithParams(ctx, apiGetJSApiTicket, func(params url.Values) {
+		params.Add("type", tp)
+	}, &jsapiTicketResp); err != nil {
+		return "", 0, err
 	}
 
 	return jsapiTicketResp.Ticket, jsapiTicketResp.ExpiresIn, nil

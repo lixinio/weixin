@@ -6,11 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/lixinio/weixin/test"
 	"github.com/lixinio/weixin/utils"
-	"github.com/lixinio/weixin/utils/redis"
-	"github.com/lixinio/weixin/wxwork"
-	"github.com/lixinio/weixin/wxwork/agent"
 	"github.com/lixinio/weixin/wxwork/server_api"
 )
 
@@ -173,7 +169,7 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 	}
 }
 
-func callback(serverApi *server_api.ServerApi) http.HandlerFunc {
+func msgCallback(serverApi *server_api.ServerApi) http.HandlerFunc {
 	f := serveData(serverApi)
 	return func(w http.ResponseWriter, r *http.Request) {
 		if strings.ToLower(r.Method) == "get" {
@@ -185,26 +181,4 @@ func callback(serverApi *server_api.ServerApi) http.HandlerFunc {
 			io.WriteString(w, http.StatusText(http.StatusBadRequest))
 		}
 	}
-}
-
-func main() {
-	redis := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
-	corp := wxwork.New(&wxwork.Config{
-		Corpid: test.CorpID,
-	})
-	agent := agent.New(corp, redis, redis, &agent.Config{
-		AgentId: test.AgentID,
-		Secret:  test.AgentSecret,
-	})
-	serverApi := server_api.NewApi(
-		test.AgentID,
-		test.AgentToken,
-		test.AgentEncodingAESKey,
-		agent.Client,
-	)
-
-	http.HandleFunc(fmt.Sprintf("/weixin/%s/%s", test.CorpID, test.AgentID), callback(serverApi))
-	http.HandleFunc(fmt.Sprintf("/weixin/%s/%s", test.CorpID, "0"), callback(serverApi))
-
-	http.ListenAndServe(":5000", nil)
 }

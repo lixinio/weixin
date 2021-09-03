@@ -58,7 +58,7 @@ type UpdateParam struct {
 }
 
 type DepartmentID struct {
-	utils.CommonError
+	utils.WeixinError
 	ID int `json:"id"`
 }
 
@@ -71,7 +71,7 @@ type DepartmentItem struct {
 }
 
 type DepartmentList struct {
-	utils.CommonError
+	utils.WeixinError
 	Department []DepartmentItem `json:"department"`
 }
 
@@ -82,8 +82,7 @@ POST https://qyapi.weixin.qq.com/cgi-bin/department/create?access_token=ACCESS_T
 */
 func (api *DepartmentApi) Create(ctx context.Context, params *CreateParam) (*DepartmentID, error) {
 	var result DepartmentID
-	err := api.Client.ApiPostWrapper(ctx, apiCreate, params, &result)
-	if err != nil {
+	if err := api.Client.HTTPPostJson(ctx, apiCreate, params, &result); err != nil {
 		return nil, err
 	}
 	return &result, nil
@@ -95,8 +94,7 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90206
 POST https://qyapi.weixin.qq.com/cgi-bin/department/update?access_token=ACCESS_TOKEN
 */
 func (api *DepartmentApi) Update(ctx context.Context, params *UpdateParam) error {
-	var result DepartmentID
-	return api.Client.ApiPostWrapper(ctx, apiUpdate, params, &result)
+	return api.Client.HTTPPostJson(ctx, apiUpdate, params, nil)
 }
 
 /*
@@ -105,7 +103,7 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90207
 GET https://qyapi.weixin.qq.com/cgi-bin/department/delete?access_token=ACCESS_TOKEN&id=ID
 */
 func (api *DepartmentApi) Delete(ctx context.Context, id int) error {
-	return api.Client.ApiGetWrapper(ctx, apiDelete, func(params url.Values) {
+	return api.Client.HTTPGetWithParams(ctx, apiDelete, func(params url.Values) {
 		params.Add("id", strconv.Itoa(id))
 	}, nil)
 }
@@ -117,13 +115,13 @@ GET https://qyapi.weixin.qq.com/cgi-bin/department/list?access_token=ACCESS_TOKE
 */
 func (api *DepartmentApi) List(ctx context.Context, id int) (*DepartmentList, error) {
 	var result DepartmentList
-	err := api.Client.ApiGetWrapper(ctx, apiList, func(params url.Values) {
+	if err := api.Client.HTTPGetWithParams(ctx, apiList, func(params url.Values) {
 		if id != 0 {
 			params.Add("id", fmt.Sprintf("%d", id))
 		}
-	}, &result)
-	if err == nil {
-		return &result, nil
+	}, &result); err != nil {
+		return nil, err
 	}
-	return nil, err
+
+	return &result, nil
 }
