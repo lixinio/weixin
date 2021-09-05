@@ -42,6 +42,7 @@ const (
 	apiRefreshToken   = "/sns/oauth2/refresh_token"
 	apiUserInfo       = "/sns/userinfo"
 	apiAuth           = "/sns/auth"
+	apiJscode2Session = "/sns/jscode2session"
 	apiGetJSApiTicket = "/cgi-bin/ticket/getticket"
 )
 
@@ -196,6 +197,30 @@ func (officialAccount *OfficialAccount) Auth(
 		params.Add("access_token", access_token)
 		params.Add("openid", openid)
 	}, nil)
+}
+
+type MpSession struct {
+	utils.WeixinError
+	OpenID     string `json:"openid"`
+	UnionID    string `json:"unionid"`
+	SessionKey string `json:"session_key"`
+}
+
+func (officialAccount *OfficialAccount) Jscode2Session(
+	ctx context.Context, jsCode string,
+) (*MpSession, error) {
+	// 无需 access token
+	result := &MpSession{}
+	if err := officialAccount.Client.HTTPGetToken(
+		context.TODO(), apiJscode2Session, func(params url.Values) {
+			params.Add("appid", officialAccount.Config.Appid)
+			params.Add("secret", officialAccount.Config.Secret)
+			params.Add("js_code", jsCode)
+			params.Add("grant_type", "authorization_code")
+		}, result); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 /*
