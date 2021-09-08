@@ -60,7 +60,7 @@ func callback(oa *official_account.OfficialAccount) http.HandlerFunc {
 		}
 		fmt.Println(user_info.Nickname, user_info.Openid, user_info.Headimgurl)
 
-		snsAccessToken2, err := oa.RefreshToken(r.Context(), snsAccessToken.RefreshToken)
+		snsAccessToken2, err := oa.RefreshSnsToken(r.Context(), snsAccessToken.RefreshToken)
 		if err != nil {
 			fmt.Println(err)
 			httpAbort(w, http.StatusForbidden)

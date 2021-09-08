@@ -8,6 +8,10 @@ import (
 	"github.com/lixinio/weixin/utils"
 )
 
+var (
+	ErrTokenUpdateForbidden = errors.New("can NOT refresh&update token in wxopen lite mode")
+)
+
 // https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/Before_Develop/creat_token.html
 // 出于安全考虑，在第三方平台创建审核通过后，微信服务器 每隔 10 分钟会向第三方的消息接收地址推送一次 component_verify_ticket，
 // 用于获取第三方平台接口调用凭据。component_verify_ticket有效期为12h
@@ -70,6 +74,21 @@ func New(cache utils.Cache, locker utils.Lock, config *Config) *WxOpen {
 	return instance
 }
 
+func NewLite(
+	cache utils.Cache,
+	locker utils.Lock,
+	appID string,
+) *WxOpen {
+	instance := &WxOpen{
+		Config:      &Config{Appid: appID},
+		ticketCache: nil,
+	}
+	client := utils.NewClient(WXServerUrl, utils.NewAccessTokenCache(instance, cache, locker, 0))
+	client.UpdateAccessTokenKey(accessTokenKey) // token的名称不一样
+	instance.Client = client
+	return instance
+}
+
 // GetAccessToken 接口 weixin.AccessTokenGetter 实现
 func (wxopen *WxOpen) GetAccessToken() (accessToken string, expiresIn int, err error) {
 	accessToken, expiresIn, err = wxopen.refreshAccessTokenFromWXServer()
@@ -91,6 +110,12 @@ func (wxopen *WxOpen) GetAccessTokenLockKey() string {
 https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/ThirdParty/token/component_access_token.html
 */
 func (wxopen *WxOpen) refreshAccessTokenFromWXServer() (accessToken string, expiresIn int, err error) {
+	if wxopen.ticketCache == nil {
+		return "", 0, fmt.Errorf(
+			"wxopen appid : %s, error: %w", wxopen.Config.Appid, ErrTokenUpdateForbidden,
+		)
+	}
+
 	ticket, err := wxopen.ticketCache.GetAccessToken()
 	if err != nil {
 		return "", 0, fmt.Errorf("can NOT get wxopen access token without ticket, %w", err)
@@ -133,6 +158,9 @@ func (wxopen *WxOpen) StartPushTicket(ctx context.Context) error {
 
 // 当收到EventComponentVerifyTicket时， 用于更新ticket到cache
 func (wxopen *WxOpen) UpdateTicket(token string) error {
+	if wxopen.ticketCache == nil {
+		return fmt.Errorf("wxopen appid : %s, error: %w", wxopen.Config.Appid, ErrTokenUpdateForbidden)
+	}
 	_, err := wxopen.ticketCache.UpdateAccessToken(token, ticketExpiresIn)
 	return err
 }
