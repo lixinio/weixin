@@ -122,16 +122,16 @@ See: https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage
 
 POST https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=APPID&grant_type=refresh_token&refresh_token=REFRESH_TOKEN
 */
-func (officialAccount *OfficialAccount) RefreshToken(
+func (officialAccount *OfficialAccount) RefreshSnsToken(
 	ctx context.Context,
-	refresh_token string,
+	refreshToken string,
 ) (*OauthAccessToken, error) {
 	result := &OauthAccessToken{}
 	// 无需 access token
 	if err := officialAccount.Client.HTTPGetToken(context.TODO(), apiRefreshToken, func(params url.Values) {
 		params.Add("appid", officialAccount.Config.Appid)
 		params.Add("grant_type", "refresh_token")
-		params.Add("refresh_token", refresh_token)
+		params.Add("refresh_token", refreshToken)
 	}, result); err != nil {
 		return nil, err
 	}
@@ -168,12 +168,12 @@ See: https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage
 POST https://api.weixin.qq.com/sns/userinfo?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN
 */
 func (officialAccount *OfficialAccount) GetUserInfo(
-	ctx context.Context, access_token string, openid string, lang string,
+	ctx context.Context, accessToken string, openid string, lang string,
 ) (*OauthUserInfo, error) {
 	result := &OauthUserInfo{}
 	// 无需 access token
 	if err := officialAccount.Client.HTTPGetToken(context.TODO(), apiUserInfo, func(params url.Values) {
-		params.Add("access_token", access_token)
+		params.Add("access_token", accessToken)
 		params.Add("openid", openid)
 		params.Add("lang", lang)
 	}, result); err != nil {
@@ -190,11 +190,11 @@ See: https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage
 GET https://api.weixin.qq.com/sns/auth?access_token=ACCESS_TOKEN&openid=OPENID
 */
 func (officialAccount *OfficialAccount) Auth(
-	ctx context.Context, access_token string, openid string,
+	ctx context.Context, accessToken string, openid string,
 ) error {
 	// 无需 access token
 	return officialAccount.Client.HTTPGetToken(context.TODO(), apiAuth, func(params url.Values) {
-		params.Add("access_token", access_token)
+		params.Add("access_token", accessToken)
 		params.Add("openid", openid)
 	}, nil)
 }
