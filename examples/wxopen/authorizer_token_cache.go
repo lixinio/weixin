@@ -76,9 +76,9 @@ func NewAuthorizerTokenCache(
 	return &AuthorizerTokenCache{
 		accessToken: utils.NewAccessTokenCache(&authorizerAccessTokenAdaptor{
 			componentAppid: componentAppid, appid: appid,
-		}, cache, locker, 300),
+		}, cache, locker),
 		refreshToken: utils.NewAccessTokenCache(&authorizerRefreshTokenAdaptor{
 			componentAppid: componentAppid, appid: appid,
-		}, cache, locker, 300),
+		}, cache, locker),
 	}
 }

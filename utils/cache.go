@@ -12,4 +12,5 @@ type Cache interface {
 	Set(string, interface{}, time.Duration) error
 	IsExist(string) bool
 	Delete(string) error
+	TTL(string) (int, error)
 }

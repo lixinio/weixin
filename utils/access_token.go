@@ -5,7 +5,8 @@ import (
 )
 
 const (
-	defaultExpireBefore     int           = 300                    // 缺省提前5分钟
+	defaultExpireBefore                   = 300                    // 缺省提前5分钟
+	defaultMinusTTL                       = 30                     // 存储token, 减掉的ttl, 避免失效的token仍存在cache中
 	defaultLockTimeout      time.Duration = 60 * time.Second       // 加锁的时长， 过期自动释放锁
 	defaultLockRetryTimeout time.Duration = 200 * time.Millisecond // 加锁失败再次重试的休眠时长
 	defaultLockRetryTime    time.Duration = 60 * time.Second       // 加锁失败重试的总时长
@@ -23,7 +24,6 @@ type AccessTokenCache struct {
 	cache             Cache             // 用来缓存token的容器
 	accessTokenLock   Lock              // 避免刷新token冲突
 	accessTokenGetter AccessTokenGetter // 获取token对象
-	expireBefore      int               // 提前多少秒重刷
 }
 
 type refreshTokenHandler func() (string, int, error)
@@ -32,16 +32,11 @@ func NewAccessTokenCache(
 	accessTokenGetter AccessTokenGetter,
 	cache Cache,
 	locker Lock,
-	expireBefore int,
 ) *AccessTokenCache {
-	if expireBefore == 0 {
-		expireBefore = defaultExpireBefore
-	}
 	return &AccessTokenCache{
 		accessTokenGetter: accessTokenGetter,
 		accessTokenLock:   locker,
 		cache:             cache,
-		expireBefore:      expireBefore,
 	}
 }
 
@@ -62,20 +57,61 @@ func (atc *AccessTokenCache) GetAccessToken() (accessToken string, err error) {
 	)
 }
 
-func (atc *AccessTokenCache) updateAccessToken(
-	handler refreshTokenHandler,
-	checkLatest bool,
-) (accessToken string, err error) {
-	//加上lock，是为了防止在并发获取token时，cache刚好失效，导致从服务器上获取到不同token
+// 清除Token, 某些应用需要在取消授权之后, 立即清除Token
+func (atc *AccessTokenCache) ClearAccessToken() error {
+	closer, err := atc.lock()
+	if err != nil {
+		return err
+	}
+	defer closer()
+	return atc.cache.Delete(atc.accessTokenGetter.GetAccessTokenKey())
+}
+
+// 强制刷新Token, 为了避免Token到期争抢刷新, 一般会有定时任务在Token过期之前的某个时刻强制刷新
+func (atc *AccessTokenCache) RefreshAccessToken(beforeTTL int) (accessToken string, err error) {
+	if beforeTTL == 0 {
+		beforeTTL = defaultExpireBefore
+	}
+	ttl, err := atc.cache.TTL(atc.accessTokenGetter.GetAccessTokenKey())
+	if err != nil {
+		return "", err
+	}
+	// 如果不存在, 返回-2
+	if ttl > beforeTTL {
+		// 未更新
+		return "", nil
+	}
+
+	return atc.updateAccessToken(
+		atc.accessTokenGetter.GetAccessToken,
+		false,
+	)
+}
+
+func (atc *AccessTokenCache) lock() (func(), error) {
 	lockKey := atc.accessTokenGetter.GetAccessTokenLockKey()
 	locked, err := atc.accessTokenLock.LockTimeout(
 		lockKey, defaultLockTimeout, defaultLockRetryTime, defaultLockRetryTimeout,
 	)
 	if err != nil || !locked {
 		// 出错或者加锁失败
+		return nil, err
+	}
+	return func() {
+		atc.accessTokenLock.UnLock(lockKey)
+	}, nil
+}
+
+func (atc *AccessTokenCache) updateAccessToken(
+	handler refreshTokenHandler,
+	checkLatest bool,
+) (accessToken string, err error) {
+	//加上lock，是为了防止在并发获取token时，cache刚好失效，导致从服务器上获取到不同token
+	closer, err := atc.lock()
+	if err != nil {
 		return "", err
 	}
-	defer atc.accessTokenLock.UnLock(lockKey)
+	defer closer()
 
 	if checkLatest {
 		// 是不是别人已经获取到Token了
@@ -91,12 +127,14 @@ func (atc *AccessTokenCache) updateAccessToken(
 	return atc.refreshAccessToken(handler)
 }
 
+// 直接从外部更新Token, 并更新缓存
+// 比如服务商模式的应用, 或者微信上报的ticket
 func (atc *AccessTokenCache) UpdateAccessToken(
 	token string,
 	expiresIn int,
 ) (accessToken string, err error) {
 	return atc.updateAccessToken(func() (string, int, error) {
-		return token, expiresIn + atc.expireBefore, nil
+		return token, expiresIn, nil
 	}, false)
 }
 
@@ -127,7 +165,7 @@ func (atc *AccessTokenCache) refreshAccessToken(
 	}
 
 	// 减去提前刷新的时间
-	expires := expiresIn - atc.expireBefore // 秒
+	expires := expiresIn - defaultMinusTTL // 秒
 	accessTokenCacheKey := atc.accessTokenGetter.GetAccessTokenKey()
 	err = atc.cache.Set(accessTokenCacheKey, accessToken, time.Duration(expires)*time.Second)
 	if err != nil {
