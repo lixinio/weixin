@@ -3,6 +3,7 @@ package redis
 // https://github.com/silenceper/wechat/blob/master/cache/redis.go
 import (
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
@@ -113,6 +114,25 @@ func (r *Redis) Delete(key string) error {
 	}
 
 	return nil
+}
+
+// 获得剩余时间(秒)
+func (r *Redis) TTL(key string) (int, error) {
+	conn := r.conn.Get()
+	defer conn.Close()
+
+	if reply, err := conn.Do("TTL", key); err != nil {
+		return -1, err
+	} else {
+		if ttl, ok := reply.(int64); ok {
+			// 如果不存在, 返回-2
+			return int(ttl), nil
+		} else {
+			return -1, fmt.Errorf(
+				"invalid ttl reply type '%s'", reflect.TypeOf(reply).String(),
+			)
+		}
+	}
 }
 
 // https://www.programmersought.com/article/85921351841/

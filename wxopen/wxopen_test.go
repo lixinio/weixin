@@ -2,7 +2,6 @@ package wxopen
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/lixinio/weixin/test"
@@ -27,9 +26,9 @@ func TestStartPushTicket(t *testing.T) {
 	require.Empty(t, err)
 }
 
-func TestRefreshToken(t *testing.T) {
-	open := initWxOpen()
-	token, _, err := open.refreshAccessTokenFromWXServer()
-	fmt.Println(token)
-	require.Empty(t, err)
-}
+// func TestRefreshToken(t *testing.T) {
+// 	open := initWxOpen()
+// 	token, _, err := open.refreshAccessTokenFromWXServer()
+// 	fmt.Println(token)
+// 	require.Empty(t, err)
+// }

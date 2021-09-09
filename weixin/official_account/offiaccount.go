@@ -29,7 +29,7 @@ func New(cache utils.Cache, locker utils.Lock, config *Config) *OfficialAccount 
 	}
 	instance.Client = utils.NewClient(
 		WXServerUrl,
-		utils.NewAccessTokenCache(instance, cache, locker, 0),
+		utils.NewAccessTokenCache(instance, cache, locker),
 	)
 	return instance
 }

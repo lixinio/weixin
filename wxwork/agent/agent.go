@@ -23,7 +23,7 @@ func New(corp *work.WxWork, cache utils.Cache, locker utils.Lock, config *Config
 		Config: config,
 		wxwork: corp,
 	}
-	instance.Client = corp.NewClient(utils.NewAccessTokenCache(instance, cache, locker, 0))
+	instance.Client = corp.NewClient(utils.NewAccessTokenCache(instance, cache, locker))
 	return instance
 }
 

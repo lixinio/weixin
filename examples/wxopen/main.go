@@ -127,10 +127,6 @@ func main() {
 		test.WxOpenOAAppid,
 		GetAuthorizerAccessToken(wxopen, oaTokenCache, test.WxOpenOAAppid),
 	)
-	// 刷新Token, 如果第一次运行， 可能会失败， 因为没有wxopen主动推送的ticket
-	if err = wxopenOA.RefreshAccessToken(); err != nil {
-		fmt.Printf("refresh oa token fail %s", err.Error())
-	}
 
 	// server
 	serverApi := server_api.NewApi(
@@ -166,6 +162,10 @@ func main() {
 	http.HandleFunc("/auth", auth(wxopen, false))
 	http.HandleFunc("/auth/mobile", auth(wxopen, true))
 	http.HandleFunc("/auth/callback", callback(wxopen, manager))
+
+	// 刷新Token
+	go RefreshWxOpenToken(wxopen)
+	go RefreshAuthorizerToken([]*authorizer.Authorizer{wxopenOA})
 
 	err = http.ListenAndServe(":5001", nil)
 	if err != nil {

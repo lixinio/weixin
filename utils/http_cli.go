@@ -19,6 +19,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -36,22 +37,32 @@ const (
 	userAgent       = "lixinio/weixin" // 自定义user agent
 )
 
+type ClientAccessTokenGetter interface {
+	GetAccessToken() (string, error)
+}
+
+type EmptyClientAccessTokenGetter int
+
+func (EmptyClientAccessTokenGetter) GetAccessToken() (string, error) {
+	return "", errors.New("can NOT get token from empty client access-token getter")
+}
+
 /*
 HttpClient 用于向微信接口发送请求
 */
 type Client struct {
-	serverUrl        string
-	userAgent        string
-	accessTokenKey   string
-	accessTokenCache *AccessTokenCache
+	serverUrl         string
+	userAgent         string
+	accessTokenKey    string
+	accessTokenGetter ClientAccessTokenGetter
 }
 
-func NewClient(serverUrl string, accessTokenCache *AccessTokenCache) *Client {
+func NewClient(serverUrl string, accessTokenGetter ClientAccessTokenGetter) *Client {
 	return &Client{
-		serverUrl:        serverUrl,
-		userAgent:        userAgent,
-		accessTokenKey:   defaultTokenKey,
-		accessTokenCache: accessTokenCache,
+		serverUrl:         serverUrl,
+		userAgent:         userAgent,
+		accessTokenKey:    defaultTokenKey,
+		accessTokenGetter: accessTokenGetter,
 	}
 }
 
@@ -371,7 +382,7 @@ func (client *Client) applyAccessToken(
 
 	// 认证
 	if auth {
-		accessToken, err := client.accessTokenCache.GetAccessToken()
+		accessToken, err := client.accessTokenGetter.GetAccessToken()
 		if err != nil {
 			return "", err
 		}

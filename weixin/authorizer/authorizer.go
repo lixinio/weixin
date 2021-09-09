@@ -1,6 +1,7 @@
 package authorizer
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/lixinio/weixin/utils"
@@ -10,50 +11,9 @@ const (
 	WXServerUrl = "https://api.weixin.qq.com" // 微信 api 服务器地址
 )
 
-// 需要通过wxopen对象刷新authorizer Access token
-// https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/ThirdParty/token/api_authorizer_token.html
-type RefreshAccessToken func() (string, int, error) // 直接获取token， 不做任何缓存
-
-// utils.AccessTokenGetter 接口实现
-type authorizerAccessTokenGetterAdapter struct {
-	accessTokenKey     string
-	accessTokenLockKey string
-	accessTokenGetter  RefreshAccessToken
-}
-
-// GetAccessToken 接口 utils.AccessTokenGetter 实现
-func (adapter *authorizerAccessTokenGetterAdapter) GetAccessToken() (string, int, error) {
-	return adapter.accessTokenGetter()
-}
-
-// GetAccessTokenKey 接口 utils.AccessTokenGetter 实现
-func (adapter *authorizerAccessTokenGetterAdapter) GetAccessTokenKey() string {
-	return adapter.accessTokenKey
-}
-
-// GetAccessTokenLockKey 接口 utils.AccessTokenGetter 实现
-func (adapter *authorizerAccessTokenGetterAdapter) GetAccessTokenLockKey() string {
-	return adapter.accessTokenLockKey
-}
-
-func newAdapter(
-	componentAppid, appid string,
-	accessTokenGetter RefreshAccessToken,
-) utils.AccessTokenGetter {
-	return &authorizerAccessTokenGetterAdapter{
-		accessTokenGetter: accessTokenGetter,
-		accessTokenKey: fmt.Sprintf(
-			"access-token:authorizer:%s:%s",
-			componentAppid,
-			appid,
-		),
-		accessTokenLockKey: fmt.Sprintf(
-			"access-token:authorizer:%s:%s.lock",
-			componentAppid,
-			appid,
-		),
-	}
-}
+var (
+	ErrTokenUpdateForbidden = errors.New("can NOT refresh&update token in wxopen lite mode")
+)
 
 type Authorizer struct {
 	ComponentAppid   string
@@ -69,10 +29,7 @@ func New(
 	accessTokenGetter RefreshAccessToken,
 ) *Authorizer {
 	accessTokenCache := utils.NewAccessTokenCache(
-		newAdapter(componentAppid, appid, accessTokenGetter),
-		cache,
-		locker,
-		0,
+		newAdapter(componentAppid, appid, accessTokenGetter), cache, locker,
 	)
 	return &Authorizer{
 		ComponentAppid:   componentAppid,
@@ -91,14 +48,10 @@ func NewLite(
 	accessTokenCache := utils.NewAccessTokenCache(
 		newAdapter(componentAppid, appid, func() (string, int, error) {
 			return "", 0, fmt.Errorf(
-				"can NOT refresh token in bare mod, appid(%s , %s)",
-				componentAppid,
-				appid,
+				"can NOT refresh token in lite mod, appid(%s , %s), %w",
+				componentAppid, appid, ErrTokenUpdateForbidden,
 			)
-		}),
-		cache,
-		locker,
-		0,
+		}), cache, locker,
 	)
 	return &Authorizer{
 		ComponentAppid: componentAppid,
@@ -107,16 +60,13 @@ func NewLite(
 	}
 }
 
-func (authorizer *Authorizer) RefreshAccessToken() error {
-	if authorizer.accessTokenCache != nil {
-		_, err := authorizer.accessTokenCache.GetAccessToken()
-		return err
-	} else {
-		// bare模式，只能从cache读取token， 无法刷新
-		return fmt.Errorf(
-			"can NOT refresh token in bare mod, appid(%s , %s)",
-			authorizer.ComponentAppid,
-			authorizer.Appid,
+func (authorizer *Authorizer) RefreshAccessToken(expireBefore int) (string, error) {
+	if authorizer.accessTokenCache == nil {
+		return "", fmt.Errorf(
+			"authorizer appid : %s,%s, error: %w",
+			authorizer.ComponentAppid, authorizer.Appid,
+			ErrTokenUpdateForbidden,
 		)
 	}
+	return authorizer.accessTokenCache.RefreshAccessToken(expireBefore)
 }

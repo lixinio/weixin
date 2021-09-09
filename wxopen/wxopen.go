@@ -9,7 +9,8 @@ import (
 )
 
 var (
-	ErrTokenUpdateForbidden = errors.New("can NOT refresh&update token in wxopen lite mode")
+	ErrTicketUpdateForbidden = errors.New("can NOT update ticket in wxopen lite mode")
+	ErrTokenUpdateForbidden  = errors.New("can NOT refresh&update token in wxopen lite mode")
 )
 
 // https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/Before_Develop/creat_token.html
@@ -24,26 +25,6 @@ const (
 	apiStartPushTicket   = "/cgi-bin/component/api_start_push_ticket"
 )
 
-// ticket 缓存的adapter， 无法自行刷新，只能微信主动上报
-// https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/ThirdParty/token/component_verify_ticket.html
-type ticketAdaptor struct {
-	appid string
-}
-
-func (ta *ticketAdaptor) GetAccessToken() (accessToken string, expiresIn int, err error) {
-	return "", 0, errors.New("can NOT update wxopen ticket")
-}
-
-// GetAccessTokenKey 接口 weixin.AccessTokenGetter 实现
-func (ta *ticketAdaptor) GetAccessTokenKey() string {
-	return fmt.Sprintf("access-token:wxopen_ticket:%s", ta.appid)
-}
-
-// GetAccessTokenLockKey 接口 weixin.AccessTokenGetter 实现
-func (ta *ticketAdaptor) GetAccessTokenLockKey() string {
-	return fmt.Sprintf("access-token:wxopen_ticket:%s.lock", ta.appid)
-}
-
 /*
 开放平台配置
 */
@@ -55,22 +36,24 @@ type Config struct {
 }
 
 type WxOpen struct {
-	Config      *Config
-	Client      *utils.Client
-	ticketCache *utils.AccessTokenCache
+	Config           *Config
+	Client           *utils.Client
+	ticketCache      *utils.AccessTokenCache
+	accessTokenCache *utils.AccessTokenCache
 }
 
 func New(cache utils.Cache, locker utils.Lock, config *Config) *WxOpen {
-	ticketCache := utils.NewAccessTokenCache(&ticketAdaptor{config.Appid}, cache, locker, 0)
+	ticketCache := utils.NewAccessTokenCache(newTicketAdapter(config.Appid), cache, locker)
+	accessTokenCache := utils.NewAccessTokenCache(
+		newAccessTokenAdaptor(config, ticketCache), cache, locker,
+	)
 	instance := &WxOpen{
-		Config:      config,
-		ticketCache: ticketCache,
+		Config:           config,
+		Client:           utils.NewClient(WXServerUrl, accessTokenCache),
+		ticketCache:      ticketCache,
+		accessTokenCache: accessTokenCache,
 	}
-
-	client := utils.NewClient(WXServerUrl, utils.NewAccessTokenCache(instance, cache, locker, 0))
-	client.UpdateAccessTokenKey(accessTokenKey) // token的名称不一样
-	instance.Client = client
-
+	instance.Client.UpdateAccessTokenKey(accessTokenKey) // token的名称不一样
 	return instance
 }
 
@@ -79,66 +62,15 @@ func NewLite(
 	locker utils.Lock,
 	appID string,
 ) *WxOpen {
+	config := &Config{Appid: appID}
 	instance := &WxOpen{
-		Config:      &Config{Appid: appID},
-		ticketCache: nil,
+		Config: config,
+		Client: utils.NewClient(WXServerUrl, utils.NewAccessTokenCache(
+			newAccessTokenAdaptor(config, nil), cache, locker,
+		)),
 	}
-	client := utils.NewClient(WXServerUrl, utils.NewAccessTokenCache(instance, cache, locker, 0))
-	client.UpdateAccessTokenKey(accessTokenKey) // token的名称不一样
-	instance.Client = client
+	instance.Client.UpdateAccessTokenKey(accessTokenKey) // token的名称不一样
 	return instance
-}
-
-// GetAccessToken 接口 weixin.AccessTokenGetter 实现
-func (wxopen *WxOpen) GetAccessToken() (accessToken string, expiresIn int, err error) {
-	accessToken, expiresIn, err = wxopen.refreshAccessTokenFromWXServer()
-	return
-}
-
-// GetAccessTokenKey 接口 weixin.AccessTokenGetter 实现
-func (wxopen *WxOpen) GetAccessTokenKey() string {
-	return fmt.Sprintf("access-token:wxopen:%s", wxopen.Config.Appid)
-}
-
-// GetAccessTokenLockKey 接口 weixin.AccessTokenGetter 实现
-func (wxopen *WxOpen) GetAccessTokenLockKey() string {
-	return fmt.Sprintf("access-token:wxopen:%s.lock", wxopen.Config.Appid)
-}
-
-/*
-从微信服务器获取新的 AccessToken
-https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/ThirdParty/token/component_access_token.html
-*/
-func (wxopen *WxOpen) refreshAccessTokenFromWXServer() (accessToken string, expiresIn int, err error) {
-	if wxopen.ticketCache == nil {
-		return "", 0, fmt.Errorf(
-			"wxopen appid : %s, error: %w", wxopen.Config.Appid, ErrTokenUpdateForbidden,
-		)
-	}
-
-	ticket, err := wxopen.ticketCache.GetAccessToken()
-	if err != nil {
-		return "", 0, fmt.Errorf("can NOT get wxopen access token without ticket, %w", err)
-	}
-
-	// AccessToken 和其他地方 字段不一致
-	result := struct {
-		utils.WeixinError
-		AccessToken string `json:"component_access_token"`
-		ExpiresIn   int    `json:"expires_in"`
-	}{}
-
-	payload := map[string]string{
-		"component_appid":         wxopen.Config.Appid,
-		"component_appsecret":     wxopen.Config.Secret,
-		"component_verify_ticket": ticket,
-	}
-	if err := wxopen.Client.HTTPPostToken(
-		context.TODO(), apiGetComponentToken, payload, &result,
-	); err != nil {
-		return "", 0, err
-	}
-	return result.AccessToken, result.ExpiresIn, nil
 }
 
 /*
@@ -159,8 +91,19 @@ func (wxopen *WxOpen) StartPushTicket(ctx context.Context) error {
 // 当收到EventComponentVerifyTicket时， 用于更新ticket到cache
 func (wxopen *WxOpen) UpdateTicket(token string) error {
 	if wxopen.ticketCache == nil {
-		return fmt.Errorf("wxopen appid : %s, error: %w", wxopen.Config.Appid, ErrTokenUpdateForbidden)
+		return fmt.Errorf(
+			"wxopen appid : %s, error: %w", wxopen.Config.Appid, ErrTicketUpdateForbidden,
+		)
 	}
 	_, err := wxopen.ticketCache.UpdateAccessToken(token, ticketExpiresIn)
 	return err
+}
+
+func (wxopen *WxOpen) RefreshAccessToken(expireBefore int) (string, error) {
+	if wxopen.accessTokenCache == nil {
+		return "", fmt.Errorf(
+			"wxopen appid : %s, error: %w", wxopen.Config.Appid, ErrTokenUpdateForbidden,
+		)
+	}
+	return wxopen.accessTokenCache.RefreshAccessToken(expireBefore)
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/lixinio/weixin/weixin/authorizer"
 	"github.com/lixinio/weixin/wxopen"
@@ -27,7 +26,6 @@ func GetAuthorizerAccessToken(
 			return "", 0, err
 		}
 		tokenCache.SetRefreshToken(resp.RefreshToken) // noqa
-		fmt.Printf("refresh appid (%s) token (%s)\n", appid, resp.AccessToken)
 		return resp.AccessToken, resp.ExpiresIn, nil
 	}
 }
