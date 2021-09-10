@@ -29,9 +29,8 @@ func (wxopen *WxOpen) ParseXML(
 ) (m interface{}, err error) {
 
 	// 是否加密消息
-	encryptMsg := EncryptMessage{}
-	err = xml.Unmarshal(body, &encryptMsg)
-	if err != nil {
+	encryptMsg := &EncryptMessage{}
+	if err = xml.Unmarshal(body, encryptMsg); err != nil {
 		return
 	}
 
@@ -56,39 +55,34 @@ func (wxopen *WxOpen) ParseXML(
 		return nil, errors.New("invalid encrypt msg")
 	}
 
-	event := Event{}
-	err = xml.Unmarshal(body, &event)
-	if err != nil {
+	event := &Event{}
+	if err = xml.Unmarshal(body, event); err != nil {
 		return
 	}
 
 	switch event.InfoType {
 
 	case EventTypeComponentVerifyTicket:
-		msg := EventComponentVerifyTicket{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventComponentVerifyTicket{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeAuthorized:
-		msg := EventAuthorized{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventAuthorized{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeUnauthorized:
-		msg := EventUnauthorized{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventUnauthorized{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeUpdateAuthorized:
-		msg := EventUpdateAuthorized{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventUpdateAuthorized{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil

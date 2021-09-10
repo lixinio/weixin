@@ -3,3 +3,4 @@ vendor
 build
 test/config.go
 examples/wxopen/__debug_bin
+examples/wxwork_suite/__debug_bin
