@@ -86,9 +86,8 @@ func (s *ServerApi) ParseXML(
 ) (m interface{}, err error) {
 
 	// 是否加密消息
-	encryptMsg := EncryptMessage{}
-	err = xml.Unmarshal(body, &encryptMsg)
-	if err != nil {
+	encryptMsg := &EncryptMessage{}
+	if err = xml.Unmarshal(body, encryptMsg); err != nil {
 		return
 	}
 
@@ -106,67 +105,57 @@ func (s *ServerApi) ParseXML(
 		body = xmlMsg
 	}
 
-	message := Message{}
-	err = xml.Unmarshal(body, &message)
-	//fmt.Println(message)
-	if err != nil {
+	message := &Message{}
+	if err = xml.Unmarshal(body, message); err != nil {
 		return
 	}
 
 	switch message.MsgType {
 	case MsgTypeText:
-		msg := MessageText{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &MessageText{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case MsgTypeImage:
-		msg := MessageImage{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &MessageImage{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case MsgTypeVoice:
-		msg := MessageVoice{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &MessageVoice{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case MsgTypeVideo:
-		msg := MessageVideo{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &MessageVideo{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case MsgTypeShortVideo:
-		msg := MessageShortVideo{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &MessageShortVideo{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case MsgTypeLocation:
-		msg := MessageLocation{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &MessageLocation{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case MsgTypeLink:
-		msg := MessageLink{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &MessageLink{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case MsgTypeFile:
-		msg := MessageFile{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &MessageFile{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
@@ -178,267 +167,231 @@ func (s *ServerApi) ParseXML(
 
 // parseEvent 解析微信推送过来的事件
 func parseEvent(body []byte) (m interface{}, err error) {
-	event := Event{}
-	err = xml.Unmarshal(body, &event)
-	if err != nil {
+	event := &Event{}
+	if err = xml.Unmarshal(body, event); err != nil {
 		return
 	}
 	switch event.Event {
 
 	// 关注事件
 	case EventTypeSubscribe:
-		msg := EventSubscribe{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventSubscribe{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeUnsubscribe:
-		msg := EventUnsubscribe{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventUnsubscribe{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeScan:
-		msg := EventScan{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventScan{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeLocation:
-		msg := EventLocation{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventLocation{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 
 	// 菜单事件
 	case EventTypeMenuClick:
-		msg := EventMenuClick{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventMenuClick{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeMenuView:
-		msg := EventMenuView{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventMenuView{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeMenuScanCodePush:
-		msg := EventMenuScanCodePush{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventMenuScanCodePush{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeMenuScanCodeWaitMsg:
-		msg := EventMenuScanCodeWaitMsg{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventMenuScanCodeWaitMsg{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeMenuPicSysPhoto:
-		msg := EventMenuPicSysPhoto{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventMenuPicSysPhoto{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeMenuPicSysPhotoOrAlbum:
-		msg := EventMenuPicSysPhotoOrAlbum{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventMenuPicSysPhotoOrAlbum{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeMenuPicWeixin:
-		msg := EventMenuPicWeixin{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventMenuPicWeixin{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeMenuLocationSelect:
-		msg := EventMenuLocationSelect{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventMenuLocationSelect{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeMenuViewMiniprogram:
-		msg := EventMenuViewMiniprogram{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventMenuViewMiniprogram{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 
 	// 资质事件
 	case EventTypeQualificationVerifySuccess:
-		msg := EventQualificationVerifySuccess{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventQualificationVerifySuccess{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeQualificationVerifyFail:
-		msg := EventQualificationVerifyFail{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventQualificationVerifyFail{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeNamingVerifySuccess:
-		msg := EventNamingVerifySuccess{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventNamingVerifySuccess{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeNamingVerifyFail:
-		msg := EventNamingVerifyFail{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventNamingVerifyFail{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeAnnualRenew:
-		msg := EventAnnualRenew{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventAnnualRenew{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeVerifyExpired:
-		msg := EventVerifyExpired{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventVerifyExpired{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 
 		// 卡券事件
 	case EventTypeCardPassChecke:
-		msg := EventCardPassChecke{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventCardPassChecke{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeCardNotPassChecke:
-		msg := EventCardNotPassChecke{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventCardNotPassChecke{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeUserGetCard:
-		msg := EventUserGetCard{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventUserGetCard{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeUserGiftingCard:
-		msg := EventUserGiftingCard{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventUserGiftingCard{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeUserDelCard:
-		msg := EventUserDelCard{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventUserDelCard{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeUserConsumeCard:
-		msg := EventUserConsumeCard{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventUserConsumeCard{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeUserPayFromPayCell:
-		msg := EventUserPayFromPayCell{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventUserPayFromPayCell{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeUserViewCard:
-		msg := EventUserViewCard{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventUserViewCard{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeUserEnterSessionFromCard:
-		msg := EventUserEnterSessionFromCard{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventUserEnterSessionFromCard{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeUpdateMemberCard:
-		msg := EventUpdateMemberCard{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventUpdateMemberCard{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeCardSkuRemind:
-		msg := EventCardSkuRemind{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventCardSkuRemind{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeCardPayOrder:
-		msg := EventCardPayOrder{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventCardPayOrder{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 	case EventTypeSubmitMembercardUserInfo:
-		msg := EventSubmitMembercardUserInfo{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventSubmitMembercardUserInfo{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 
 		// 导购事件
 	case EventTypeGuideQrcodeScan:
-		msg := EventGuideQrcodeScan{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventGuideQrcodeScan{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 
 		// 模版消息发送任务完成
 	case EventTypeTemplateSendJobFinish:
-		msg := EventTemplateSendJobFinish{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventTemplateSendJobFinish{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil
 
 	case EventTypeAuthorizeInvoice:
-		msg := EventAuthorizeInvoice{}
-		err = xml.Unmarshal(body, &msg)
-		if err != nil {
+		msg := &EventAuthorizeInvoice{}
+		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
 		return msg, nil

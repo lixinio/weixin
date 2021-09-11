@@ -34,6 +34,22 @@ const (
 	WxOpenSecret         = "efghi"
 	WxOpenToken          = "jklmn"
 	WxOpenEncodingAESKey = "opqrst"
+	WxOpenOAAppid        = "abcdefg" // 开放平台授权的测试服务号
+
+	//===================================== 企业微信服务商 =====================================
+	WxWorkProviderCorpID = "abcdefg"
+	WxWorkProviderSecret = "hijklmn"
+
+
+	//===================================== 企业微信服务商应用 =====================================
+	WxWorkSuiteID = "abc"
+	WxWorkSuiteSecret = "def"
+	WxWorkSuiteToken          = "jklmn"
+	WxWorkSuiteEncodingAESKey = "opqrst"
+
+	WxWorkSuiteCorpID = "abce" // 授权给服务商的集团Corp ID
+	WxWorkSuiteAgentID = 123 // 授权给服务商的集团 应用ID
+
 )
 
 var (
@@ -45,6 +61,17 @@ var (
 		{
 			Filename: "2576848698.txt",
 			Content:  "65f48d80e5c86c1d357ca439d9e7d83e",
+		},
+	}
+
+	//===================================== 企业微信服务商 =====================================
+	WxWorkSuiteDomainVer = []struct {
+		Filename string
+		Content  string
+	}{
+		{
+			Filename: "WW_verify_abcdegh.txt",
+			Content:  "hijikmm",
 		},
 	}
 )
