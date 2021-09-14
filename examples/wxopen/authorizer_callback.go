@@ -15,7 +15,7 @@ func serveAuthorizerData(serverApi *server_api.ServerApi) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.Printf("Error reading body: %v", err)
+			log.Printf("Error reading body: %v\n", err)
 			httpAbort(w, http.StatusBadRequest)
 			return
 		}
@@ -31,7 +31,7 @@ func serveAuthorizerData(serverApi *server_api.ServerApi) http.HandlerFunc {
 		}
 
 		switch v := content.(type) {
-		case server_api.MessageText:
+		case *server_api.MessageText:
 			fmt.Printf("MsgTypeText : %s\n", v.Content)
 			// w.Write([]byte("success"))
 			serverApi.ResponseText(w, r, &server_api.ReplyMessageText{
@@ -39,7 +39,7 @@ func serveAuthorizerData(serverApi *server_api.ServerApi) http.HandlerFunc {
 				Content:      server_api.CDATA(v.Content),
 			})
 			return
-		case server_api.MessageImage:
+		case *server_api.MessageImage:
 			fmt.Printf("MessageImage : %s %s\n", v.MediaId, v.PicUrl)
 			serverApi.ResponseImage(w, r, &server_api.ReplyMessageImage{
 				ReplyMessage: *v.Reply(),
@@ -50,7 +50,7 @@ func serveAuthorizerData(serverApi *server_api.ServerApi) http.HandlerFunc {
 				},
 			})
 			return
-		case server_api.MessageVoice:
+		case *server_api.MessageVoice:
 			fmt.Printf("MessageVoice : %s %s\n", v.Format, v.MediaId)
 			serverApi.ResponseVoice(w, r, &server_api.ReplyMessageVoice{
 				ReplyMessage: *v.Reply(),
@@ -61,7 +61,7 @@ func serveAuthorizerData(serverApi *server_api.ServerApi) http.HandlerFunc {
 				},
 			})
 			return
-		case server_api.MessageVideo:
+		case *server_api.MessageVideo:
 			fmt.Printf("MessageVideo : %s %s\n", v.MediaId, v.ThumbMediaId)
 			// serverApi.ResponseVideo(w, r, &server_api.ReplyMessageVideo{
 			// 	ReplyMessage: *v.Reply(),
@@ -78,7 +78,7 @@ func serveAuthorizerData(serverApi *server_api.ServerApi) http.HandlerFunc {
 			// 	},
 			// })
 			// return
-		case server_api.MessageLocation:
+		case *server_api.MessageLocation:
 			fmt.Printf("MessageLocation : %s %sX%s\n", v.Label, v.Location_X, v.Location_Y)
 			news := &server_api.ReplyMessageNewsItem{
 				Title:       "欢迎关注",
@@ -98,20 +98,20 @@ func serveAuthorizerData(serverApi *server_api.ServerApi) http.HandlerFunc {
 			msg.ReplyMessage.MsgType = server_api.ReplyMsgTypeNews
 			serverApi.ResponseNews(w, r, msg)
 			return
-		case server_api.MessageLink:
+		case *server_api.MessageLink:
 			fmt.Printf("MessageLink : %s %s %s\n", v.Title, v.Url, v.Description)
-		case server_api.MessageFile:
+		case *server_api.MessageFile:
 			fmt.Printf("MessageFile : %s %s\n", v.Title, v.Description)
-		case server_api.EventSubscribe:
+		case *server_api.EventSubscribe:
 			fmt.Printf("EventSubscribe : %s %s\n", v.FromUserName, v.EventKey)
 			return
-		case server_api.EventUnsubscribe:
+		case *server_api.EventUnsubscribe:
 			fmt.Printf("EventUnsubscribe : %s\n", v.FromUserName)
-		case server_api.EventTemplateSendJobFinish:
+		case *server_api.EventTemplateSendJobFinish:
 			fmt.Printf("EventTemplateSendJobFinish : %s %s\n", v.MsgID, v.Status)
-		case server_api.EventMenuClick:
+		case *server_api.EventMenuClick:
 			fmt.Printf("EventMenuClick : %s\n", v.EventKey)
-		case server_api.EventAuthorizeInvoice:
+		case *server_api.EventAuthorizeInvoice:
 			fmt.Printf("EventMenuClick : %s %s %s %s\n", v.SuccOrderId, v.FailOrderId, v.AuthorizeAppId, v.Source)
 		default:
 			fmt.Printf("I don't know about type %T!\n", v)

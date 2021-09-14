@@ -360,8 +360,8 @@ func (client *Client) httpDoRaw(
 	// 根据规范，有些接口返回20x，这里暂不考虑
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusPartialContent {
 		resp.Body.Close()
-		resp = nil
 		err = fmt.Errorf("status %s", resp.Status)
+		resp = nil
 		return
 	}
 

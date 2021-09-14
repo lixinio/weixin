@@ -23,6 +23,12 @@ func index(agent *agent.Agent) http.HandlerFunc {
 <form method="get" action="/login_sso">
 <button type="submit">网页扫码登录</button>
 </form>
+<br/>
+<br/>
+<br/>
+<form method="get" action="/jsapi/oa">
+<button type="submit">OA审批</button>
+</form>
 	`
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -76,6 +82,21 @@ func main() {
 	http.HandleFunc("/login", login(agent, false))
 	http.HandleFunc("/login_sso", login(agent, true))
 	http.HandleFunc("/login/callback", callback(agent))
+	http.HandleFunc("/jsapi/oa", jsapiOA(agent))
+
+	// static
+	fs := http.FileServer(http.Dir("./static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
+
+	// 域名校验
+	for _, ver := range test.WxWorkAgentDomainVer {
+		http.HandleFunc(
+			fmt.Sprintf("/%s", ver.Filename),
+			func(w http.ResponseWriter, r *http.Request) {
+				fmt.Fprintf(w, ver.Content)
+			},
+		)
+	}
 
 	http.HandleFunc(fmt.Sprintf("/weixin/%s/%d", test.CorpID, test.AgentID), msgCallback(serverApi))
 	http.HandleFunc(fmt.Sprintf("/weixin/%s/%s", test.CorpID, "0"), msgCallback(serverApi))

@@ -20,7 +20,7 @@ func serveData(serverApi *wxwork_suite.WxWorkSuite) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.Printf("Error reading body: %v", err)
+			log.Printf("Error reading body: %v\n", err)
 			httpAbort(w, http.StatusBadRequest)
 			return
 		}

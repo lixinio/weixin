@@ -24,14 +24,14 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 		}
 
 		switch v := content.(type) {
-		case server_api.MessageText:
+		case *server_api.MessageText:
 			fmt.Printf("MsgTypeText : %s\n", v.Content)
 			serverApi.ResponseText(w, r, &server_api.ReplyMessageText{
 				ReplyMessage: *v.Reply(),
 				Content:      server_api.CDATA(v.Content),
 			})
 			return
-		case server_api.MessageImage:
+		case *server_api.MessageImage:
 			fmt.Printf("MessageImage : %s %s\n", v.MediaId, v.PicUrl)
 			serverApi.ResponseImage(w, r, &server_api.ReplyMessageImage{
 				ReplyMessage: *v.Reply(),
@@ -42,7 +42,7 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 				},
 			})
 			return
-		case server_api.MessageVoice:
+		case *server_api.MessageVoice:
 			fmt.Printf("MessageVoice : %s %s\n", v.Format, v.MediaId)
 			serverApi.ResponseVoice(w, r, &server_api.ReplyMessageVoice{
 				ReplyMessage: *v.Reply(),
@@ -53,7 +53,7 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 				},
 			})
 			return
-		case server_api.MessageVideo:
+		case *server_api.MessageVideo:
 			fmt.Printf("MessageVideo : %s %s\n", v.MediaId, v.ThumbMediaId)
 			serverApi.ResponseVideo(w, r, &server_api.ReplyMessageVideo{
 				ReplyMessage: *v.Reply(),
@@ -68,7 +68,7 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 				},
 			})
 			return
-		case server_api.MessageLocation:
+		case *server_api.MessageLocation:
 			fmt.Printf("MessageLocation : %s %s %s %sX%s\n", v.Label, v.Scale, v.AppType, v.Location_X, v.Location_Y)
 			news := &server_api.ReplyMessageNewsItem{
 				Title:       "欢迎关注",
@@ -88,7 +88,7 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 			msg.ReplyMessage.MsgType = server_api.ReplyMsgTypeNews
 			serverApi.ResponseNews(w, r, msg)
 			return
-		case server_api.MessageLink:
+		case *server_api.MessageLink:
 			fmt.Printf("MessageLink : %s %s %s %s\n", v.Title, v.Url, v.PicUrl, v.Description)
 			msg := &server_api.ReplyMessageTaskCard{
 				ReplyMessage: *v.Reply(),
@@ -102,14 +102,14 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 			msg.ReplyMessage.MsgType = server_api.ReplyMsgTypeTaskCard
 			serverApi.ResponseTaskCard(w, r, msg)
 			return
-		case server_api.EventChangeContactCreateUser:
+		case *server_api.EventChangeContactCreateUser:
 			fmt.Print("create user", " ", v.ChangeType, " ",
 				v.UserID, " ", v.Name, " ", v.Mobile, " ", v.Alias, " ", v.Email, " ",
 				v.Position, " ", v.Telephone, " ", v.Address, " ",
 				v.Avatar, " ", v.Gender, " ", v.Status, " ", v.Department, " ",
 				v.MainDepartment, " ", v.IsLeaderInDept, "\n",
 			)
-		case server_api.EventChangeContactUpdateUser:
+		case *server_api.EventChangeContactUpdateUser:
 			fmt.Print("update user", " ", v.ChangeType, " ",
 				v.UserID, " ", v.Name, " ", v.Mobile, " ", v.Alias, " ", v.Email, " ",
 				v.Position, " ", v.Telephone, " ", v.Address, " ",
@@ -117,15 +117,15 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 				v.MainDepartment, " ", v.IsLeaderInDept, " ",
 				v.NewUserID, "\n",
 			)
-		case server_api.EventChangeContactDeleteUser:
+		case *server_api.EventChangeContactDeleteUser:
 			fmt.Print("delete user", " ", v.ChangeType, " ", v.UserID, "\n")
-		case server_api.EventChangeContactCreateParty:
+		case *server_api.EventChangeContactCreateParty:
 			fmt.Print("create party", " ", v.ChangeType, " ", v.ID, " ", v.Name, " ", v.Order, " ", v.ParentId, "\n")
-		case server_api.EventChangeContactUpdateParty:
+		case *server_api.EventChangeContactUpdateParty:
 			fmt.Print("create party", " ", v.ChangeType, " ", v.ID, " ", v.Name, " ", v.ParentId, "\n")
-		case server_api.EventChangeContactDeleteParty:
+		case *server_api.EventChangeContactDeleteParty:
 			fmt.Print("delete user", " ", v.ChangeType, " ", v.ID, "\n")
-		case server_api.EventMenuClick:
+		case *server_api.EventMenuClick:
 			fmt.Print("EventMenuClick", " ", v.AgentID, " ", v.EventKey, "\n")
 			msg := &server_api.ReplyMessageText{
 				ReplyMessage: *v.Reply(),
@@ -133,14 +133,14 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 			}
 			msg.MsgType = server_api.ReplyMsgTypeText
 			serverApi.ResponseText(w, r, msg)
-		case server_api.EventMenuView:
+		case *server_api.EventMenuView:
 			fmt.Print("EventMenuView", " ", v.AgentID, " ", v.EventKey, "\n")
-		case server_api.EventMenuScanCodePush:
+		case *server_api.EventMenuScanCodePush:
 			fmt.Print("EventMenuScanCodePush", " ",
 				v.AgentID, " ", v.EventKey,
 				v.ScanCodeInfo.ScanType, " ", v.ScanCodeInfo.ScanResult, "\n",
 			)
-		case server_api.EventMenuScanCodeWaitMsg:
+		case *server_api.EventMenuScanCodeWaitMsg:
 			fmt.Print("EventMenuScanCodeWaitMsg", " ",
 				v.AgentID, " ", v.EventKey,
 				v.ScanCodeInfo.ScanType, " ", v.ScanCodeInfo.ScanResult, "\n",
@@ -152,15 +152,22 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 			msg.MsgType = server_api.ReplyMsgTypeText
 			serverApi.ResponseText(w, r, msg)
 			return
-		case server_api.EventMenuPicSysPhoto:
+		case *server_api.EventMenuPicSysPhoto:
 			fmt.Print("EventMenuPicSysPhoto", " ", v.AgentID, " ", v.EventKey, "\n")
-		case server_api.EventMenuPicSysPhotoOrAlbum:
+		case *server_api.EventMenuPicSysPhotoOrAlbum:
 			fmt.Print("EventMenuPicSysPhotoOrAlbum", " ", v.AgentID, " ", v.EventKey, "\n")
-		case server_api.EventMenuPicWeixin:
+		case *server_api.EventMenuPicWeixin:
 			fmt.Print("EventMenuPicWeixin", " ", v.AgentID, " ", v.EventKey, "\n")
-		case server_api.EventMenuLocationSelect:
+		case *server_api.EventMenuLocationSelect:
 			fmt.Print("EventMenuLocationSelect", " ", v.AgentID, " ", v.EventKey,
 				v.SendLocationInfo.Label, " ", v.SendLocationInfo.Text, " ", "\n")
+		case *server_api.EventApproval:
+			fmt.Printf(
+				"审批变更 : %s %s %s\n",
+				v.ApprovalInfo.ThirdNo,
+				v.ApprovalInfo.OpenSpName,
+				v.ApprovalInfo.OpenSpStatus,
+			)
 		default:
 			// fmt.Printf("I don't know about type %T!\n", v)
 		}

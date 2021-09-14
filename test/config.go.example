@@ -12,6 +12,9 @@ const (
 	AgentToken          = "othuiRi3beero0xut6ohquiewahthaixu7cor8OShai" // 接收消息服务器配置（Token）
 	AgentEncodingAESKey = "teingie6aeSha9uo7aiC6phaez0moofooy7pa3kohCa" // 接收消息服务器配置（EncodingAESKey）
 	AgentUserID         = "test"                                        // 用作测试的用户ID
+	AgentOATmplID       = "f3576c5d4859291937381a9288c8688b_951211346"  // 企业（自建） 审批模板ID
+	AgentOAThirdNo      = "f3576c5d4859294"     // 企业（自建） 审批业务单号， 每次申请之后需要更换
+
 	// 微信服务号
 	OfficialAccountAppid  = "wx7123451234512345"
 	OfficialAccountSecret = "eeRaquaec0nie7gughahC3xeobaethai8OoGh5DahSh"
@@ -46,6 +49,8 @@ const (
 	WxWorkSuiteSecret = "def"
 	WxWorkSuiteToken          = "jklmn"
 	WxWorkSuiteEncodingAESKey = "opqrst"
+	WxWorkSuiteOaTmplID       = "404641918b5f9380ffa9f26aebbc711c_1190810156" // 企业审批模板ID
+	WxWorkSuiteOaThirdNo      = "f3576c5d4859294"     // 企业 审批业务单号， 每次申请之后需要更换
 
 	WxWorkSuiteCorpID = "abce" // 授权给服务商的集团Corp ID
 	WxWorkSuiteAgentID = 123 // 授权给服务商的集团 应用ID
@@ -72,6 +77,17 @@ var (
 		{
 			Filename: "WW_verify_abcdegh.txt",
 			Content:  "hijikmm",
+		},
+	}
+
+	//===================================== 企业微信 =====================================
+	WxWorkAgentDomainVer = []struct {
+		Filename string
+		Content  string
+	}{
+		{
+			Filename: "WW_verify_otGxh4qyUaJvxlrM.txt",
+			Content:  "otGxh4qyUaJvxlrM",
 		},
 	}
 )

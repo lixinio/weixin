@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	WXServerUrl = "https://api.weixin.qq.com" // 微信 api 服务器地址
+	WXServerUrl = "https://qyapi.weixin.qq.com" // 微信 api 服务器地址
 )
 
 var (
