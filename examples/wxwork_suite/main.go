@@ -7,6 +7,7 @@ import (
 	"github.com/lixinio/weixin/test"
 	"github.com/lixinio/weixin/utils/redis"
 	"github.com/lixinio/weixin/wxwork/authorizer"
+	"github.com/lixinio/weixin/wxwork/server_api"
 	"github.com/lixinio/weixin/wxwork_suite"
 )
 
@@ -21,6 +22,12 @@ func index(suite *wxwork_suite.WxWorkSuite) http.HandlerFunc {
 <br/>
 <form method="get" action="/install">
 <button type="submit">扫码授权</button>
+</form>
+<br/>
+<br/>
+<br/>
+<form method="get" action="/jsapi/oa">
+<button type="submit">OA审批</button>
 </form>
 	`
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -163,9 +170,24 @@ func main() {
 		test.WxWorkSuiteAgentID,
 		GetAuthorizerAccessToken(suite, oaTokenCache, test.WxWorkSuiteCorpID),
 	)
+	// server
+	serverApi := server_api.NewApi(
+		wxworkSuiteAgent.AgentID,
+		test.WxWorkSuiteToken,
+		test.WxWorkSuiteEncodingAESKey,
+		wxworkSuiteAgent.Client,
+	)
+	// 似乎不需要调用这个接口， 调用也是失败的
+	// 注入oa模板
+	// ctx := context.Background()
+	// tmplID := initOA(ctx, wxworkSuiteAgent)
+	// fmt.Printf("oa template id %s\n", tmplID)
+
 	// 立即刷新Token
-	if _, err = wxworkSuiteAgent.RefreshAccessToken(0); err != nil {
-		fmt.Printf("refresh token fail %s", err.Error())
+	if token, err := wxworkSuiteAgent.RefreshAccessToken(0); err != nil {
+		fmt.Printf("refresh token fail %s\n", err.Error())
+	} else {
+		fmt.Printf("refresh token success '%s'\n", token)
 	}
 
 	http.HandleFunc("/", index(suite))
@@ -176,12 +198,18 @@ func main() {
 
 	http.HandleFunc(
 		fmt.Sprintf("/weixin/%s/%s/data", test.WxWorkProviderCorpID, test.WxWorkSuiteID),
-		weixinCallback(suite),
+		authorizerCallback(serverApi),
 	)
 	http.HandleFunc(
 		fmt.Sprintf("/weixin/%s/%s/cmd", test.WxWorkProviderCorpID, test.WxWorkSuiteID),
 		weixinCallback(suite),
 	)
+
+	http.HandleFunc("/jsapi/oa", jsapiOA(wxworkSuiteAgent))
+
+	// static
+	fs := http.FileServer(http.Dir("./static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	// 域名校验
 	for _, ver := range test.WxWorkSuiteDomainVer {

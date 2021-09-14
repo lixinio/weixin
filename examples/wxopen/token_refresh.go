@@ -29,7 +29,7 @@ func RefreshAuthorizerToken(authorizers []*authorizer.Authorizer) {
 			token, err := auth.RefreshAccessToken(0)
 			if err != nil {
 				fmt.Printf(
-					"refresh authorizer(%s %s) fail, error %s",
+					"refresh authorizer(%s %s) fail, error %s\n",
 					auth.ComponentAppid, auth.Appid, err.Error(),
 				)
 			} else {

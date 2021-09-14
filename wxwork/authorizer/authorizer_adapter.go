@@ -42,7 +42,7 @@ func newAdapter(
 			suiteID, corpID, agentID,
 		),
 		accessTokenLockKey: fmt.Sprintf(
-			"qywx.suite_agent_access_token.%s.%s.%d",
+			"qywx.suite_agent_access_token.%s.%s.%d.lock",
 			suiteID, corpID, agentID,
 		),
 	}

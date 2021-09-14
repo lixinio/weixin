@@ -15,7 +15,7 @@ func serveData(serverApi *wxopen.WxOpen) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.Printf("Error reading body: %v", err)
+			log.Printf("Error reading body: %v\n", err)
 			httpAbort(w, http.StatusBadRequest)
 			return
 		}
@@ -31,16 +31,16 @@ func serveData(serverApi *wxopen.WxOpen) http.HandlerFunc {
 		}
 
 		switch v := content.(type) {
-		case wxopen.EventComponentVerifyTicket:
+		case *wxopen.EventComponentVerifyTicket:
 			fmt.Printf("ComponentVerifyTicket : %s\n", v.ComponentVerifyTicket)
 			// todo save to db
 			// 刷新Ticket到Cache
 			serverApi.UpdateTicket(v.ComponentVerifyTicket)
-		case wxopen.EventAuthorized:
+		case *wxopen.EventAuthorized:
 			fmt.Printf("EventAuthorized : %s\n", v.AuthorizerAppid)
-		case wxopen.EventUnauthorized:
+		case *wxopen.EventUnauthorized:
 			fmt.Printf("EventUnauthorized : %s\n", v.AuthorizerAppid)
-		case wxopen.EventUpdateAuthorized:
+		case *wxopen.EventUpdateAuthorized:
 			fmt.Printf("EventUpdateAuthorized : %s\n", v.AuthorizerAppid)
 		default:
 			fmt.Printf("I don't know about type %T!\n", v)
