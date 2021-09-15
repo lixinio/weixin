@@ -3,31 +3,19 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
+	"github.com/lixinio/weixin/utils"
 	"github.com/lixinio/weixin/wxopen"
 )
 
-func serveData(serverApi *wxopen.WxOpen) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		body, err := ioutil.ReadAll(r.Body)
+func serveData(serverApi *wxopen.WxOpen, apps wxopen.ReleaseApps) utils.XmlHandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request, body []byte) error {
+		content, err := serverApi.ParseXML(body)
 		if err != nil {
-			log.Printf("Error reading body: %v\n", err)
-			httpAbort(w, http.StatusBadRequest)
-			return
-		}
-		content, err := serverApi.ParseXML(
-			body,
-			r.URL.Query().Get("msg_signature"),
-			r.URL.Query().Get("timestamp"),
-			r.URL.Query().Get("nonce"),
-		)
-		if err != nil {
-			httpAbort(w, http.StatusBadRequest)
-			return
+			utils.HttpAbortBadRequest(w)
+			return err
 		}
 
 		switch v := content.(type) {
@@ -37,27 +25,41 @@ func serveData(serverApi *wxopen.WxOpen) http.HandlerFunc {
 			// 刷新Ticket到Cache
 			serverApi.UpdateTicket(v.ComponentVerifyTicket)
 		case *wxopen.EventAuthorized:
+			if app, ok := apps[v.AuthorizerAppid]; ok {
+				fmt.Printf("release app %s %v\n", app.UserName, app.IsMp)
+				// ignore
+			}
 			fmt.Printf("EventAuthorized : %s\n", v.AuthorizerAppid)
 		case *wxopen.EventUnauthorized:
+			if app, ok := apps[v.AuthorizerAppid]; ok {
+				fmt.Printf("release app %s %v\n", app.UserName, app.IsMp)
+				// ignore
+			}
 			fmt.Printf("EventUnauthorized : %s\n", v.AuthorizerAppid)
 		case *wxopen.EventUpdateAuthorized:
+			if app, ok := apps[v.AuthorizerAppid]; ok {
+				fmt.Printf("release app %s %v\n", app.UserName, app.IsMp)
+				// ignore
+			}
 			fmt.Printf("EventUpdateAuthorized : %s\n", v.AuthorizerAppid)
 		default:
 			fmt.Printf("I don't know about type %T!\n", v)
 		}
 
-		io.WriteString(w, "success")
+		_, err = io.WriteString(w, "success")
+		return err
 	}
 }
 
-func weixinCallback(serverApi *wxopen.WxOpen) http.HandlerFunc {
-	f := serveData(serverApi)
+func weixinCallback(serverApi *wxopen.WxOpen, apps wxopen.ReleaseApps) http.HandlerFunc {
+	f := serveData(serverApi, apps)
 	return func(w http.ResponseWriter, r *http.Request) {
 		if strings.ToLower(r.Method) == "post" {
-			f(w, r)
+			if err := serverApi.ServeData(w, r, f); err != nil {
+				fmt.Printf("serve data fail %v", err)
+			}
 		} else {
-			w.WriteHeader(http.StatusBadRequest)
-			io.WriteString(w, http.StatusText(http.StatusBadRequest))
+			utils.HttpAbortBadRequest(w)
 		}
 	}
 }

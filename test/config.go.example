@@ -22,6 +22,7 @@ const (
 	OfficialAccountAESKey = "teingie6aeSha9uo7aiC6phaez0moofooy7pa3kohCa" // 接收消息服务器配置（EncodingAESKey）
 	OfficialAccountAuthKey   = "MP_verify_7JuEh0gsFco1d0Uq.txt"           // 域名所有权检验 文件名
 	OfficialAccountAuthValue = "7JuEh0gsFco1d0Uq"                         // 域名所有权检验 文件内容
+	OfficialAccountOpenid = "oWVnF6Nea1OmiVfxBe7Q28__2K2g" // 关注服务号的用户openid
 
 	// 发票
 	InvoicePayee             = "深圳市XXX信息技术有限公司"
@@ -38,6 +39,7 @@ const (
 	WxOpenToken          = "jklmn"
 	WxOpenEncodingAESKey = "opqrst"
 	WxOpenOAAppid        = "abcdefg" // 开放平台授权的测试服务号
+	WxOpenOAOpenID       = "okJIps_G-jaMzKPQgOVYexXEoMj8" // 开放平台授权的测试服务号用户
 
 	//===================================== 企业微信服务商 =====================================
 	WxWorkProviderCorpID = "abcdefg"

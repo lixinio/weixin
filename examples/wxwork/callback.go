@@ -10,30 +10,24 @@ import (
 	"github.com/lixinio/weixin/wxwork/server_api"
 )
 
-func httpAbort(w http.ResponseWriter, code int) {
-	w.WriteHeader(http.StatusBadRequest)
-	io.WriteString(w, http.StatusText(http.StatusBadRequest))
-}
-
 func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request, body []byte) {
+	return func(w http.ResponseWriter, r *http.Request, body []byte) error {
 		content, err := serverApi.ParseXML(body)
 		if err != nil {
-			httpAbort(w, http.StatusBadRequest)
-			return
+			utils.HttpAbortBadRequest(w)
+			return err
 		}
 
 		switch v := content.(type) {
 		case *server_api.MessageText:
 			fmt.Printf("MsgTypeText : %s\n", v.Content)
-			serverApi.ResponseText(w, r, &server_api.ReplyMessageText{
+			return serverApi.ResponseText(w, r, &server_api.ReplyMessageText{
 				ReplyMessage: *v.Reply(),
 				Content:      server_api.CDATA(v.Content),
 			})
-			return
 		case *server_api.MessageImage:
 			fmt.Printf("MessageImage : %s %s\n", v.MediaId, v.PicUrl)
-			serverApi.ResponseImage(w, r, &server_api.ReplyMessageImage{
+			return serverApi.ResponseImage(w, r, &server_api.ReplyMessageImage{
 				ReplyMessage: *v.Reply(),
 				Image: struct {
 					MediaId server_api.CDATA
@@ -41,10 +35,9 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 					MediaId: server_api.CDATA(v.MediaId),
 				},
 			})
-			return
 		case *server_api.MessageVoice:
 			fmt.Printf("MessageVoice : %s %s\n", v.Format, v.MediaId)
-			serverApi.ResponseVoice(w, r, &server_api.ReplyMessageVoice{
+			return serverApi.ResponseVoice(w, r, &server_api.ReplyMessageVoice{
 				ReplyMessage: *v.Reply(),
 				Voice: struct {
 					MediaId server_api.CDATA
@@ -52,10 +45,9 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 					MediaId: server_api.CDATA(v.MediaId),
 				},
 			})
-			return
 		case *server_api.MessageVideo:
 			fmt.Printf("MessageVideo : %s %s\n", v.MediaId, v.ThumbMediaId)
-			serverApi.ResponseVideo(w, r, &server_api.ReplyMessageVideo{
+			return serverApi.ResponseVideo(w, r, &server_api.ReplyMessageVideo{
 				ReplyMessage: *v.Reply(),
 				Video: struct {
 					MediaId     server_api.CDATA
@@ -67,7 +59,6 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 					Description: "Description",
 				},
 			})
-			return
 		case *server_api.MessageLocation:
 			fmt.Printf("MessageLocation : %s %s %s %sX%s\n", v.Label, v.Scale, v.AppType, v.Location_X, v.Location_Y)
 			news := &server_api.ReplyMessageNewsItem{
@@ -86,8 +77,7 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 				},
 			}
 			msg.ReplyMessage.MsgType = server_api.ReplyMsgTypeNews
-			serverApi.ResponseNews(w, r, msg)
-			return
+			return serverApi.ResponseNews(w, r, msg)
 		case *server_api.MessageLink:
 			fmt.Printf("MessageLink : %s %s %s %s\n", v.Title, v.Url, v.PicUrl, v.Description)
 			msg := &server_api.ReplyMessageTaskCard{
@@ -100,8 +90,7 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 				},
 			}
 			msg.ReplyMessage.MsgType = server_api.ReplyMsgTypeTaskCard
-			serverApi.ResponseTaskCard(w, r, msg)
-			return
+			return serverApi.ResponseTaskCard(w, r, msg)
 		case *server_api.EventChangeContactCreateUser:
 			fmt.Print("create user", " ", v.ChangeType, " ",
 				v.UserID, " ", v.Name, " ", v.Mobile, " ", v.Alias, " ", v.Email, " ",
@@ -132,7 +121,7 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 				Content:      server_api.CDATA(v.EventKey),
 			}
 			msg.MsgType = server_api.ReplyMsgTypeText
-			serverApi.ResponseText(w, r, msg)
+			return serverApi.ResponseText(w, r, msg)
 		case *server_api.EventMenuView:
 			fmt.Print("EventMenuView", " ", v.AgentID, " ", v.EventKey, "\n")
 		case *server_api.EventMenuScanCodePush:
@@ -150,8 +139,7 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 				Content:      server_api.CDATA(v.ScanCodeInfo.ScanResult),
 			}
 			msg.MsgType = server_api.ReplyMsgTypeText
-			serverApi.ResponseText(w, r, msg)
-			return
+			return serverApi.ResponseText(w, r, msg)
 		case *server_api.EventMenuPicSysPhoto:
 			fmt.Print("EventMenuPicSysPhoto", " ", v.AgentID, " ", v.EventKey, "\n")
 		case *server_api.EventMenuPicSysPhotoOrAlbum:
@@ -169,10 +157,11 @@ func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 				v.ApprovalInfo.OpenSpStatus,
 			)
 		default:
-			// fmt.Printf("I don't know about type %T!\n", v)
+			fmt.Printf("I don't know about type %T!\n", v)
 		}
 
-		io.WriteString(w, "success")
+		_, err = io.WriteString(w, "success")
+		return err
 	}
 }
 
@@ -180,12 +169,15 @@ func msgCallback(serverApi *server_api.ServerApi) http.HandlerFunc {
 	f := serveData(serverApi)
 	return func(w http.ResponseWriter, r *http.Request) {
 		if strings.ToLower(r.Method) == "get" {
-			serverApi.ServeEcho(w, r)
+			if err := serverApi.ServeEcho(w, r); err != nil {
+				fmt.Printf("serve echo fail %v", err)
+			}
 		} else if strings.ToLower(r.Method) == "post" {
-			serverApi.ServeData(w, r, f)
+			if err := serverApi.ServeData(w, r, f); err != nil {
+				fmt.Printf("serve data fail %v", err)
+			}
 		} else {
-			w.WriteHeader(http.StatusBadRequest)
-			io.WriteString(w, http.StatusText(http.StatusBadRequest))
+			utils.HttpAbortBadRequest(w)
 		}
 	}
 }

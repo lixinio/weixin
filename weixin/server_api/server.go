@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -55,56 +56,69 @@ func calcSignatureFromHttp(r *http.Request, token string) string {
 	)
 }
 
-func httpAbort(w http.ResponseWriter, code int) {
-	w.WriteHeader(http.StatusBadRequest)
-	io.WriteString(w, http.StatusText(http.StatusBadRequest))
-}
-
-func (s *ServerApi) ServeEcho(w http.ResponseWriter, r *http.Request) {
+func (s *ServerApi) ServeEcho(w http.ResponseWriter, r *http.Request) error {
 	signature := calcSignatureFromHttp(r, s.Token)
 	echoStr := r.URL.Query().Get("echostr")
 	if echoStr != "" && signature == r.URL.Query().Get("signature") {
-		io.WriteString(w, echoStr)
+		_, err := io.WriteString(w, echoStr)
+		return err
 	} else {
-		httpAbort(w, http.StatusBadRequest)
+		utils.HttpAbortBadRequest(w)
+		return errors.New("signature dismatch")
 	}
 }
 
-func (s *ServerApi) ServeData(w http.ResponseWriter, r *http.Request, processor http.HandlerFunc) {
+func (s *ServerApi) ServeData(
+	w http.ResponseWriter,
+	r *http.Request,
+	processor utils.XmlHandlerFunc,
+) error {
 	signature := calcSignatureFromHttp(r, s.Token)
-	if signature == r.URL.Query().Get("signature") {
-		processor(w, r)
-	} else {
-		httpAbort(w, http.StatusBadRequest)
+	if signature != r.URL.Query().Get("signature") {
+		utils.HttpAbortBadRequest(w)
+		return fmt.Errorf(
+			"signature dismatch %s != %s",
+			signature, r.URL.Query().Get("signature"),
+		)
 	}
-}
 
-// ParseXML 解析微信推送过来的消息/事件
-func (s *ServerApi) ParseXML(
-	body []byte,
-	msgSignature, timestamp, nonce string,
-) (m interface{}, err error) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.HttpAbortBadRequest(w)
+		return err
+	}
 
 	// 是否加密消息
 	encryptMsg := &EncryptMessage{}
 	if err = xml.Unmarshal(body, encryptMsg); err != nil {
-		return
+		return err
 	}
 
 	// 需要解密
 	if encryptMsg.Encrypt != "" {
-		if utils.CalcSignature(s.Token, timestamp, nonce, encryptMsg.Encrypt) != msgSignature {
-			return nil, errors.New("invalid msg signature")
+		msgSignature := r.URL.Query().Get("msg_signature")
+		timestamp := r.URL.Query().Get("timestamp")
+		nonce := r.URL.Query().Get("nonce")
+
+		if utils.CalcSignature(
+			s.Token, timestamp, nonce, encryptMsg.Encrypt,
+		) != msgSignature {
+			return errors.New("invalid msg signature")
 		}
 
 		var xmlMsg []byte
 		_, xmlMsg, _, err = utils.AESDecryptMsg(encryptMsg.Encrypt, s.EncodingAESKey)
 		if err != nil {
-			return
+			return err
 		}
 		body = xmlMsg
 	}
 
+	return processor(w, r, body)
+}
+
+// ParseXML 解析微信推送过来的消息/事件
+func (s *ServerApi) ParseXML(body []byte) (m interface{}, err error) {
 	message := &Message{}
 	if err = xml.Unmarshal(body, message); err != nil {
 		return

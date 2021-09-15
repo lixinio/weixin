@@ -18,8 +18,8 @@ package server_api
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -58,23 +58,20 @@ func calcSignatureFromHttp(r *http.Request, token string) (string, string) {
 	), echostr
 }
 
-func httpAbort(w http.ResponseWriter, code int) {
-	w.WriteHeader(http.StatusBadRequest)
-	io.WriteString(w, http.StatusText(http.StatusBadRequest))
-}
-
-func (s *ServerApi) ServeEcho(w http.ResponseWriter, r *http.Request) {
+func (s *ServerApi) ServeEcho(w http.ResponseWriter, r *http.Request) error {
 	signature, echoStr := calcSignatureFromHttp(r, s.Token)
 	if echoStr != "" && signature == r.URL.Query().Get("msg_signature") {
 		// 解密 echoStr
 		_, msg, _, err := utils.AESDecryptMsg(echoStr, s.EncodingAESKey)
 		if err != nil {
-			httpAbort(w, http.StatusBadRequest)
-			return
+			utils.HttpAbortBadRequest(w)
+			return err
 		}
-		w.Write(msg)
+		_, err = w.Write(msg)
+		return err
 	} else {
-		httpAbort(w, http.StatusBadRequest)
+		utils.HttpAbortBadRequest(w)
+		return errors.New("signature dismatch")
 	}
 }
 
@@ -82,16 +79,16 @@ func (s *ServerApi) ServeData(
 	w http.ResponseWriter,
 	r *http.Request,
 	processor utils.XmlHandlerFunc,
-) {
+) error {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		return
+		return err
 	}
 
 	// 加密格式 的消息
 	encryptMsg := &EncryptMessage{}
 	if err = xml.Unmarshal(body, encryptMsg); err != nil {
-		return
+		return err
 	}
 
 	// 验证签名
@@ -103,18 +100,17 @@ func (s *ServerApi) ServeData(
 	)
 
 	if msgSignature := r.URL.Query().Get("msg_signature"); signature != msgSignature {
-		err = fmt.Errorf("%s != %s", signature, msgSignature)
-		fmt.Println(err)
-		return
+		err = fmt.Errorf("signature dismatch %s != %s", signature, msgSignature)
+		return err
 	}
 
 	// 解密
 	var xmlMsg []byte
 	_, xmlMsg, _, err = utils.AESDecryptMsg(encryptMsg.Encrypt, s.EncodingAESKey)
 	if err != nil {
-		return
+		return err
 	}
-	processor(w, r, xmlMsg)
+	return processor(w, r, xmlMsg)
 }
 
 /*

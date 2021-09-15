@@ -11,24 +11,23 @@ import (
 )
 
 func serveAuthorizerData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request, body []byte) {
+	return func(w http.ResponseWriter, r *http.Request, body []byte) error {
 		content, err := serverApi.ParseXML(body)
 		if err != nil {
-			httpAbort(w, http.StatusBadRequest)
-			return
+			utils.HttpAbortBadRequest(w)
+			return err
 		}
 
 		switch v := content.(type) {
 		case *server_api.MessageText:
 			fmt.Printf("MsgTypeText : %s\n", v.Content)
-			serverApi.ResponseText(w, r, &server_api.ReplyMessageText{
+			return serverApi.ResponseText(w, r, &server_api.ReplyMessageText{
 				ReplyMessage: *v.Reply(),
 				Content:      server_api.CDATA(v.Content),
 			})
-			return
 		case *server_api.MessageImage:
 			fmt.Printf("MessageImage : %s %s\n", v.MediaId, v.PicUrl)
-			serverApi.ResponseImage(w, r, &server_api.ReplyMessageImage{
+			return serverApi.ResponseImage(w, r, &server_api.ReplyMessageImage{
 				ReplyMessage: *v.Reply(),
 				Image: struct {
 					MediaId server_api.CDATA
@@ -36,7 +35,6 @@ func serveAuthorizerData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 					MediaId: server_api.CDATA(v.MediaId),
 				},
 			})
-			return
 		case *server_api.EventApproval:
 			fmt.Printf(
 				"审批变更 : %s %s %s\n",
@@ -48,7 +46,8 @@ func serveAuthorizerData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 			fmt.Printf("I don't know about type %T!\n", v)
 		}
 
-		io.WriteString(w, "success")
+		_, err = io.WriteString(w, "success")
+		return err
 	}
 }
 
@@ -56,12 +55,15 @@ func authorizerCallback(serverApi *server_api.ServerApi) http.HandlerFunc {
 	f := serveAuthorizerData(serverApi)
 	return func(w http.ResponseWriter, r *http.Request) {
 		if strings.ToLower(r.Method) == "get" {
-			serverApi.ServeEcho(w, r)
+			if err := serverApi.ServeEcho(w, r); err != nil {
+				fmt.Printf("serve echo fail %v", err)
+			}
 		} else if strings.ToLower(r.Method) == "post" {
-			serverApi.ServeData(w, r, f)
+			if err := serverApi.ServeData(w, r, f); err != nil {
+				fmt.Printf("serve data fail %v", err)
+			}
 		} else {
-			w.WriteHeader(http.StatusBadRequest)
-			io.WriteString(w, http.StatusText(http.StatusBadRequest))
+			utils.HttpAbortBadRequest(w)
 		}
 	}
 }

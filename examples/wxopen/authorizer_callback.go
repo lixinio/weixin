@@ -3,45 +3,31 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
+	"github.com/lixinio/weixin/utils"
 	"github.com/lixinio/weixin/weixin/server_api"
 )
 
-func serveAuthorizerData(serverApi *server_api.ServerApi) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		body, err := ioutil.ReadAll(r.Body)
+func serveAuthorizerData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request, body []byte) error {
+		content, err := serverApi.ParseXML(body)
 		if err != nil {
-			log.Printf("Error reading body: %v\n", err)
-			httpAbort(w, http.StatusBadRequest)
-			return
-		}
-		content, err := serverApi.ParseXML(
-			body,
-			r.URL.Query().Get("msg_signature"),
-			r.URL.Query().Get("timestamp"),
-			r.URL.Query().Get("nonce"),
-		)
-		if err != nil {
-			httpAbort(w, http.StatusBadRequest)
-			return
+			utils.HttpAbortBadRequest(w)
+			return err
 		}
 
 		switch v := content.(type) {
 		case *server_api.MessageText:
 			fmt.Printf("MsgTypeText : %s\n", v.Content)
-			// w.Write([]byte("success"))
-			serverApi.ResponseText(w, r, &server_api.ReplyMessageText{
+			return serverApi.ResponseText(w, r, &server_api.ReplyMessageText{
 				ReplyMessage: *v.Reply(),
 				Content:      server_api.CDATA(v.Content),
 			})
-			return
 		case *server_api.MessageImage:
 			fmt.Printf("MessageImage : %s %s\n", v.MediaId, v.PicUrl)
-			serverApi.ResponseImage(w, r, &server_api.ReplyMessageImage{
+			return serverApi.ResponseImage(w, r, &server_api.ReplyMessageImage{
 				ReplyMessage: *v.Reply(),
 				Image: struct {
 					MediaId server_api.CDATA
@@ -49,10 +35,9 @@ func serveAuthorizerData(serverApi *server_api.ServerApi) http.HandlerFunc {
 					MediaId: server_api.CDATA(v.MediaId),
 				},
 			})
-			return
 		case *server_api.MessageVoice:
 			fmt.Printf("MessageVoice : %s %s\n", v.Format, v.MediaId)
-			serverApi.ResponseVoice(w, r, &server_api.ReplyMessageVoice{
+			return serverApi.ResponseVoice(w, r, &server_api.ReplyMessageVoice{
 				ReplyMessage: *v.Reply(),
 				Voice: struct {
 					MediaId server_api.CDATA
@@ -60,10 +45,9 @@ func serveAuthorizerData(serverApi *server_api.ServerApi) http.HandlerFunc {
 					MediaId: server_api.CDATA(v.MediaId),
 				},
 			})
-			return
 		case *server_api.MessageVideo:
 			fmt.Printf("MessageVideo : %s %s\n", v.MediaId, v.ThumbMediaId)
-			// serverApi.ResponseVideo(w, r, &server_api.ReplyMessageVideo{
+			// return  serverApi.ResponseVideo(w, r, &server_api.ReplyMessageVideo{
 			// 	ReplyMessage: *v.Reply(),
 			// 	Video: struct {
 			// 		MediaId     server_api.CDATA
@@ -77,7 +61,6 @@ func serveAuthorizerData(serverApi *server_api.ServerApi) http.HandlerFunc {
 			// 		Description: "Description",
 			// 	},
 			// })
-			// return
 		case *server_api.MessageLocation:
 			fmt.Printf("MessageLocation : %s %sX%s\n", v.Label, v.Location_X, v.Location_Y)
 			news := &server_api.ReplyMessageNewsItem{
@@ -96,15 +79,13 @@ func serveAuthorizerData(serverApi *server_api.ServerApi) http.HandlerFunc {
 				},
 			}
 			msg.ReplyMessage.MsgType = server_api.ReplyMsgTypeNews
-			serverApi.ResponseNews(w, r, msg)
-			return
+			return serverApi.ResponseNews(w, r, msg)
 		case *server_api.MessageLink:
 			fmt.Printf("MessageLink : %s %s %s\n", v.Title, v.Url, v.Description)
 		case *server_api.MessageFile:
 			fmt.Printf("MessageFile : %s %s\n", v.Title, v.Description)
 		case *server_api.EventSubscribe:
 			fmt.Printf("EventSubscribe : %s %s\n", v.FromUserName, v.EventKey)
-			return
 		case *server_api.EventUnsubscribe:
 			fmt.Printf("EventUnsubscribe : %s\n", v.FromUserName)
 		case *server_api.EventTemplateSendJobFinish:
@@ -117,7 +98,8 @@ func serveAuthorizerData(serverApi *server_api.ServerApi) http.HandlerFunc {
 			fmt.Printf("I don't know about type %T!\n", v)
 		}
 
-		io.WriteString(w, "success")
+		_, err = io.WriteString(w, "success")
+		return err
 	}
 }
 
@@ -125,12 +107,15 @@ func authorizerCallback(serverApi *server_api.ServerApi) http.HandlerFunc {
 	f := serveAuthorizerData(serverApi)
 	return func(w http.ResponseWriter, r *http.Request) {
 		if strings.ToLower(r.Method) == "get" {
-			serverApi.ServeEcho(w, r)
+			if err := serverApi.ServeEcho(w, r); err != nil {
+				fmt.Printf("serve echo fail %v", err)
+			}
 		} else if strings.ToLower(r.Method) == "post" {
-			serverApi.ServeData(w, r, f)
+			if err := serverApi.ServeData(w, r, f); err != nil {
+				fmt.Printf("serve data fail %v", err)
+			}
 		} else {
-			w.WriteHeader(http.StatusBadRequest)
-			io.WriteString(w, http.StatusText(http.StatusBadRequest))
+			utils.HttpAbortBadRequest(w)
 		}
 	}
 }
