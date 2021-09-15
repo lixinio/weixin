@@ -47,6 +47,12 @@ func (EmptyClientAccessTokenGetter) GetAccessToken() (string, error) {
 	return "", errors.New("can NOT get token from empty client access-token getter")
 }
 
+type StaticClientAccessTokenGetter string
+
+func (s StaticClientAccessTokenGetter) GetAccessToken() (string, error) {
+	return string(s), nil
+}
+
 /*
 HttpClient 用于向微信接口发送请求
 */

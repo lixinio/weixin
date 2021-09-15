@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/lixinio/weixin/test"
+	"github.com/lixinio/weixin/utils"
 	"github.com/lixinio/weixin/wxwork/authorizer"
 	oa_api "github.com/lixinio/weixin/wxwork/oa"
 )
@@ -28,12 +29,12 @@ func jsapiOA(a *authorizer.Authorizer) http.HandlerFunc {
 		url := "http://" + r.Host + r.RequestURI
 		corpConfig, err := a.GetCorpJSApiConfig(r.Context(), url)
 		if err != nil {
-			httpAbort(w, http.StatusBadRequest)
+			utils.HttpAbortBadRequest(w)
 			return
 		}
 		agentConfig, err := a.GetAgentJSApiConfig(r.Context(), url)
 		if err != nil {
-			httpAbort(w, http.StatusBadRequest)
+			utils.HttpAbortBadRequest(w)
 			return
 		}
 
@@ -51,7 +52,7 @@ func jsapiOA(a *authorizer.Authorizer) http.HandlerFunc {
 		// t.Execute(os.Stdout, val)
 		err = t.Execute(w, val)
 		if err != nil {
-			httpAbort(w, http.StatusBadRequest)
+			utils.HttpAbortBadRequest(w)
 			return
 		}
 	}

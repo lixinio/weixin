@@ -6,15 +6,11 @@ import (
 	"net/http"
 
 	"github.com/lixinio/weixin/test"
+	"github.com/lixinio/weixin/utils"
 	"github.com/lixinio/weixin/utils/redis"
 	"github.com/lixinio/weixin/weixin/official_account"
 	"github.com/lixinio/weixin/weixin/server_api"
 )
-
-func httpAbort(w http.ResponseWriter, code int) {
-	w.WriteHeader(http.StatusBadRequest)
-	io.WriteString(w, http.StatusText(http.StatusBadRequest))
-}
 
 func index(oa *official_account.OfficialAccount) http.HandlerFunc {
 	html := `
@@ -42,7 +38,7 @@ func callback(oa *official_account.OfficialAccount) http.HandlerFunc {
 		snsAccessToken, err := oa.GetSnsAccessToken(r.Context(), code)
 		if err != nil {
 			fmt.Println(err)
-			httpAbort(w, http.StatusForbidden)
+			utils.HttpAbort(w, http.StatusForbidden)
 			return
 		}
 		fmt.Println(snsAccessToken.Scope, snsAccessToken.AccessToken, snsAccessToken.Openid)
@@ -55,7 +51,7 @@ func callback(oa *official_account.OfficialAccount) http.HandlerFunc {
 		)
 		if err != nil {
 			fmt.Println(err)
-			httpAbort(w, http.StatusForbidden)
+			utils.HttpAbort(w, http.StatusForbidden)
 			return
 		}
 		fmt.Println(user_info.Nickname, user_info.Openid, user_info.Headimgurl)
@@ -63,7 +59,7 @@ func callback(oa *official_account.OfficialAccount) http.HandlerFunc {
 		snsAccessToken2, err := oa.RefreshSnsToken(r.Context(), snsAccessToken.RefreshToken)
 		if err != nil {
 			fmt.Println(err)
-			httpAbort(w, http.StatusForbidden)
+			utils.HttpAbort(w, http.StatusForbidden)
 			return
 		}
 		fmt.Println(snsAccessToken2.Scope, snsAccessToken2.AccessToken, snsAccessToken2.Openid)
