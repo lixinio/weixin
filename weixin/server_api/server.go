@@ -409,6 +409,38 @@ func parseEvent(body []byte) (m interface{}, err error) {
 			return
 		}
 		return msg, nil
+
+		// 开放平台审核
+	case EventTypeWxaNickNameAudit:
+		msg := &EventWxaNickNameAudit{}
+		if err = xml.Unmarshal(body, msg); err != nil {
+			return
+		}
+		return msg, nil
+	case EventTypeWxaCategoryAudit:
+		msg := &EventWxaCategoryAudit{}
+		if err = xml.Unmarshal(body, msg); err != nil {
+			return
+		}
+		return msg, nil
+	case EventTypeWeappAuditSuccess:
+		msg := &EventWeappAuditSuccess{}
+		if err = xml.Unmarshal(body, msg); err != nil {
+			return
+		}
+		return msg, nil
+	case EventTypeWeappAuditFail:
+		msg := &EventWeappAuditFail{}
+		if err = xml.Unmarshal(body, msg); err != nil {
+			return
+		}
+		return msg, nil
+	case EventTypeWeappAuditDelay:
+		msg := &EventWeappAuditDelay{}
+		if err = xml.Unmarshal(body, msg); err != nil {
+			return
+		}
+		return msg, nil
 	}
 
 	return
