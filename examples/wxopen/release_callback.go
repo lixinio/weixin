@@ -11,7 +11,7 @@ import (
 )
 
 func releaseCallback(wxopenApi *wxopen.WxOpen, serverApi *server_api.ServerApi) http.HandlerFunc {
-	f := wxopenApi.ServeRelease(wxopenApi, serverApi)
+	f := wxopenApi.ServeRelease(serverApi)
 	return func(w http.ResponseWriter, r *http.Request) {
 		if strings.ToLower(r.Method) == "get" {
 			if err := serverApi.ServeEcho(w, r); err != nil {

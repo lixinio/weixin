@@ -65,7 +65,6 @@ var ReleaseAppIDS = ReleaseApps{
 // 全网发布
 // https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/operation/thirdparty/releases_instructions.html
 func (api *WxOpen) ServeRelease(
-	wxopenApi *WxOpen,
 	serverApi *server_api.ServerApi,
 ) utils.XmlHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, body []byte) (err error) {
