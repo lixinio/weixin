@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/lixinio/weixin/test"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,4 +28,15 @@ func TestGetAuthorizerList(t *testing.T) {
 			detail.AuthorizerRefreshToken,
 		)
 	}
+}
+
+func TestGetAuthorizerInfo(t *testing.T) {
+	open := initWxOpen()
+	detail, err := open.GetAuthorizerInfo(context.Background(), test.WxOpenOAAppid)
+	require.Empty(t, err)
+	fmt.Printf(
+		"%v\n%v\n",
+		detail.AuthorizationInfo,
+		detail.AuthorizerInfo,
+	)
 }
