@@ -138,7 +138,7 @@ func processOtherText(
 		fmt.Sprintf("%s_from_api", authCode),
 	)
 	if err != nil {
-		return fmt.Errorf("error send custom text message by token '%s', error %w\n",
+		return fmt.Errorf("error send custom text message by token '%s', error %w",
 			authInfo.AuthorizerAccessToken, err,
 		)
 	}

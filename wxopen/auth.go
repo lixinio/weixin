@@ -261,6 +261,7 @@ type AuthorizerInfo struct {
 	UserName        string `json:"user_name"`
 	PrincipalName   string `json:"principal_name"`
 	Alias           string `json:"alias"`
+	Signature       string `json:"signature"`
 	QrcodeUrl       string `json:"qrcode_url"`
 	ServiceTypeInfo struct {
 		ID int `json:"service_type_info"`
