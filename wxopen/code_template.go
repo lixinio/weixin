@@ -13,12 +13,6 @@ const (
 	apiDeleteTemplate       = "/wxa/deletetemplate"
 )
 
-/*
-获取代码草稿列表
-通过本接口，可以获取草稿箱中所有的草稿（临时代码模板）；草稿是由第三方平台的开发小程序在使用微信开发者工具上传的
-See: https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/ThirdParty/code_template/gettemplatedraftlist.html
-GET https://api.weixin.qq.com/wxa/gettemplatedraftlist?access_token=ACCESS_TOKEN
-*/
 type Draft struct {
 	DraftID     int32  `json:"draft_id"`
 	UserVersion string `json:"user_version"`
@@ -26,6 +20,12 @@ type Draft struct {
 	CreateTime  int64  `json:"create_time"`
 }
 
+/*
+获取代码草稿列表
+通过本接口，可以获取草稿箱中所有的草稿（临时代码模板）；草稿是由第三方平台的开发小程序在使用微信开发者工具上传的
+See: https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/ThirdParty/code_template/gettemplatedraftlist.html
+GET https://api.weixin.qq.com/wxa/gettemplatedraftlist?access_token=ACCESS_TOKEN
+*/
 func (api *WxOpen) GetTemplateDraftList(ctx context.Context) ([]Draft, error) {
 	result := struct {
 		utils.WeixinError
@@ -50,12 +50,6 @@ func (api *WxOpen) AddToTemplate(ctx context.Context, draftID int32) error {
 	}, nil)
 }
 
-/*
-获取代码模板列表
-第三方平台运营者可以登录 open.weixin.qq.com 或者通过将草稿箱的草稿选为代码模板接口，将草稿箱中的某个代码版本添加到代码模板库中
-See: https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/ThirdParty/code_template/gettemplatelist.html
-GET https://api.weixin.qq.com/wxa/gettemplatelist?access_token=ACCESS_TOKEN
-*/
 type Template struct {
 	TemplateID   int32  `json:"template_id"`
 	TemplateType int8   `json:"template_type"`
@@ -64,6 +58,12 @@ type Template struct {
 	CreateTime   int64  `json:"create_time"`
 }
 
+/*
+获取代码模板列表
+第三方平台运营者可以登录 open.weixin.qq.com 或者通过将草稿箱的草稿选为代码模板接口，将草稿箱中的某个代码版本添加到代码模板库中
+See: https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/ThirdParty/code_template/gettemplatelist.html
+GET https://api.weixin.qq.com/wxa/gettemplatelist?access_token=ACCESS_TOKEN
+*/
 func (api *WxOpen) GetTemplateList(ctx context.Context) ([]Template, error) {
 	result := struct {
 		utils.WeixinError
