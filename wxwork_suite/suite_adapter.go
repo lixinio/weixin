@@ -31,8 +31,8 @@ func (ta *ticketAdaptor) GetAccessTokenLockKey() string {
 
 func newTicketAdapter(suiteID string) *ticketAdaptor {
 	return &ticketAdaptor{
-		tokenKey:  fmt.Sprintf("access-token:wxcorp-provider-ticket:%s", suiteID),
-		lockerKey: fmt.Sprintf("access-token:wxcorp-provider-ticket:%s.lock", suiteID),
+		tokenKey:  fmt.Sprintf("qywx.suite_access_ticket.%s", suiteID),
+		lockerKey: fmt.Sprintf("qywx.suite_access_ticket.%s.lock", suiteID),
 	}
 }
 
