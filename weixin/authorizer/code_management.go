@@ -61,13 +61,44 @@ func (api *AuthorizerApi) GetQrcode(ctx context.Context, path string) ([]byte, e
 	return body, nil
 }
 
+type AuditParamsItem struct {
+	Address     string `json:"address,omitempty"`
+	Tag         string `json:"tag,omitempty"`
+	Title       string `json:"title,omitempty"`
+	FirstID     int    `json:"first_id,omitempty"`
+	SecondID    int    `json:"second_id,omitempty"`
+	ThirdID     int    `json:"third_id,omitempty"`
+	FirstClass  string `json:"first_class,omitempty"`
+	SecondClass string `json:"second_class,omitempty"`
+	ThirdClass  string `json:"third_class,omitempty"`
+}
+type PreviewInfo struct {
+	VideoIdList []string `json:"video_id_list,omitempty"`
+	PicIdList   []string `json:"pic_id_list,omitempty"`
+}
+type UGCDeclare struct {
+	Scene          []int  `json:"scene,omitempty"`
+	OtherSceneDesc string `json:"other_scene_desc,omitempty"`
+	Method         []int  `json:"method,omitempty"`
+	HasAuditTeam   int    `json:"has_audit_team,omitempty"`
+	AuditDesc      string `json:"audit_desc,omitempty"`
+}
+type AuditParams struct {
+	ItemList      []AuditParamsItem `json:"item_list,omitempty"`
+	PreviewInfo   PreviewInfo       `json:"preview_info,omitempty"`
+	VersionDesc   string            `json:"version_desc,omitempty"`
+	FeedbackInfo  string            `json:"feedback_info,omitempty"`
+	FeedbackStuff string            `json:"feedback_stuff,omitempty"`
+	UGCDecalre    UGCDeclare        `json:"ugc_declare,omitempty"`
+}
+
 /*
 提交审核
 在调用上传代码接口为小程序上传代码后，可以调用本接口，将上传的代码提交审核。
 https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/code/submit_audit.html
 POST https://api.weixin.qq.com/wxa/submit_audit?access_token=ACCESS_TOKEN
 */
-func (api *AuthorizerApi) SubmitAudit(ctx context.Context, auditParams map[string]interface{}) (int32, error) {
+func (api *AuthorizerApi) SubmitAudit(ctx context.Context, auditParams *AuditParams) (int32, error) {
 	result := struct {
 		utils.WeixinError
 		AuditID int32 `json:"auditid"`

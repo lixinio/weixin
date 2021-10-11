@@ -56,7 +56,7 @@ func TestGetQrcode(t *testing.T) {
 	require.Empty(t, err)
 	require.NotEmpty(t, qrcode)
 	// save qrcode to temp file
-	file, _ := os.CreateTemp("", "qrcode-"+test.WxOpenOAAppid+"-*.png")
+	file, _ := os.Create("/tmp/qrcode-" + test.WxOpenOAAppid + ".png")
 	defer file.Close()
 
 	_, _ = io.Copy(file, bytes.NewReader(qrcode))
@@ -65,7 +65,7 @@ func TestGetQrcode(t *testing.T) {
 
 func TestSubmitAudit(t *testing.T) {
 	api := NewApi(initAuthorizer())
-	_, err := api.SubmitAudit(context.Background(), map[string]interface{}{})
+	_, err := api.SubmitAudit(context.Background(), &AuditParams{})
 	require.Empty(t, err)
 }
 
