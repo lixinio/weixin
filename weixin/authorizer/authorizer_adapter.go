@@ -39,11 +39,11 @@ func newAdapter(
 	return &authorizerAccessTokenGetterAdapter{
 		accessTokenGetter: accessTokenGetter,
 		accessTokenKey: fmt.Sprintf(
-			"access-token:authorizer:%s:%s",
+			"weixin.authorizer_access_token.%s.%s",
 			componentAppid, appid,
 		),
 		accessTokenLockKey: fmt.Sprintf(
-			"access-token:authorizer:%s:%s.lock",
+			"weixin.authorizer_access_token.%s.%s.lock",
 			componentAppid, appid,
 		),
 	}

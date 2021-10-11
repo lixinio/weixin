@@ -31,8 +31,8 @@ func (ta *ticketAdaptor) GetAccessTokenLockKey() string {
 
 func newTicketAdapter(appid string) *ticketAdaptor {
 	return &ticketAdaptor{
-		tokenKey:  fmt.Sprintf("access-token:wxopen_ticket:%s", appid),
-		lockerKey: fmt.Sprintf("access-token:wxopen_ticket:%s.lock", appid),
+		tokenKey:  fmt.Sprintf("weixin.component.wxopen_ticket.%s", appid),
+		lockerKey: fmt.Sprintf("weixin.component.wxopen_ticket.%s.lock", appid),
 	}
 }
 
@@ -94,8 +94,8 @@ func newAccessTokenAdaptor(
 	adaptor := &accessTokenAdaptor{
 		config:      config,
 		ticketCache: ticketCache,
-		tokenKey:    fmt.Sprintf("access-token:wxopen:%s", config.Appid),
-		lockerKey:   fmt.Sprintf("access-token:wxopen:%s.lock", config.Appid),
+		tokenKey:    fmt.Sprintf("weixin.component.access_token.%s", config.Appid),
+		lockerKey:   fmt.Sprintf("weixin.component.access_token.%s.lock", config.Appid),
 	}
 	if ticketCache != nil {
 		adaptor.client = utils.NewClient(WXServerUrl, utils.EmptyClientAccessTokenGetter(0))
