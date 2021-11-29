@@ -39,7 +39,7 @@ type authorizerPermanentCodeAdaptor struct {
 }
 
 func (ta *authorizerPermanentCodeAdaptor) GetAccessToken() (accessToken string, expiresIn int, err error) {
-	return "", 0, errors.New("can NOT update authorizer refresh token")
+	return "", 0, errors.New("can NOT refresh authorizer permanent code")
 }
 
 // GetAccessTokenKey 接口 weixin.AccessTokenGetter 实现

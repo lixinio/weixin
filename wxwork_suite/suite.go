@@ -22,8 +22,8 @@ suite_ticket实际有效期为30分钟，可以容错连续两次获取suite_tic
 const ticketExpiresIn = 60*30 - 30 // 12h (43200)
 
 var (
-	ErrTicketUpdateForbidden = errors.New("can NOT update ticket in wxopen lite mode")
-	ErrTokenUpdateForbidden  = errors.New("can NOT refresh&update token in wxopen lite mode")
+	ErrTicketUpdateForbidden = errors.New("can NOT update ticket in wxwork suite lite mode")
+	ErrTokenUpdateForbidden  = errors.New("can NOT refresh&update token in wxwork suite lite mode")
 )
 
 type Config struct {
@@ -89,4 +89,14 @@ func (suite *WxWorkSuite) RefreshAccessToken(expireBefore int) (string, error) {
 		)
 	}
 	return suite.accessTokenCache.RefreshAccessToken(expireBefore)
+}
+
+func (suite *WxWorkSuite) ClearAccessToken() error {
+	if suite.accessTokenCache == nil {
+		return fmt.Errorf(
+			"suiteid : %s, error: %w",
+			suite.Config.SuiteID, ErrTokenUpdateForbidden,
+		)
+	}
+	return suite.accessTokenCache.ClearAccessToken()
 }

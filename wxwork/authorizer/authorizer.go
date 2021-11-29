@@ -73,3 +73,14 @@ func (authorizer *Authorizer) RefreshAccessToken(expireBefore int) (string, erro
 	}
 	return authorizer.accessTokenCache.RefreshAccessToken(expireBefore)
 }
+
+func (authorizer *Authorizer) ClearAccessToken() error {
+	if authorizer.accessTokenCache == nil {
+		return fmt.Errorf(
+			"authorizer appid : %s,%s,%d, error: %w",
+			authorizer.SuiteID, authorizer.CorpID, authorizer.AgentID,
+			ErrTokenUpdateForbidden,
+		)
+	}
+	return authorizer.accessTokenCache.ClearAccessToken()
+}
