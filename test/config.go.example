@@ -3,6 +3,12 @@ package test
 const (
 	// 缓存
 	CacheUrl = "redis://127.0.0.1:6379/1"
+	// ImagePath
+	ImagePath = "/home/user/Pictures/a.png"
+	// VideoPath
+	VideoPath = "/home/user/Videos/b.mp4"
+	// AudioPath
+	AudioPath = "/home/user/Music/b.amr"
 	// 企业微信
 	CorpID = "wx7123451234512345" // 企业ID
 	// 自建H5应用， 回调配置参考 https://work.weixin.qq.com/api/doc/90000/90135/90237
@@ -12,6 +18,8 @@ const (
 	AgentToken          = "othuiRi3beero0xut6ohquiewahthaixu7cor8OShai" // 接收消息服务器配置（Token）
 	AgentEncodingAESKey = "teingie6aeSha9uo7aiC6phaez0moofooy7pa3kohCa" // 接收消息服务器配置（EncodingAESKey）
 	AgentUserID         = "test"                                        // 用作测试的用户ID
+	AgentUserMobile     = "13800138000"                                 // 用作测试的用户手机号
+	AgentRootDep        = 1                                             // agent授权根目录
 	AgentOATmplID       = "f3576c5d4859291937381a9288c8688b_951211346"  // 企业（自建） 审批模板ID
 	AgentOAThirdNo      = "f3576c5d4859294"     // 企业（自建） 审批业务单号， 每次申请之后需要更换
 

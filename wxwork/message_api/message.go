@@ -43,18 +43,6 @@ func NewApi(client *utils.Client, agentID int) *MessageApi {
 	return &MessageApi{Client: client, AgentID: agentID}
 }
 
-type MessageHeader struct {
-	ToUser                 string `json:"touser,omitempty"`
-	ToParty                string `json:"toparty,omitempty"`
-	ToTag                  string `json:"totag,omitempty"`
-	MsgType                string `json:"msgtype"`
-	AgentID                int    `json:"agentid"`
-	Safe                   int    `json:"safe,omitempty"`
-	EnableIDTrans          int    `json:"enable_id_trans,omitempty"`
-	EnableDuplicateCheck   int    `json:"enable_duplicate_check,omitempty"`
-	DuplicateCheckInterval int    `json:"duplicate_check_interval,omitempty"`
-}
-
 type MessageResponse struct {
 	utils.WeixinError
 	InvalidUser  string `json:"invaliduser"`
@@ -64,32 +52,381 @@ type MessageResponse struct {
 	ResponseCode string `json:"response_code"`
 }
 
-type TextMessage struct {
-	*MessageHeader
-	Text struct {
-		Content string `json:"content"`
-	} `json:"text"`
-}
-
 /*
-发送应用消息
+发送应用消息(文本)
 应用支持推送文本、图片、视频、文件、图文等类型。
 See: https://work.weixin.qq.com/api/doc/90000/90135/90236
 POST https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=ACCESS_TOKEN
 */
+
+type TextMessage struct {
+	*MessageHeader
+	MsgType string `json:"msgtype"`
+	AgentID int    `json:"agentid"`
+	Text    struct {
+		Content string `json:"content"`
+	} `json:"text"`
+}
+
 func (api *MessageApi) SendTextMessage(
 	ctx context.Context, header *MessageHeader, content string,
 ) (*MessageResponse, error) {
-	header.MsgType = "text"
-	header.AgentID = api.AgentID
 	result := &MessageResponse{}
 	if err := api.Client.HTTPPostJson(ctx, apiSend, &TextMessage{
 		MessageHeader: header,
+		AgentID:       api.AgentID,
+		MsgType:       "text",
 		Text: struct {
 			Content string `json:"content"`
 		}{
 			Content: content,
 		},
+	}, result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+/*
+发送应用消息(文本卡片)
+应用支持推送文本、图片、视频、文件、图文等类型。
+See: https://work.weixin.qq.com/api/doc/90000/90135/90236
+POST https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=ACCESS_TOKEN
+*/
+
+type TextCardMessage struct {
+	*MessageHeader
+	MsgType  string `json:"msgtype"`
+	AgentID  int    `json:"agentid"`
+	TextCard struct {
+		Title       string `json:"title"`
+		Description string `json:"description"`
+		URL         string `json:"url"`
+		BtnTxt      string `json:"btntxt"`
+	} `json:"textcard"`
+}
+
+func (api *MessageApi) SendTextCardMessage(
+	ctx context.Context, header *MessageHeader,
+	title, description, url, btntxt string,
+) (*MessageResponse, error) {
+	result := &MessageResponse{}
+	if err := api.Client.HTTPPostJson(ctx, apiSend, &TextCardMessage{
+		MessageHeader: header,
+		AgentID:       api.AgentID,
+		MsgType:       "textcard",
+		TextCard: struct {
+			Title       string `json:"title"`
+			Description string `json:"description"`
+			URL         string `json:"url"`
+			BtnTxt      string `json:"btntxt"`
+		}{
+			Title:       title,
+			Description: description,
+			URL:         url,
+			BtnTxt:      btntxt,
+		},
+	}, result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+/*
+发送应用消息(图文)
+应用支持推送文本、图片、视频、文件、图文等类型。
+See: https://work.weixin.qq.com/api/doc/90000/90135/90236
+POST https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=ACCESS_TOKEN
+*/
+type NewsMessageParam struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	URL         string `json:"url"`
+	PicURL      string `json:"picurl"`
+	AppID       string `json:"appid"`
+	PagePath    string `json:"pagepath"`
+}
+
+type NewsMessage struct {
+	*MessageHeader
+	MsgType string `json:"msgtype"`
+	AgentID int    `json:"agentid"`
+	News    struct {
+		Articles []*NewsMessageParam `json:"articles"`
+	} `json:"news"`
+}
+
+func (api *MessageApi) SendNewsMessage(
+	ctx context.Context, header *MessageHeader,
+	articles []*NewsMessageParam,
+) (*MessageResponse, error) {
+	result := &MessageResponse{}
+	if err := api.Client.HTTPPostJson(ctx, apiSend, &NewsMessage{
+		MessageHeader: header,
+		AgentID:       api.AgentID,
+		MsgType:       "news",
+		News: struct {
+			Articles []*NewsMessageParam `json:"articles"`
+		}{
+			Articles: articles,
+		},
+	}, result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+/*
+发送应用消息(Markdown)
+应用支持推送文本、图片、视频、文件、图文等类型。
+See: https://work.weixin.qq.com/api/doc/90000/90135/90236
+POST https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=ACCESS_TOKEN
+*/
+type MarkdownMessage struct {
+	*MessageHeader
+	MsgType  string `json:"msgtype"`
+	AgentID  int    `json:"agentid"`
+	Markdown struct {
+		Content string `json:"content"`
+	} `json:"markdown"`
+}
+
+func (api *MessageApi) SendMarkdownMessage(
+	ctx context.Context, header *MessageHeader, content string,
+) (*MessageResponse, error) {
+	result := &MessageResponse{}
+	if err := api.Client.HTTPPostJson(ctx, apiSend, &MarkdownMessage{
+		MessageHeader: header,
+		AgentID:       api.AgentID,
+		MsgType:       "markdown",
+		Markdown: struct {
+			Content string `json:"content"`
+		}{
+			Content: content,
+		},
+	}, result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+/*
+发送应用消息(image)
+应用支持推送文本、图片、视频、文件、图文等类型。
+See: https://work.weixin.qq.com/api/doc/90000/90135/90236
+POST https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=ACCESS_TOKEN
+*/
+type ImageMessage struct {
+	*MessageHeader
+	MsgType string `json:"msgtype"`
+	AgentID int    `json:"agentid"`
+	Image   struct {
+		MediaID string `json:"media_id"`
+	} `json:"image"`
+}
+
+func (api *MessageApi) SendImageMessage(
+	ctx context.Context, header *MessageHeader, mediaID string,
+) (*MessageResponse, error) {
+	result := &MessageResponse{}
+	if err := api.Client.HTTPPostJson(ctx, apiSend, &ImageMessage{
+		MessageHeader: header,
+		AgentID:       api.AgentID,
+		MsgType:       "image",
+		Image: struct {
+			MediaID string `json:"media_id"`
+		}{
+			MediaID: mediaID,
+		},
+	}, result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+/*
+发送应用消息(voice)
+应用支持推送文本、图片、视频、文件、图文等类型。
+See: https://work.weixin.qq.com/api/doc/90000/90135/90236
+POST https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=ACCESS_TOKEN
+*/
+type VoiceMessage struct {
+	*MessageHeader
+	MsgType string `json:"msgtype"`
+	AgentID int    `json:"agentid"`
+	Voice   struct {
+		MediaID string `json:"media_id"`
+	} `json:"voice"`
+}
+
+func (api *MessageApi) SendVoiceMessage(
+	ctx context.Context, header *MessageHeader, mediaID string,
+) (*MessageResponse, error) {
+	result := &MessageResponse{}
+	if err := api.Client.HTTPPostJson(ctx, apiSend, &VoiceMessage{
+		MessageHeader: header,
+		AgentID:       api.AgentID,
+		MsgType:       "voice",
+		Voice: struct {
+			MediaID string `json:"media_id"`
+		}{
+			MediaID: mediaID,
+		},
+	}, result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+/*
+发送应用消息(video)
+应用支持推送文本、图片、视频、文件、图文等类型。
+See: https://work.weixin.qq.com/api/doc/90000/90135/90236
+POST https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=ACCESS_TOKEN
+*/
+type VideoMessage struct {
+	*MessageHeader
+	MsgType string `json:"msgtype"`
+	AgentID int    `json:"agentid"`
+	Video   struct {
+		MediaID string `json:"media_id"`
+	} `json:"video"`
+}
+
+func (api *MessageApi) SendVideoMessage(
+	ctx context.Context, header *MessageHeader, mediaID string,
+) (*MessageResponse, error) {
+	result := &MessageResponse{}
+	if err := api.Client.HTTPPostJson(ctx, apiSend, &VideoMessage{
+		MessageHeader: header,
+		AgentID:       api.AgentID,
+		MsgType:       "video",
+		Video: struct {
+			MediaID string `json:"media_id"`
+		}{
+			MediaID: mediaID,
+		},
+	}, result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+/*
+发送应用消息(file)
+应用支持推送文本、图片、视频、文件、图文等类型。
+See: https://work.weixin.qq.com/api/doc/90000/90135/90236
+POST https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=ACCESS_TOKEN
+*/
+type FileMessage struct {
+	*MessageHeader
+	MsgType string `json:"msgtype"`
+	AgentID int    `json:"agentid"`
+	File    struct {
+		MediaID string `json:"media_id"`
+	} `json:"file"`
+}
+
+func (api *MessageApi) SendFileMessage(
+	ctx context.Context, header *MessageHeader, mediaID string,
+) (*MessageResponse, error) {
+	result := &MessageResponse{}
+	if err := api.Client.HTTPPostJson(ctx, apiSend, &FileMessage{
+		MessageHeader: header,
+		AgentID:       api.AgentID,
+		MsgType:       "file",
+		File: struct {
+			MediaID string `json:"media_id"`
+		}{
+			MediaID: mediaID,
+		},
+	}, result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+/*
+发送应用消息(图文)
+应用支持推送文本、图片、视频、文件、图文等类型。
+See: https://work.weixin.qq.com/api/doc/90000/90135/90236
+POST https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=ACCESS_TOKEN
+*/
+type MpNewsMessageParam struct {
+	Title            string `json:"title"`
+	ThumbMediaID     string `json:"thumb_media_id"`
+	Author           string `json:"author"`
+	ContentSourceURL string `json:"content_source_url"`
+	Content          string `json:"content"`
+	Digest           string `json:"digest"`
+}
+
+type MpNewsMessage struct {
+	*MessageHeader
+	MsgType string `json:"msgtype"`
+	AgentID int    `json:"agentid"`
+	MpNews  struct {
+		Articles []*MpNewsMessageParam `json:"articles"`
+	} `json:"mpnews"`
+}
+
+func (api *MessageApi) SendMpNewsMessage(
+	ctx context.Context, header *MessageHeader,
+	articles []*MpNewsMessageParam,
+) (*MessageResponse, error) {
+	result := &MessageResponse{}
+	if err := api.Client.HTTPPostJson(ctx, apiSend, &MpNewsMessage{
+		MessageHeader: header,
+		AgentID:       api.AgentID,
+		MsgType:       "mpnews",
+		MpNews: struct {
+			Articles []*MpNewsMessageParam `json:"articles"`
+		}{
+			Articles: articles,
+		},
+	}, result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+/*
+发送应用消息(小程序)
+应用支持推送文本、图片、视频、文件、图文等类型。
+See: https://work.weixin.qq.com/api/doc/90000/90135/90236
+POST https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=ACCESS_TOKEN
+*/
+type MpNoticeItem struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+type MpNoticeMessageParam struct {
+	AppID             string          `json:"appid"`
+	Page              string          `json:"page"`
+	Title             string          `json:"title"`
+	Description       string          `json:"description"`
+	EmphasisFirstItem bool            `json:"emphasis_first_item"`
+	ContentItem       []*MpNoticeItem `json:"content_item"`
+}
+
+type MpNoticeMessage struct {
+	*MessageHeader
+	MsgType  string                `json:"msgtype"`
+	AgentID  int                   `json:"agentid"`
+	MpNotice *MpNoticeMessageParam `json:"miniprogram_notice"`
+}
+
+func (api *MessageApi) SendMpNoticeMessage(
+	ctx context.Context, header *MessageHeader,
+	msg *MpNoticeMessageParam,
+) (*MessageResponse, error) {
+	result := &MessageResponse{}
+	if err := api.Client.HTTPPostJson(ctx, apiSend, &MpNoticeMessage{
+		MessageHeader: header,
+		AgentID:       api.AgentID,
+		MsgType:       "miniprogram_notice",
+		MpNotice:      msg,
 	}, result); err != nil {
 		return nil, err
 	}

@@ -4,17 +4,25 @@ import "github.com/lixinio/weixin/utils"
 
 type UserInfo struct {
 	utils.WeixinError
+	UserDetail
+}
 
+type UserDetail struct {
+	User
+	Alias     string `json:"alias"`     // 别名；第三方仅通讯录应用可获取
+	Mobile    string `json:"mobile"`    // 手机号码；第三方仅通讯录应用可获取
+	Email     string `json:"email"`     // 邮箱；第三方仅通讯录应用可获取
+	Position  string `json:"position"`  // 职务信息；第三方仅通讯录应用可获取
+	AvatarURL string `json:"avatar"`    // NOTE：如果要获取小图将url最后的”/0”改成”/100”即可。
+	Telephone string `json:"telephone"` // 座机；第三方仅通讯录应用可获取
+	Gender    string `json:"gender"`    // 性别
+	Status    int    `json:"status"`    // 成员激活状态
+}
+
+type User struct {
 	UserID     string `json:"userid"`
 	Name       string `json:"name"`
-	Alias      string `json:"alias"`     // 别名；第三方仅通讯录应用可获取
-	Mobile     string `json:"mobile"`    // 手机号码；第三方仅通讯录应用可获取
-	Email      string `json:"email"`     // 邮箱；第三方仅通讯录应用可获取
-	Position   string `json:"position"`  // 职务信息；第三方仅通讯录应用可获取
-	AvatarURL  string `json:"avatar"`    // NOTE：如果要获取小图将url最后的”/0”改成”/100”即可。
-	Telephone  string `json:"telephone"` // 座机；第三方仅通讯录应用可获取
-	Gender     string `json:"gender"`    // 性别
-	Status     int    `json:"status"`    // 成员激活状态
+	OpenUserid string `json:"open_userid"`
 	Department []int  `json:"department"`
 }
 
@@ -35,3 +43,13 @@ const (
 	UserStatusDeactivated int = 2 // 已禁用
 	UserStatusUnactivated int = 4 // 未激活
 )
+
+type DepUserInfo struct {
+	utils.WeixinError
+	UserList []*User `json:"userlist"`
+}
+
+type DepUserDetail struct {
+	utils.WeixinError
+	UserList []*UserDetail `json:"userlist"`
+}
