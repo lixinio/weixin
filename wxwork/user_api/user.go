@@ -20,6 +20,7 @@ package user_api
 import (
 	"context"
 	"net/url"
+	"strconv"
 
 	"github.com/lixinio/weixin/utils"
 )
@@ -32,6 +33,7 @@ const (
 	apiBatchDelete     = "/cgi-bin/user/batchdelete"
 	apiSimpleList      = "/cgi-bin/user/simplelist"
 	apiList            = "/cgi-bin/user/list"
+	apiMobileGetUserId = "/cgi-bin/user/getuserid"
 	apiConvertToOpenId = "/cgi-bin/user/convert_to_openid"
 	apiConvertToUserId = "/cgi-bin/user/convert_to_userid"
 	apiAuthSucc        = "/cgi-bin/user/authsucc"
@@ -134,12 +136,19 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90200
 
 GET https://qyapi.weixin.qq.com/cgi-bin/user/simplelist?access_token=ACCESS_TOKEN&department_id=DEPARTMENT_ID&fetch_child=FETCH_CHILD
 */
-// func (api *UserApi) SimpleList(
-// 	context context.Context,
-// 	params url.Values,
-// ) (resp []byte, err error) {
-// 	return api.Client.HTTPGet(context, apiSimpleList+"?"+params.Encode())
-// }
+func (api *UserApi) SimpleList(
+	context context.Context, depID, fetchChild int,
+) (*DepUserInfo, error) {
+	result := &DepUserInfo{}
+	err := api.Client.HTTPGetWithParams(context, apiSimpleList, func(params url.Values) {
+		params.Add("department_id", strconv.Itoa(depID))
+		params.Add("fetch_child", strconv.Itoa(fetchChild))
+	}, result)
+	if err == nil {
+		return result, nil
+	}
+	return nil, err
+}
 
 /*
 获取部门成员详情
@@ -148,9 +157,19 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90201
 
 GET https://qyapi.weixin.qq.com/cgi-bin/user/list?access_token=ACCESS_TOKEN&department_id=DEPARTMENT_ID&fetch_child=FETCH_CHILD
 */
-// func (api *UserApi) List(context context.Context, params url.Values) (resp []byte, err error) {
-// 	return api.Client.HTTPGet(context, apiList+"?"+params.Encode())
-// }
+func (api *UserApi) List(
+	context context.Context, depID, fetchChild int,
+) (*DepUserDetail, error) {
+	result := &DepUserDetail{}
+	err := api.Client.HTTPGetWithParams(context, apiList, func(params url.Values) {
+		params.Add("department_id", strconv.Itoa(depID))
+		params.Add("fetch_child", strconv.Itoa(fetchChild))
+	}, result)
+	if err == nil {
+		return result, nil
+	}
+	return nil, err
+}
 
 /*
 userid与openid互换
@@ -161,17 +180,20 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90202
 
 POST https://qyapi.weixin.qq.com/cgi-bin/user/convert_to_openid?access_token=ACCESS_TOKEN
 */
-// func (api *UserApi) ConvertToOpenId(
-// 	context context.Context,
-// 	payload []byte,
-// ) (resp []byte, err error) {
-// 	return api.Client.HTTPPost(
-// 		context,
-// 		apiConvertToOpenId,
-// 		bytes.NewReader(payload),
-// 		"application/json;charset=utf-8",
-// 	)
-// }
+func (api *UserApi) ConvertToOpenId(
+	context context.Context, userid string,
+) (string, error) {
+	result := &struct {
+		utils.WeixinError
+		Openid string `json:"openid"`
+	}{}
+	if err := api.Client.HTTPPostJson(context, apiConvertToOpenId, map[string]string{
+		"userid": userid,
+	}, result); err != nil {
+		return "", err
+	}
+	return result.Openid, nil
+}
 
 /*
 openid转userid
@@ -182,17 +204,46 @@ See: https://work.weixin.qq.com/api/doc/90000/90135/90202
 
 POST https://qyapi.weixin.qq.com/cgi-bin/user/convert_to_userid?access_token=ACCESS_TOKEN
 */
-// func (api *UserApi) ConvertToUserId(
-// 	context context.Context,
-// 	payload []byte,
-// ) (resp []byte, err error) {
-// 	return api.Client.HTTPPost(
-// 		context,
-// 		apiConvertToUserId,
-// 		bytes.NewReader(payload),
-// 		"application/json;charset=utf-8",
-// 	)
-// }
+func (api *UserApi) ConvertToUserId(
+	context context.Context,
+	openid string,
+) (string, error) {
+	result := &struct {
+		utils.WeixinError
+		Userid string `json:"userid"`
+	}{}
+	if err := api.Client.HTTPPostJson(context, apiConvertToUserId, map[string]string{
+		"openid": openid,
+	}, result); err != nil {
+		return "", err
+	}
+	return result.Userid, nil
+}
+
+/*
+手机号获取userid
+
+通过手机号获取其所对应的userid。
+
+See: https://work.weixin.qq.com/api/doc/90001/90143/91693
+
+POST https://qyapi.weixin.qq.com/cgi-bin/user/getuserid?access_token=ACCESS_TOKEN
+*/
+func (api *UserApi) MobileGetUserId(
+	context context.Context,
+	mobile string,
+) (string, error) {
+	result := &struct {
+		utils.WeixinError
+		Userid string `json:"userid"`
+	}{}
+	if err := api.Client.HTTPPostJson(context, apiMobileGetUserId, map[string]string{
+		"mobile": mobile,
+	}, result); err != nil {
+		return "", err
+	}
+	return result.Userid, nil
+}
 
 /*
 二次验证
