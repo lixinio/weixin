@@ -175,7 +175,6 @@ func main() {
 		wxworkSuiteAgent.AgentID,
 		test.WxWorkSuiteToken,
 		test.WxWorkSuiteEncodingAESKey,
-		wxworkSuiteAgent.Client,
 	)
 	// 似乎不需要调用这个接口， 调用也是失败的
 	// 注入oa模板
