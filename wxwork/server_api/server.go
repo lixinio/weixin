@@ -29,7 +29,6 @@ import (
 )
 
 type ServerApi struct {
-	*utils.Client
 	AgentID        string
 	Token          string // 接收消息服务器配置（Token）
 	EncodingAESKey string // 接收消息服务器配置（EncodingAESKey）
@@ -38,10 +37,8 @@ type ServerApi struct {
 func NewApi(
 	agentID int,
 	token, encodingAESKey string,
-	client *utils.Client,
 ) *ServerApi {
 	return &ServerApi{
-		Client:         client,
 		AgentID:        strconv.Itoa(agentID),
 		Token:          token,
 		EncodingAESKey: encodingAESKey,

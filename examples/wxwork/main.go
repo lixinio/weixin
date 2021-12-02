@@ -75,7 +75,6 @@ func main() {
 		test.AgentID,
 		test.AgentToken,
 		test.AgentEncodingAESKey,
-		agent.Client,
 	)
 
 	http.HandleFunc("/", index(agent))
