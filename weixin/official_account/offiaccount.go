@@ -1,6 +1,7 @@
 package official_account
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/lixinio/weixin/utils"
@@ -8,6 +9,10 @@ import (
 
 const (
 	WXServerUrl = "https://api.weixin.qq.com" // 微信 api 服务器地址
+)
+
+var (
+	ErrTokenUpdateForbidden = errors.New("can NOT refresh&update token in offiaccount lite mode")
 )
 
 /*
@@ -28,30 +33,30 @@ func New(cache utils.Cache, locker utils.Lock, config *Config) *OfficialAccount 
 		Config: config,
 	}
 	instance.Client = utils.NewClient(
-		WXServerUrl,
-		utils.NewAccessTokenCache(instance, cache, locker),
+		WXServerUrl, utils.NewAccessTokenCache(
+			newAdapter(config.Appid, instance.refreshAccessTokenFromWXServer),
+			cache, locker,
+		),
 	)
 	return instance
 }
 
-// GetAccessToken 接口 weixin.AccessTokenGetter 实现
-func (officialAccount *OfficialAccount) GetAccessToken() (accessToken string, expiresIn int, err error) {
-	accessToken, expiresIn, err = officialAccount.refreshAccessTokenFromWXServer()
-	return
-}
-
-// GetAccessTokenKey 接口 weixin.AccessTokenGetter 实现
-func (officialAccount *OfficialAccount) GetAccessTokenKey() string {
-	return fmt.Sprintf(
-		"weixin.access_token.%s",
-		officialAccount.Config.Appid,
+func NewLite(cache utils.Cache, locker utils.Lock, appid string) *OfficialAccount {
+	client := utils.NewClient(
+		WXServerUrl, utils.NewAccessTokenCache(
+			newAdapter(appid, func() (string, int, error) {
+				return "", 0, fmt.Errorf(
+					"can NOT refresh token in lite mod, appid(%s), %w",
+					appid, ErrTokenUpdateForbidden,
+				)
+			}),
+			cache, locker,
+		),
 	)
-}
-
-// GetAccessTokenLockKey 接口 weixin.AccessTokenGetter 实现
-func (officialAccount *OfficialAccount) GetAccessTokenLockKey() string {
-	return fmt.Sprintf(
-		"weixin.access_token.%s.lock",
-		officialAccount.Config.Appid,
-	)
+	return &OfficialAccount{
+		Client: client,
+		Config: &Config{
+			Appid: appid,
+		},
+	}
 }
