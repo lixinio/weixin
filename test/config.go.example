@@ -65,6 +65,9 @@ const (
 	WxWorkSuiteCorpID = "abce" // 授权给服务商的集团Corp ID
 	WxWorkSuiteAgentID = 123 // 授权给服务商的集团 应用ID
 
+	//===================================== 网页扫码登录 =====================================
+	WxSSOAppid  = "abcdefg"
+	WxSSOSecret = "hijklmn"
 )
 
 var (

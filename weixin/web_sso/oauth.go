@@ -11,6 +11,7 @@ const (
 	apiAuthorize    = "https://open.weixin.qq.com/connect/qrconnect"
 	apiAccessToken  = "/sns/oauth2/access_token"
 	apiRefreshToken = "/sns/oauth2/refresh_token"
+	apiUserInfo     = "/sns/userinfo"
 	WXServerUrl     = "https://api.weixin.qq.com" // 微信 api 服务器地址
 )
 
@@ -97,5 +98,45 @@ func (sso *WebSSO) RefreshSnsToken(
 		return nil, err
 	}
 
+	return result, nil
+}
+
+const (
+	LANG_zh_CN = "zh_CN"
+	LANG_zh_TW = "zh_TW"
+	LANG_en    = "en"
+)
+
+type OauthUserInfo struct {
+	utils.WeixinError
+	Openid     string   `json:"openid"`
+	Nickname   string   `json:"nickname"`
+	Sex        int64    `json:"sex"`
+	Province   string   `json:"province"`
+	City       string   `json:"city"`
+	Country    string   `json:"country"`
+	Headimgurl string   `json:"headimgurl"`
+	Privilege  []string `json:"privilege"`
+	Unionid    string   `json:"unionid"`
+}
+
+// https://developers.weixin.qq.com/doc/oplatform/Website_App/WeChat_Login/Authorized_Interface_Calling_UnionID.html
+// 获取用户个人信息（UnionID机制）
+// https://api.weixin.qq.com/sns/userinfo?access_token=ACCESS_TOKEN&openid=OPENID
+func (sso *WebSSO) GetUserInfo(
+	ctx context.Context, accessToken string, openid string, lang string,
+) (*OauthUserInfo, error) {
+	result := &OauthUserInfo{}
+	if lang == "" {
+		lang = LANG_zh_CN // 国家地区语言版本，zh_CN 简体，zh_TW 繁体，en 英语，默认为en
+	}
+	// 无需 access token
+	if err := sso.Client.HTTPGetToken(context.TODO(), apiUserInfo, func(params url.Values) {
+		params.Add("access_token", accessToken)
+		params.Add("openid", openid)
+		params.Add("lang", lang)
+	}, result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }
