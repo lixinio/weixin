@@ -30,7 +30,13 @@ func NewApi(client *utils.Client) *AuthorizerApi {
 https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/code/commit.html
 POST https://api.weixin.qq.com/wxa/commit?access_token=ACCESS_TOKEN
 */
-func (api *AuthorizerApi) Commit(ctx context.Context, templateID int32, extJson string, userVersion string, userDesc string) error {
+func (api *AuthorizerApi) Commit(
+	ctx context.Context,
+	templateID int32,
+	extJson string,
+	userVersion string,
+	userDesc string,
+) error {
 	return api.Client.HTTPPostJson(ctx, apiCommit, map[string]interface{}{
 		"template_id":  templateID,
 		"ext_json":     extJson,
@@ -98,7 +104,10 @@ type AuditParams struct {
 https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/code/submit_audit.html
 POST https://api.weixin.qq.com/wxa/submit_audit?access_token=ACCESS_TOKEN
 */
-func (api *AuthorizerApi) SubmitAudit(ctx context.Context, auditParams *AuditParams) (int32, error) {
+func (api *AuthorizerApi) SubmitAudit(
+	ctx context.Context,
+	auditParams *AuditParams,
+) (int32, error) {
 	result := struct {
 		utils.WeixinError
 		AuditID int32 `json:"auditid"`

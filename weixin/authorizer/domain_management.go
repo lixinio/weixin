@@ -32,7 +32,10 @@ type ModifyDomainResp struct {
 https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/Mini_Program_Basic_Info/Server_Address_Configuration.html
 POST https://api.weixin.qq.com/wxa/modify_domain?access_token=ACCESS_TOKEN
 */
-func (api *AuthorizerApi) ModifyDomain(ctx context.Context, params *ModifyDomainParams) (*ModifyDomainResp, error) {
+func (api *AuthorizerApi) ModifyDomain(
+	ctx context.Context,
+	params *ModifyDomainParams,
+) (*ModifyDomainResp, error) {
 	result := ModifyDomainResp{}
 	err := api.Client.HTTPPostJson(ctx, apiModifyDomain, params, &result)
 	if err != nil {
@@ -52,6 +55,9 @@ type SetWebViewDomainParams struct {
 https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/Mini_Program_Basic_Info/setwebviewdomain.html
 POST https://api.weixin.qq.com/wxa/setwebviewdomain?access_token=ACCESS_TOKEN
 */
-func (api *AuthorizerApi) SetWebViewDomain(ctx context.Context, params *SetWebViewDomainParams) error {
+func (api *AuthorizerApi) SetWebViewDomain(
+	ctx context.Context,
+	params *SetWebViewDomainParams,
+) error {
 	return api.Client.HTTPPostJson(ctx, apiSetWebViewDomain, params, nil)
 }

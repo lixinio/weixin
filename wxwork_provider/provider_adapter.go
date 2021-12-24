@@ -9,7 +9,9 @@ import (
 )
 
 var (
-	ErrTokenUpdateForbidden = errors.New("can NOT refresh&update token in wxwork provider lite mode")
+	ErrTokenUpdateForbidden = errors.New(
+		"can NOT refresh&update token in wxwork provider lite mode",
+	)
 )
 
 // access token的cache

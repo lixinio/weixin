@@ -23,30 +23,34 @@ func New(corp *work.WxWork, cache utils.Cache, locker utils.Lock, config *Config
 		Config: config,
 		wxwork: corp,
 	}
-	instance.Client = corp.NewClient(utils.NewAccessTokenCache(instance, cache, locker))
+	instance.Client = corp.NewClient(utils.NewAccessTokenCache(
+		newAdapter(corp.Config.Corpid, config.AgentID, instance.refreshAccessTokenFromWXServer),
+		cache, locker,
+	))
 	return instance
 }
 
-// GetAccessToken 接口 weixin.AccessTokenGetter 实现
-func (agent *Agent) GetAccessToken() (accessToken string, expiresIn int, err error) {
-	accessToken, expiresIn, err = agent.refreshAccessTokenFromWXServer()
-	return
+func NewLite(
+	corp *work.WxWork, cache utils.Cache, locker utils.Lock, agentID int,
+) *Agent {
+	client := corp.NewClient(
+		utils.NewAccessTokenCache(
+			newAdapter(corp.Config.Corpid, agentID, func() (string, int, error) {
+				return "", 0, fmt.Errorf(
+					"can NOT refresh token in lite mod, corp(%s), agentid(%d), %w",
+					corp.Config.Corpid, agentID, ErrTokenUpdateForbidden,
+				)
+			}),
+			cache, locker,
+		),
+	)
+	return &Agent{
+		Config: &Config{AgentID: agentID},
+		wxwork: corp,
+		Client: client,
+	}
 }
 
-// GetAccessTokenKey 接口 weixin.AccessTokenGetter 实现
-func (agent *Agent) GetAccessTokenKey() string {
-	return fmt.Sprintf(
-		"qywx_%s_%d.access_token",
-		agent.wxwork.Config.Corpid,
-		agent.Config.AgentID,
-	)
-}
-
-// GetAccessTokenLockKey 接口 weixin.AccessTokenGetter 实现
-func (agent *Agent) GetAccessTokenLockKey() string {
-	return fmt.Sprintf(
-		"qywx_%s_%d.access_token.lock",
-		agent.wxwork.Config.Corpid,
-		agent.Config.AgentID,
-	)
+func (agent *Agent) CorpID() string {
+	return agent.wxwork.Config.Corpid
 }
