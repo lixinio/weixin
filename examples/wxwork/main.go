@@ -66,6 +66,7 @@ func main() {
 	corp := wxwork.New(&wxwork.Config{
 		Corpid: test.CorpID,
 	})
+	// agent := agent.NewLite(corp, redis, redis, test.AgentID)
 	agent := agent.New(corp, redis, redis, &agent.Config{
 		AgentID: test.AgentID,
 		Secret:  test.AgentSecret,
