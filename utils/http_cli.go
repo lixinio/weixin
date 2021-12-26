@@ -167,6 +167,53 @@ func (client *Client) HTTPGetRaw(
 	return resp, nil
 }
 
+// 生成二维码， 需要根据Content-Type来判断Body， 可以是json，可能是二进制
+// HTTPGetRaw 素材下载， 需要根据Content-Type来判断Body， 可以是json，可能是二进制
+// 例如 https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/qr-code/wxacode.getUnlimited.html
+func (client *Client) HTTPPostDownload(
+	ctx context.Context, path string,
+	body interface{}, querysFunc func(url.Values),
+) (resp *http.Response, err error) {
+	newPath, err := client.applyAccessToken(path, querysFunc, true)
+	if err != nil {
+		return
+	}
+
+	payload := new(bytes.Buffer)
+	err = json.NewEncoder(payload).Encode(body)
+	if err != nil {
+		return nil, err
+	}
+
+	// 调用http请求
+	req, err := http.NewRequest(http.MethodPost, client.serverUrl+newPath, payload)
+	if err != nil {
+		return
+	}
+
+	resp, err = client.httpDoRaw(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	// 如果Content-Type 是 Json, 那出错了
+	if hasJsonContentType(resp) {
+		defer resp.Body.Close()
+		result := &WeixinError{}
+		if err = doWeixinError(resp, result); err != nil {
+			return nil, err
+		} else {
+			// wtf
+			panic(fmt.Errorf(
+				"request (%s) response invalid json response(%d: %s)",
+				req.URL.Path, result.ErrCode, result.ErrMsg,
+			))
+		}
+	}
+
+	return resp, nil
+}
+
 // HTTPPost POST 请求, 一次性上传, 优先使用 HttpFile
 // 发票上传接口不支持分块(Go Http Client库缺省的方式)
 // https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Transfer-Encoding
