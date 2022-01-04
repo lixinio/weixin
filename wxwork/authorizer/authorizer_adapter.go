@@ -38,12 +38,10 @@ func newAdapter(
 	return &authorizerAccessTokenGetterAdapter{
 		accessTokenGetter: accessTokenGetter,
 		accessTokenKey: fmt.Sprintf(
-			"qywx.suite_agent_access_token.%s.%s.%d",
-			suiteID, corpID, agentID,
+			"qywx.suite_agent_access_token.%s.%s", suiteID, corpID,
 		),
 		accessTokenLockKey: fmt.Sprintf(
-			"qywx.suite_agent_access_token.%s.%s.%d.lock",
-			suiteID, corpID, agentID,
+			"qywx.suite_agent_access_token.%s.%s.lock", suiteID, corpID,
 		),
 	}
 }
