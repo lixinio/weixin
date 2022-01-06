@@ -102,7 +102,7 @@ type TextCardMessage struct {
 		Title       string `json:"title"`
 		Description string `json:"description"`
 		URL         string `json:"url"`
-		BtnTxt      string `json:"btntxt"`
+		BtnTxt      string `json:"btntxt,omitempty"`
 	} `json:"textcard"`
 }
 
@@ -119,7 +119,7 @@ func (api *MessageApi) SendTextCardMessage(
 			Title       string `json:"title"`
 			Description string `json:"description"`
 			URL         string `json:"url"`
-			BtnTxt      string `json:"btntxt"`
+			BtnTxt      string `json:"btntxt,omitempty"`
 		}{
 			Title:       title,
 			Description: description,
@@ -140,11 +140,11 @@ POST https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=ACCESS_TOKEN
 */
 type NewsMessageParam struct {
 	Title       string `json:"title"`
-	Description string `json:"description"`
-	URL         string `json:"url"`
-	PicURL      string `json:"picurl"`
-	AppID       string `json:"appid"`
-	PagePath    string `json:"pagepath"`
+	Description string `json:"description,omitempty"`
+	URL         string `json:"url,omitempty"`      // 点击后跳转的链接。 最长2048字节，请确保包含了协议头(http/https)，小程序或者url必须填写一个
+	PicURL      string `json:"picurl,omitempty"`   // 图文消息的图片链接，支持JPG、PNG格式，较好的效果为大图 1068*455，小图150*150。
+	AppID       string `json:"appid,omitempty"`    // 小程序appid，必须是与当前应用关联的小程序，appid和pagepath必须同时填写，填写后会忽略url字段
+	PagePath    string `json:"pagepath,omitempty"` // 点击消息卡片后的小程序页面，仅限本小程序内的页面。appid和pagepath必须同时填写，填写后会忽略url字段
 }
 
 type NewsMessage struct {
@@ -355,10 +355,10 @@ POST https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=ACCESS_TOKEN
 type MpNewsMessageParam struct {
 	Title            string `json:"title"`
 	ThumbMediaID     string `json:"thumb_media_id"`
-	Author           string `json:"author"`
-	ContentSourceURL string `json:"content_source_url"`
+	Author           string `json:"author,omitempty"`
+	ContentSourceURL string `json:"content_source_url,omitempty"`
 	Content          string `json:"content"`
-	Digest           string `json:"digest"`
+	Digest           string `json:"digest,omitempty"`
 }
 
 type MpNewsMessage struct {
@@ -403,11 +403,11 @@ type MpNoticeItem struct {
 
 type MpNoticeMessageParam struct {
 	AppID             string          `json:"appid"`
-	Page              string          `json:"page"`
+	Page              string          `json:"page,omitempty"`
 	Title             string          `json:"title"`
-	Description       string          `json:"description"`
+	Description       string          `json:"description,omitempty"`
 	EmphasisFirstItem bool            `json:"emphasis_first_item"`
-	ContentItem       []*MpNoticeItem `json:"content_item"`
+	ContentItem       []*MpNoticeItem `json:"content_item,omitempty"`
 }
 
 type MpNoticeMessage struct {
