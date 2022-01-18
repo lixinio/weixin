@@ -12,14 +12,18 @@ const (
 )
 
 var (
-	ErrTokenUpdateForbidden = errors.New("can NOT refresh&update token in wxopen lite mode")
+	ErrTokenUpdateForbidden  = errors.New("can NOT refresh&update token in wxopen lite mode")
+	ErrJsApiTicketForbidden  = errors.New("can NOT refresh&update jsapi ticket without enable it")
+	ErrWxCardTicketForbidden = errors.New("can NOT refresh&update wxcard ticket without enable it")
 )
 
 type Authorizer struct {
-	ComponentAppid   string
-	Appid            string
-	Client           *utils.Client
-	accessTokenCache *utils.AccessTokenCache // 用于支持手动刷新Token， Client不对外暴露该对象
+	ComponentAppid    string
+	Appid             string
+	Client            *utils.Client
+	accessTokenCache  *utils.AccessTokenCache // 用于支持手动刷新Token， Client不对外暴露该对象
+	jsApiTicketCache  *utils.AccessTokenCache
+	wxCardTicketCache *utils.AccessTokenCache
 }
 
 func New(
@@ -69,4 +73,59 @@ func (authorizer *Authorizer) RefreshAccessToken(expireBefore int) (string, erro
 		)
 	}
 	return authorizer.accessTokenCache.RefreshAccessToken(expireBefore)
+}
+
+func (authorizer *Authorizer) ClearAccessToken() error {
+	if authorizer.accessTokenCache == nil {
+		return fmt.Errorf(
+			"authorizer appid : %s,%s, error: %w",
+			authorizer.ComponentAppid, authorizer.Appid,
+			ErrTokenUpdateForbidden,
+		)
+	}
+	return authorizer.accessTokenCache.ClearAccessToken()
+}
+
+func (authorizer *Authorizer) RefreshJsApiTicket(expireBefore int) (string, error) {
+	if authorizer.jsApiTicketCache == nil {
+		return "", fmt.Errorf(
+			"authorizer appid : %s,%s, error: %w",
+			authorizer.ComponentAppid, authorizer.Appid,
+			ErrJsApiTicketForbidden,
+		)
+	}
+	return authorizer.jsApiTicketCache.RefreshAccessToken(expireBefore)
+}
+
+func (authorizer *Authorizer) ClearJsApiTicket() error {
+	if authorizer.jsApiTicketCache == nil {
+		return fmt.Errorf(
+			"authorizer appid : %s,%s, error: %w",
+			authorizer.ComponentAppid, authorizer.Appid,
+			ErrJsApiTicketForbidden,
+		)
+	}
+	return authorizer.jsApiTicketCache.ClearAccessToken()
+}
+
+func (authorizer *Authorizer) RefreshWxCardTicket(expireBefore int) (string, error) {
+	if authorizer.wxCardTicketCache == nil {
+		return "", fmt.Errorf(
+			"authorizer appid : %s,%s, error: %w",
+			authorizer.ComponentAppid, authorizer.Appid,
+			ErrWxCardTicketForbidden,
+		)
+	}
+	return authorizer.wxCardTicketCache.RefreshAccessToken(expireBefore)
+}
+
+func (authorizer *Authorizer) ClearWxCardTicket() error {
+	if authorizer.wxCardTicketCache == nil {
+		return fmt.Errorf(
+			"authorizer appid : %s,%s, error: %w",
+			authorizer.ComponentAppid, authorizer.Appid,
+			ErrWxCardTicketForbidden,
+		)
+	}
+	return authorizer.wxCardTicketCache.ClearAccessToken()
 }

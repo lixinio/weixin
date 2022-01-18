@@ -12,15 +12,19 @@ const (
 )
 
 var (
-	ErrTokenUpdateForbidden = errors.New("can NOT refresh&update token in wxwork lite mode")
+	ErrTokenUpdateForbidden      = errors.New("can NOT refresh&update token in wxwork lite mode")
+	ErrCorpJsApiTicketForbidden  = errors.New("can NOT refresh&update corp jsapi ticket without enable it")
+	ErrAgentJsApiTicketForbidden = errors.New("can NOT refresh&update agent jsapi ticket without enable it")
 )
 
 type Authorizer struct {
-	SuiteID          string
-	CorpID           string
-	AgentID          int
-	Client           *utils.Client
-	accessTokenCache *utils.AccessTokenCache // 用于支持手动刷新Token， Client不对外暴露该对象
+	SuiteID               string
+	CorpID                string
+	AgentID               int
+	Client                *utils.Client
+	accessTokenCache      *utils.AccessTokenCache // 用于支持手动刷新Token， Client不对外暴露该对象
+	corpJsApiTicketCache  *utils.AccessTokenCache
+	agentJsApiTicketCache *utils.AccessTokenCache
 }
 
 func New(
@@ -83,4 +87,48 @@ func (authorizer *Authorizer) ClearAccessToken() error {
 		)
 	}
 	return authorizer.accessTokenCache.ClearAccessToken()
+}
+
+func (authorizer *Authorizer) RefreshCorpJsApiTicket(expireBefore int) (string, error) {
+	if authorizer.corpJsApiTicketCache == nil {
+		return "", fmt.Errorf(
+			"authorizer appid : %s,%s,%d, error: %w",
+			authorizer.SuiteID, authorizer.CorpID, authorizer.AgentID,
+			ErrCorpJsApiTicketForbidden,
+		)
+	}
+	return authorizer.corpJsApiTicketCache.RefreshAccessToken(expireBefore)
+}
+
+func (authorizer *Authorizer) ClearCorpJsApiTicket() error {
+	if authorizer.corpJsApiTicketCache == nil {
+		return fmt.Errorf(
+			"authorizer appid : %s,%s,%d, error: %w",
+			authorizer.SuiteID, authorizer.CorpID, authorizer.AgentID,
+			ErrCorpJsApiTicketForbidden,
+		)
+	}
+	return authorizer.corpJsApiTicketCache.ClearAccessToken()
+}
+
+func (authorizer *Authorizer) RefreshAgentJsApiTicket(expireBefore int) (string, error) {
+	if authorizer.agentJsApiTicketCache == nil {
+		return "", fmt.Errorf(
+			"authorizer appid : %s,%s,%d, error: %w",
+			authorizer.SuiteID, authorizer.CorpID, authorizer.AgentID,
+			ErrAgentJsApiTicketForbidden,
+		)
+	}
+	return authorizer.agentJsApiTicketCache.RefreshAccessToken(expireBefore)
+}
+
+func (authorizer *Authorizer) ClearAgentJsApiTicket() error {
+	if authorizer.agentJsApiTicketCache == nil {
+		return fmt.Errorf(
+			"authorizer appid : %s,%s,%d, error: %w",
+			authorizer.SuiteID, authorizer.CorpID, authorizer.AgentID,
+			ErrAgentJsApiTicketForbidden,
+		)
+	}
+	return authorizer.agentJsApiTicketCache.ClearAccessToken()
 }

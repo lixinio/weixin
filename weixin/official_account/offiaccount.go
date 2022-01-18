@@ -12,7 +12,9 @@ const (
 )
 
 var (
-	ErrTokenUpdateForbidden = errors.New("can NOT refresh&update token in offiaccount lite mode")
+	ErrTokenUpdateForbidden  = errors.New("can NOT refresh&update token in offiaccount lite mode")
+	ErrJsApiTicketForbidden  = errors.New("can NOT refresh&update jsapi ticket without enable it")
+	ErrWxCardTicketForbidden = errors.New("can NOT refresh&update wxcard ticket without enable it")
 )
 
 /*
@@ -24,8 +26,10 @@ type Config struct {
 }
 
 type OfficialAccount struct {
-	Config *Config
-	Client *utils.Client
+	Config            *Config
+	Client            *utils.Client
+	jsApiTicketCache  *utils.AccessTokenCache
+	wxCardTicketCache *utils.AccessTokenCache
 }
 
 func New(cache utils.Cache, locker utils.Lock, config *Config) *OfficialAccount {
