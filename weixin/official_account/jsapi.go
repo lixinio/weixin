@@ -26,7 +26,7 @@ type JsApiCorpConfig struct {
 func (officialAccount *OfficialAccount) GetJSApiConfig(
 	ctx context.Context, url string,
 ) (*JsApiCorpConfig, error) {
-	jsApiTicket, _, err := officialAccount.GetJSApiTicket(ctx)
+	jsApiTicket, err := officialAccount.GetJSApiTicket(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -57,10 +57,23 @@ See: https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/JS-SDK.html#62
 
 GET https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=ACCESS_TOKEN&type=jsapi
 */
-func (officialAccount *OfficialAccount) GetJSApiTicket(
+func (officialAccount *OfficialAccount) getJSApiTicket(
 	ctx context.Context,
 ) (jsapiTicket string, expiresIn int64, err error) {
 	return officialAccount.getApiTicket(ctx, "jsapi")
+}
+
+func (officialAccount *OfficialAccount) GetJSApiTicket(
+	ctx context.Context,
+) (jsapiTicket string, err error) {
+	if officialAccount.jsApiTicketCache == nil {
+		return "", fmt.Errorf(
+			"authorizer appid : %s, error: %w",
+			officialAccount.Config.Appid,
+			ErrJsApiTicketForbidden,
+		)
+	}
+	return officialAccount.jsApiTicketCache.GetAccessToken()
 }
 
 /*
@@ -72,10 +85,23 @@ See: https://developers.weixin.qq.com/doc/offiaccount/WeChat_Invoice/E_Invoice/V
 
 GET https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=ACCESS_TOKEN&type=wx_card
 */
-func (officialAccount *OfficialAccount) GetWxCardApiTicket(
+func (officialAccount *OfficialAccount) getWxCardApiTicket(
 	ctx context.Context,
 ) (jsapiTicket string, expiresIn int64, err error) {
 	return officialAccount.getApiTicket(ctx, "wx_card")
+}
+
+func (officialAccount *OfficialAccount) GetWxCardApiTicket(
+	ctx context.Context,
+) (jsapiTicket string, err error) {
+	if officialAccount.wxCardTicketCache == nil {
+		return "", fmt.Errorf(
+			"authorizer appid : %s, error: %w",
+			officialAccount.Config.Appid,
+			ErrWxCardTicketForbidden,
+		)
+	}
+	return officialAccount.wxCardTicketCache.GetAccessToken()
 }
 
 func (officialAccount *OfficialAccount) getApiTicket(

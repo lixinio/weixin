@@ -16,12 +16,14 @@ func TestTicket(t *testing.T) {
 		Appid:  test.OfficialAccountAppid,
 		Secret: test.OfficialAccountSecret,
 	})
+	officialAccount.EnableJSApiTicketCache(redis, redis)
+	officialAccount.EnableWxCardTicketCache(redis, redis)
 
-	ticket, _, err := officialAccount.GetJSApiTicket(context.TODO())
+	ticket, err := officialAccount.GetJSApiTicket(context.TODO())
 	require.Equal(t, nil, err)
 	fmt.Println(ticket)
 
-	ticket, _, err = officialAccount.GetWxCardApiTicket(context.TODO())
+	ticket, err = officialAccount.GetWxCardApiTicket(context.TODO())
 	require.Equal(t, nil, err)
 	fmt.Println(ticket)
 }

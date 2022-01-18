@@ -25,7 +25,7 @@ const (
 https://work.weixin.qq.com/api/doc/90001/90144/90539#%E8%8E%B7%E5%8F%96%E4%BC%81%E4%B8%9A%E7%9A%84jsapi_ticket
 https://qyapi.weixin.qq.com/cgi-bin/get_jsapi_ticket?access_token=ACCESS_TOKEN
 */
-func (authorizer *Authorizer) GetCorpJSApiTicket(
+func (authorizer *Authorizer) getCorpJSApiTicket(
 	ctx context.Context,
 ) (jsapiTicket string, expiresIn int64, err error) {
 	jsapiTicketResp := struct {
@@ -43,6 +43,19 @@ func (authorizer *Authorizer) GetCorpJSApiTicket(
 	return jsapiTicketResp.Ticket, jsapiTicketResp.ExpiresIn, nil
 }
 
+func (authorizer *Authorizer) GetCorpJSApiTicket(
+	ctx context.Context,
+) (jsapiTicket string, err error) {
+	if authorizer.corpJsApiTicketCache == nil {
+		return "", fmt.Errorf(
+			"authorizer appid : %s,%s,%d, error: %w",
+			authorizer.SuiteID, authorizer.CorpID, authorizer.AgentID,
+			ErrCorpJsApiTicketForbidden,
+		)
+	}
+	return authorizer.corpJsApiTicketCache.GetAccessToken()
+}
+
 type JsApiCorpConfig struct {
 	Url       string `json:"url"`
 	NonceStr  string `json:"nonceStr"`
@@ -55,7 +68,7 @@ type JsApiCorpConfig struct {
 func (authorizer *Authorizer) GetCorpJSApiConfig(
 	ctx context.Context, url string,
 ) (*JsApiCorpConfig, error) {
-	jsApiTicket, _, err := authorizer.GetCorpJSApiTicket(ctx)
+	jsApiTicket, err := authorizer.GetCorpJSApiTicket(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -82,10 +95,23 @@ func (authorizer *Authorizer) GetCorpJSApiConfig(
 https://work.weixin.qq.com/api/doc/90001/90144/90539#%E8%8E%B7%E5%8F%96%E5%BA%94%E7%94%A8%E7%9A%84jsapi_ticket
 https://qyapi.weixin.qq.com/cgi-bin/ticket/get?access_token=ACCESS_TOKEN&type=agent_config
 */
-func (authorizer *Authorizer) GetAgentJSApiTicket(
+func (authorizer *Authorizer) getAgentJSApiTicket(
 	ctx context.Context,
 ) (jsapiTicket string, expiresIn int64, err error) {
 	return authorizer.getAgentApiTicket(ctx, "agent_config")
+}
+
+func (authorizer *Authorizer) GetAgentJSApiTicket(
+	ctx context.Context,
+) (jsapiTicket string, err error) {
+	if authorizer.agentJsApiTicketCache == nil {
+		return "", fmt.Errorf(
+			"authorizer appid : %s,%s,%d, error: %w",
+			authorizer.SuiteID, authorizer.CorpID, authorizer.AgentID,
+			ErrAgentJsApiTicketForbidden,
+		)
+	}
+	return authorizer.agentJsApiTicketCache.GetAccessToken()
 }
 
 type JsApiAgentConfig struct {
@@ -101,7 +127,7 @@ type JsApiAgentConfig struct {
 func (authorizer *Authorizer) GetAgentJSApiConfig(
 	ctx context.Context, url string,
 ) (*JsApiAgentConfig, error) {
-	jsApiTicket, _, err := authorizer.GetAgentJSApiTicket(ctx)
+	jsApiTicket, err := authorizer.GetAgentJSApiTicket(ctx)
 	if err != nil {
 		return nil, err
 	}

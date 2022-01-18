@@ -215,7 +215,7 @@ func TestInvoice(t *testing.T) {
 	orderID := fmt.Sprintf("%d", time.Now().UnixNano())
 	fmt.Printf("order id %s\n", orderID)
 	{
-		ticket, _, err := officialAccount.GetWxCardApiTicket(ctx)
+		ticket, err := officialAccount.GetWxCardApiTicket(ctx)
 		require.Equal(t, nil, err)
 
 		result, err := api.GetAuthUrl(ctx, &AuthUrlObj{
