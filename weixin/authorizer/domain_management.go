@@ -6,8 +6,10 @@ import (
 	"github.com/lixinio/weixin/utils"
 )
 
-const apiModifyDomain = "/wxa/modify_domain"
-const apiSetWebViewDomain = "/wxa/setwebviewdomain"
+const (
+	apiModifyDomain     = "/wxa/modify_domain"
+	apiSetWebViewDomain = "/wxa/setwebviewdomain"
+)
 
 type ModifyDomainParams struct {
 	Action          string   `json:"action"` // 可选值 add delete set get
@@ -32,7 +34,7 @@ type ModifyDomainResp struct {
 https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/Mini_Program_Basic_Info/Server_Address_Configuration.html
 POST https://api.weixin.qq.com/wxa/modify_domain?access_token=ACCESS_TOKEN
 */
-func (api *AuthorizerApi) ModifyDomain(
+func (api *Authorizer) ModifyDomain(
 	ctx context.Context,
 	params *ModifyDomainParams,
 ) (*ModifyDomainResp, error) {
@@ -55,7 +57,7 @@ type SetWebViewDomainParams struct {
 https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/Mini_Program_Basic_Info/setwebviewdomain.html
 POST https://api.weixin.qq.com/wxa/setwebviewdomain?access_token=ACCESS_TOKEN
 */
-func (api *AuthorizerApi) SetWebViewDomain(
+func (api *Authorizer) SetWebViewDomain(
 	ctx context.Context,
 	params *SetWebViewDomainParams,
 ) error {

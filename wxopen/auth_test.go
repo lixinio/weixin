@@ -39,4 +39,12 @@ func TestGetAuthorizerInfo(t *testing.T) {
 		detail.AuthorizationInfo,
 		detail.AuthorizerInfo,
 	)
+
+	detail2, err := open.GetAuthorizerMpInfo(context.Background(), test.WxOpenMpAppid)
+	require.Empty(t, err)
+	fmt.Printf(
+		"%v\n%v\n",
+		detail2.AuthorizationInfo,
+		detail2.AuthorizerInfo,
+	)
 }

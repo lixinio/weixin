@@ -55,7 +55,7 @@ func (tc *AuthorizerTokenCache) SetAccessToken(token string, expiresIn int) erro
 	return err
 }
 
-func (tc *AuthorizerTokenCache) GetAceessToken() (string, error) {
+func (tc *AuthorizerTokenCache) GetAccessToken() (string, error) {
 	return tc.accessToken.GetAccessToken()
 }
 

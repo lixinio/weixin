@@ -22,7 +22,7 @@ func TestTokenCache(t *testing.T) {
 	err = authorizer.SetRefreshToken(token2)
 	require.Equal(t, err, nil)
 
-	newToken, err := authorizer.GetAceessToken()
+	newToken, err := authorizer.GetAccessToken()
 	require.Equal(t, err, nil)
 	require.Equal(t, newToken, token)
 

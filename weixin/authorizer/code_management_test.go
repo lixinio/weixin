@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/lixinio/weixin/test"
-	"github.com/lixinio/weixin/utils"
 	"github.com/lixinio/weixin/utils/redis"
 	"github.com/lixinio/weixin/wxopen"
 	"github.com/stretchr/testify/require"
@@ -26,14 +25,14 @@ func initWxOpen() *wxopen.WxOpen {
 	return wxopen
 }
 
-func initAuthorizer() *utils.Client {
+func initAuthorizer() *Authorizer {
 	redis := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
 	wxopenOA := NewLite(
 		redis, redis,
 		test.WxOpenAppid,
 		test.WxOpenOAAppid,
 	)
-	return wxopenOA.Client
+	return wxopenOA
 }
 
 func TestCommit(t *testing.T) {
@@ -45,14 +44,14 @@ func TestCommit(t *testing.T) {
 	templateID := templates[len(templates)-1].TemplateID
 	require.NotEmpty(t, templateID)
 
-	api := NewApi(initAuthorizer())
-	err = api.Commit(context.Background(), templateID, "{}", "test", "test")
+	api := initAuthorizer()
+	err = api.CodeCommit(context.Background(), templateID, "{}", "test", "test")
 	require.Empty(t, err)
 }
 
 func TestGetQrcode(t *testing.T) {
-	api := NewApi(initAuthorizer())
-	qrcode, err := api.GetQrcode(context.Background(), "")
+	api := initAuthorizer()
+	qrcode, err := api.GetTestQrcode(context.Background(), "")
 	require.Empty(t, err)
 	require.NotEmpty(t, qrcode)
 	// save qrcode to temp file
@@ -64,13 +63,13 @@ func TestGetQrcode(t *testing.T) {
 }
 
 func TestSubmitAudit(t *testing.T) {
-	api := NewApi(initAuthorizer())
-	_, err := api.SubmitAudit(context.Background(), &AuditParams{})
+	api := initAuthorizer()
+	_, err := api.CodeSubmitAudit(context.Background(), &AuditParams{})
 	require.Empty(t, err)
 }
 
 func TestRelease(t *testing.T) {
-	api := NewApi(initAuthorizer())
-	err := api.Release(context.Background())
+	api := initAuthorizer()
+	err := api.CodeRelease(context.Background())
 	require.Empty(t, err)
 }

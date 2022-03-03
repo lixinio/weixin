@@ -256,19 +256,55 @@ func (api *WxOpen) GetAuthorizerToken(
 // 获取授权方的帐号基本信息
 // https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/ThirdParty/token/api_get_authorizer_info.html
 type AuthorizerInfo struct {
-	NickName        string `json:"nick_name"`
-	HeadImg         string `json:"head_img"`
-	UserName        string `json:"user_name"`
-	PrincipalName   string `json:"principal_name"`
-	Alias           string `json:"alias"`
-	Signature       string `json:"signature"`
-	QrcodeUrl       string `json:"qrcode_url"`
-	ServiceTypeInfo struct {
+	NickName        string   `json:"nick_name"`
+	HeadImg         string   `json:"head_img"`
+	UserName        string   `json:"user_name"`
+	PrincipalName   string   `json:"principal_name"`
+	Alias           string   `json:"alias"`
+	Signature       string   `json:"signature"`
+	QrcodeUrl       string   `json:"qrcode_url"`
+	ServiceTypeInfo struct { // 0 订阅号 1 由历史老帐号升级后的订阅号 2 服务号
 		ID int `json:"service_type_info"`
 	} `json:"service_type_info"`
-	VerifyTypeInfo struct {
+	VerifyTypeInfo struct { //-1 未认证 0 微信认证 1 新浪微博认证 2 腾讯微博认证 3 已资质认证通过但还未通过名称认证 4 已资质认证通过、还未通过名称认证，但通过了新浪微博认证 5 已资质认证通过、还未通过名称认证，但通过了腾讯微博认证
 		ID int `json:"id"`
 	} `json:"verify_type_info"`
+}
+
+type AuthorizerMpInfo struct { // 小程序
+	NickName        string   `json:"nick_name"`
+	HeadImg         string   `json:"head_img"`
+	UserName        string   `json:"user_name"`
+	PrincipalName   string   `json:"principal_name"`
+	Signature       string   `json:"signature"`
+	QrcodeUrl       string   `json:"qrcode_url"`
+	ServiceTypeInfo struct { // 0 普通小程序 12 试用小程序 4 小游戏 10 小商店 2或者 3 门店小程序
+		ID int `json:"service_type_info"`
+	} `json:"service_type_info"`
+	VerifyTypeInfo struct { // -1 未认证 0 微信认证
+		ID int `json:"id"`
+	} `json:"verify_type_info"`
+	BusinessInfo struct {
+		OpenStore int `json:"open_store"` // 是否开通微信门店功能
+		OpenScan  int `json:"open_scan"`  // 是否开通微信扫商品功能
+		OpenPay   int `json:"open_pay"`   // 是否开通微信支付功能
+		OpenCard  int `json:"open_card"`  // 是否开通微信卡券功能
+		OpenShake int `json:"open_shake"` // 是否开通微信摇一摇功能
+	} `json:"business_info"`
+	MiniProgramInfo struct {
+		Network struct {
+			RequestDomain   []string `json:"RequestDomain"`
+			WsRequestDomain []string `json:"WsRequestDomain"`
+			UploadDomain    []string `json:"UploadDomain"`
+			DownloadDomain  []string `json:"DownloadDomain"`
+			BizDomain       []string `json:"BizDomain"`
+			UDPDomain       []string `json:"UDPDomain"`
+		} `json:"network"` // 小程序配置的合法域名信息
+		Categories []struct {
+			First  string `json:"first"`  // 一级类目 ID
+			Second string `json:"second"` // 二级类目 ID
+		} `json:"categories"` // 小程序配置的类目信息
+	} `json:"MiniProgramInfo"`
 }
 
 type AuthorizerDetail struct {
@@ -277,7 +313,13 @@ type AuthorizerDetail struct {
 	AuthorizerInfo    *AuthorizerInfo    `json:"authorizer_info"`
 }
 
-// 获取授权方的帐号基本信息
+type AuthorizerMpDetail struct {
+	utils.WeixinError
+	AuthorizationInfo *AuthorizationInfo `json:"authorization_info"`
+	AuthorizerInfo    *AuthorizerMpInfo  `json:"authorizer_info"`
+}
+
+// 获取授权方的帐号基本信息（公众号）
 func (api *WxOpen) GetAuthorizerInfo(
 	ctx context.Context, authorizerAppid string,
 ) (*AuthorizerDetail, error) {
@@ -287,6 +329,24 @@ func (api *WxOpen) GetAuthorizerInfo(
 	}
 
 	result := &AuthorizerDetail{}
+	err := api.Client.HTTPPostJson(ctx, apiApiGetAuthorizerInfo, payload, result)
+	if err == nil {
+		return result, nil
+	} else {
+		return nil, err
+	}
+}
+
+// 获取授权方的帐号基本信息(小程序)
+func (api *WxOpen) GetAuthorizerMpInfo(
+	ctx context.Context, authorizerAppid string,
+) (*AuthorizerMpDetail, error) {
+	payload := map[string]string{
+		"component_appid":  api.Config.Appid,
+		"authorizer_appid": authorizerAppid,
+	}
+
+	result := &AuthorizerMpDetail{}
 	err := api.Client.HTTPPostJson(ctx, apiApiGetAuthorizerInfo, payload, result)
 	if err == nil {
 		return result, nil
