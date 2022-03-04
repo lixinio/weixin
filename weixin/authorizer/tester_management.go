@@ -22,7 +22,7 @@ type BindTesterParams struct {
 https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/Mini_Program_AdminManagement/Admin.html
 POST https://api.weixin.qq.com/wxa/bind_tester?access_token=ACCESS_TOKEN
 */
-func (api *AuthorizerApi) BindTester(ctx context.Context, wechatid string) (string, error) {
+func (api *Authorizer) BindTester(ctx context.Context, wechatid string) (string, error) {
 	result := struct {
 		utils.WeixinError
 		Userstr string `json:"userstr"`
@@ -55,7 +55,7 @@ type Member struct {
 https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/Mini_Program_AdminManagement/Admin.html
 POST https://api.weixin.qq.com/wxa/memberauth?access_token=TOKEN
 */
-func (api *AuthorizerApi) MemberAuth(ctx context.Context) (*MemberAuthResult, error) {
+func (api *Authorizer) MemberAuth(ctx context.Context) (*MemberAuthResult, error) {
 	params := MemberAuthParams{
 		Action: "get_experiencer",
 	}
@@ -79,7 +79,7 @@ type UnbindTesterParams struct {
 	Userstr  string `json:"userstr,omitempty"`
 }
 
-func (api *AuthorizerApi) UnbindTester(ctx context.Context, wechatid string, userstr string) error {
+func (api *Authorizer) UnbindTester(ctx context.Context, wechatid string, userstr string) error {
 	params := UnbindTesterParams{
 		Wechatid: wechatid,
 		Userstr:  userstr,

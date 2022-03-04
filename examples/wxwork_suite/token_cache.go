@@ -9,7 +9,7 @@ import (
 
 type TokenCache interface {
 	SetAccessToken(string, int) error  // 保存 Access token
-	GetAceessToken() (string, error)   // 获取 Access token
+	GetAccessToken() (string, error)   // 获取 Access token
 	SetPermanentCode(string) error     // 保存 Permanent code
 	GetPermanentCode() (string, error) // 获取 PermanentCode code
 }

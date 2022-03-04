@@ -15,14 +15,6 @@ const (
 	apiRelease     = "/wxa/release"
 )
 
-type AuthorizerApi struct {
-	*utils.Client
-}
-
-func NewApi(client *utils.Client) *AuthorizerApi {
-	return &AuthorizerApi{Client: client}
-}
-
 /*
 上传代码
 第三方平台需要先将草稿添加到代码模板库，或者从代码模板库中选取某个代码模板，得到对应的模板 id（template_id）； 然后调用本接口可以为已授权的小程序上传代码。
@@ -30,7 +22,7 @@ func NewApi(client *utils.Client) *AuthorizerApi {
 https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/code/commit.html
 POST https://api.weixin.qq.com/wxa/commit?access_token=ACCESS_TOKEN
 */
-func (api *AuthorizerApi) Commit(
+func (api *Authorizer) CodeCommit(
 	ctx context.Context,
 	templateID int32,
 	extJson string,
@@ -51,7 +43,7 @@ func (api *AuthorizerApi) Commit(
 https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/code/get_qrcode.html
 GET https://api.weixin.qq.com/wxa/get_qrcode?access_token=ACCESS_TOKEN&path=page%2Findex%3Faction%3D1
 */
-func (api *AuthorizerApi) GetQrcode(ctx context.Context, path string) ([]byte, error) {
+func (api *Authorizer) GetTestQrcode(ctx context.Context, path string) ([]byte, error) {
 	resp, err := api.Client.HTTPGetRaw(ctx, apiGetQrcode, func(params url.Values) {
 		params.Add("path", path)
 	})
@@ -104,7 +96,7 @@ type AuditParams struct {
 https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/code/submit_audit.html
 POST https://api.weixin.qq.com/wxa/submit_audit?access_token=ACCESS_TOKEN
 */
-func (api *AuthorizerApi) SubmitAudit(
+func (api *Authorizer) CodeSubmitAudit(
 	ctx context.Context,
 	auditParams *AuditParams,
 ) (int32, error) {
@@ -125,6 +117,6 @@ func (api *AuthorizerApi) SubmitAudit(
 https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/code/release.html
 POST https://api.weixin.qq.com/wxa/release?access_token=ACCESS_TOKEN
 */
-func (api *AuthorizerApi) Release(ctx context.Context) error {
+func (api *Authorizer) CodeRelease(ctx context.Context) error {
 	return api.Client.HTTPPostJson(ctx, apiRelease, struct{}{}, nil)
 }
