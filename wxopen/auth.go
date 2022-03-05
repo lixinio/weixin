@@ -264,11 +264,14 @@ type AuthorizerInfo struct {
 	Signature       string   `json:"signature"`
 	QrcodeUrl       string   `json:"qrcode_url"`
 	ServiceTypeInfo struct { // 0 订阅号 1 由历史老帐号升级后的订阅号 2 服务号
-		ID int `json:"service_type_info"`
+		ID int `json:"id"`
 	} `json:"service_type_info"`
 	VerifyTypeInfo struct { //-1 未认证 0 微信认证 1 新浪微博认证 2 腾讯微博认证 3 已资质认证通过但还未通过名称认证 4 已资质认证通过、还未通过名称认证，但通过了新浪微博认证 5 已资质认证通过、还未通过名称认证，但通过了腾讯微博认证
 		ID int `json:"id"`
 	} `json:"verify_type_info"`
+	MiniProgramInfo *struct { // 用于判断是否是小程序
+		Todo int8 `json:"todo"` // 填充内容， 无意义
+	} `json:"MiniProgramInfo,omitempty"`
 }
 
 type AuthorizerMpInfo struct { // 小程序
@@ -279,7 +282,7 @@ type AuthorizerMpInfo struct { // 小程序
 	Signature       string   `json:"signature"`
 	QrcodeUrl       string   `json:"qrcode_url"`
 	ServiceTypeInfo struct { // 0 普通小程序 12 试用小程序 4 小游戏 10 小商店 2或者 3 门店小程序
-		ID int `json:"service_type_info"`
+		ID int `json:"id"`
 	} `json:"service_type_info"`
 	VerifyTypeInfo struct { // -1 未认证 0 微信认证
 		ID int `json:"id"`
