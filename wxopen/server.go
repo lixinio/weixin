@@ -95,6 +95,24 @@ func (wxopen *WxOpen) ParseXML(body []byte) (m interface{}, err error) {
 			return
 		}
 		return msg, nil
+	case EventTypeThirdFastRegisterBetaApp:
+		msg := &EventThirdFastRegisterBetaApp{}
+		if err = xml.Unmarshal(body, msg); err != nil {
+			return
+		}
+		return msg, nil
+	case EventTypeThirdFastVerifyBetaApp:
+		msg := &EventThirdFastVerifyBetaApp{}
+		if err = xml.Unmarshal(body, msg); err != nil {
+			return
+		}
+		return msg, nil
+	case EventTypeThirdFastRegister:
+		msg := &EventThirdFastRegister{}
+		if err = xml.Unmarshal(body, msg); err != nil {
+			return
+		}
+		return msg, nil
 	}
 	return
 }
