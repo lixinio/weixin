@@ -68,6 +68,11 @@ const (
 	//===================================== 网页扫码登录 =====================================
 	WxSSOAppid  = "abcdefg"
 	WxSSOSecret = "hijklmn"
+
+	// ==================================== 外部联系人 =======================================
+	UserID = "daihaoran"
+	ExternalUserId = "wmVYOuDwAAFyIaUyr0zzzv5Uxllxq0iA"
+
 )
 
 var (
