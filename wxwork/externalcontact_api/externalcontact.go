@@ -87,7 +87,55 @@ func (api *ExternalContactApi) GetExternalContactList(
 
 type GetExternalContactResponse struct {
 	utils.WeixinError
-	ExternalContact map[string]interface{} `json:"external_contact"`
+	// ExternalContact map[string]interface{} `json:"external_contact"`
+	ExternalContact ExternalContact `json:"external_contact"`
+}
+
+type ExternalContact struct {
+	ExternalUserid  string           `json:"external_userid"`
+	Name            string           `json:"name"`
+	Position        string           `json:"position"`
+	Avatar          string           `json:"avatar"`
+	CorpName        string           `json:"corp_name"`
+	CorpFullName    string           `json:"corp_full_name"`
+	Type            uint8            `json:"type"`
+	Gender          uint8            `json:"gender"`
+	Unionid         string           `json:"unionid"`
+	ExternalProfile *ExternalProfile `json:"external_profile"`
+	FolloweUsers    []*FollowUser    `json:"follow_user"`
+}
+
+type ExternalProfile struct {
+	ExternalCorpName string                    `json:"external_corp_name"`
+	WechatChannels   *WechatChannel            `json:"wechat_channels"`
+	ExternalAttr     []*map[string]interface{} `json:"external_attr"`
+}
+
+type WechatChannel struct {
+	Nickname string `json:"nickname"`
+	Status   uint8  `json:"status"`
+}
+
+type FollowUser struct {
+	Userid         string         `json:"userid"`
+	Remark         string         `json:"remark"`
+	Description    string         `json:"description"`
+	CreateTime     uint64         `json:"createtime"`
+	Tags           []Tag          `json:"tags"`
+	RemarkCorpName string         `json:"remark_corp_name"`
+	RemarkMobiles  []string       `json:"remark_mobiles"`
+	WechatChannels *WechatChannel `json:"wechat_channels"`
+	OperUserid     string         `json:"oper_userid"`
+	AddWay         uint8          `json:"add_way"`
+	State          string         `json:"state"`
+	NextCursor     string         `json:"next_cursor"`
+}
+
+type Tag struct {
+	GroupName string `json:"group_name"`
+	TagName   string `json:"tag_name"`
+	Type      uint8  `json:"type"`
+	TagID     string `json:"tag_id"`
 }
 
 // https://developer.work.weixin.qq.com/document/path/92114
