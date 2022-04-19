@@ -63,3 +63,33 @@ func TestGetFollowUserList(t *testing.T) {
 		fmt.Println(result.FollowUsers)
 	}
 }
+
+func TestGetExternalContactList(t *testing.T) {
+	ctx := context.Background()
+	for _, cli := range []*item{
+		initWxWorkAgent(),
+		initWxWorkSuiteAuthorizer(),
+	} {
+		api := NewApi(cli.client)
+
+		listResult, err := api.GetExternalContactList(ctx, test.UserID)
+
+		require.Equal(t, nil, err)
+		fmt.Println(listResult.ExternalUserids)
+
+	}
+}
+
+func TestGetExternalUser(t *testing.T) {
+	ctx := context.Background()
+	for _, cli := range []*item{
+		initWxWorkAgent(),
+		initWxWorkSuiteAuthorizer(),
+	} {
+		api := NewApi(cli.client)
+		result, err := api.GetExternalContact(ctx, test.ExternalUserID, "")
+
+		require.Equal(t, nil, err)
+		fmt.Println(result.ExternalContact)
+	}
+}
