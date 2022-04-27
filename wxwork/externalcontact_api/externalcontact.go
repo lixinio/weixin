@@ -63,7 +63,7 @@ func (api *ExternalContactApi) GetFollowUserList(
 	return result, nil
 }
 
-type apiGetExternalContactListResponse struct {
+type GetExternalContactListResponse struct {
 	utils.WeixinError
 	ExternalUserids []string `json:"external_userid"`
 }
@@ -73,8 +73,8 @@ type apiGetExternalContactListResponse struct {
 func (api *ExternalContactApi) GetExternalContactList(
 	ctx context.Context,
 	userid string,
-) (*apiGetExternalContactListResponse, error) {
-	result := &apiGetExternalContactListResponse{}
+) (*GetExternalContactListResponse, error) {
+	result := &GetExternalContactListResponse{}
 
 	if err := api.Client.HTTPGetWithParams(ctx, apiGetExternalContactList, func(params url.Values) {
 		params.Add("userid", userid)
