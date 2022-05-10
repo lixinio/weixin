@@ -8,26 +8,34 @@ package externalcontact_api
 
 import (
 	"context"
+	"net/url"
 
 	"github.com/lixinio/weixin/utils"
 )
 
 const (
+	// 获取配置了客户联系功能的成员列表
 	apiGetFollowUserList = "/cgi-bin/externalcontact/get_follow_user_list"
+	// 获取客户列表
+	apiGetExternalContactList = "/cgi-bin/externalcontact/list"
+	// 获取客户详情
+	apiGetExternalContact = "/cgi-bin/externalcontact/get"
+	// 批量获取客户详情
+	// apiGetExternalContactBatch = "/cgi-bin/externalcontact/batch/get_by_user"
 
 	// https://developer.work.weixin.qq.com/document/path/92577
 	// 配置客户联系「联系我」方式
-	apiUpdateTaskcard = "/cgi-bin/externalcontact/add_contact_way"
+	// apiUpdateTaskcard = "/cgi-bin/externalcontact/add_contact_way"
 	// 获取企业已配置的「联系我」方式
-	apiAppchatCreate = "/cgi-bin/externalcontact/get_contact_way"
+	// apiAppchatCreate = "/cgi-bin/externalcontact/get_contact_way"
 	// 获取企业已配置的「联系我」列表
-	apiAppchatUpdate = "/cgi-bin/externalcontact/list_contact_way"
+	// apiAppchatUpdate = "/cgi-bin/externalcontact/list_contact_way"
 	// 更新企业已配置的「联系我」方式
-	apiAppchatGet = "/cgi-bin/externalcontact/update_contact_way"
+	// apiAppchatGet = "/cgi-bin/externalcontact/update_contact_way"
 	// 删除企业已配置的「联系我」方式
-	apiAppchatSend = "/cgi-bin/externalcontact/del_contact_way"
+	// apiAppchatSend = "/cgi-bin/externalcontact/del_contact_way"
 	// 结束临时会话
-	apiLinkedcorpMessageSend = "/cgi-bin/externalcontact/close_temp_chat"
+	// apiLinkedcorpMessageSend = "/cgi-bin/externalcontact/close_temp_chat"
 )
 
 type ExternalContactApi struct {
@@ -52,5 +60,103 @@ func (api *ExternalContactApi) GetFollowUserList(
 	if err := api.Client.HTTPGet(ctx, apiGetFollowUserList, result); err != nil {
 		return nil, err
 	}
+	return result, nil
+}
+
+type GetExternalContactListResponse struct {
+	utils.WeixinError
+	ExternalUserids []string `json:"external_userid"`
+}
+
+// https://developer.work.weixin.qq.com/document/path/92113
+// 获取客户列表
+func (api *ExternalContactApi) GetExternalContactList(
+	ctx context.Context,
+	userid string,
+) (*GetExternalContactListResponse, error) {
+	result := &GetExternalContactListResponse{}
+
+	if err := api.Client.HTTPGetWithParams(ctx, apiGetExternalContactList, func(params url.Values) {
+		params.Add("userid", userid)
+	}, result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+type GetExternalContactResponse struct {
+	utils.WeixinError
+	ExternalContact ExternalContact `json:"external_contact"`
+}
+
+type ExternalContact struct {
+	ExternalUserid  string           `json:"external_userid"`
+	Name            string           `json:"name"`
+	Position        string           `json:"position"`
+	Avatar          string           `json:"avatar"`
+	CorpName        string           `json:"corp_name"`
+	CorpFullName    string           `json:"corp_full_name"`
+	Type            uint8            `json:"type"`
+	Gender          uint8            `json:"gender"`
+	Unionid         string           `json:"unionid"`
+	ExternalProfile *ExternalProfile `json:"external_profile"`
+	FolloweUsers    []*FollowUser    `json:"follow_user"`
+}
+
+type ExternalProfile struct {
+	ExternalCorpName string                    `json:"external_corp_name"`
+	WechatChannels   *WechatChannel            `json:"wechat_channels"`
+	ExternalAttr     []*map[string]interface{} `json:"external_attr"`
+}
+
+type WechatChannel struct {
+	Nickname string `json:"nickname"`
+	Status   uint8  `json:"status"`
+}
+
+type FollowUser struct {
+	Userid         string         `json:"userid"`
+	Remark         string         `json:"remark"`
+	Description    string         `json:"description"`
+	CreateTime     uint64         `json:"createtime"`
+	Tags           []Tag          `json:"tags"`
+	RemarkCorpName string         `json:"remark_corp_name"`
+	RemarkMobiles  []string       `json:"remark_mobiles"`
+	WechatChannels *WechatChannel `json:"wechat_channels"`
+	OperUserid     string         `json:"oper_userid"`
+	AddWay         uint8          `json:"add_way"`
+	State          string         `json:"state"`
+	NextCursor     string         `json:"next_cursor"`
+}
+
+type Tag struct {
+	GroupName string `json:"group_name"`
+	TagName   string `json:"tag_name"`
+	Type      uint8  `json:"type"`
+	TagID     string `json:"tag_id"`
+}
+
+// https://developer.work.weixin.qq.com/document/path/92114
+// 获取客户详情
+func (api *ExternalContactApi) GetExternalContact(
+	ctx context.Context,
+	externalUserid string,
+	cursor string,
+) (*GetExternalContactResponse, error) {
+	result := &GetExternalContactResponse{}
+
+	if err := api.Client.HTTPGetWithParams(ctx, apiGetExternalContact, func(params url.Values) {
+		if externalUserid != "" {
+			params.Add("external_userid", externalUserid)
+		}
+
+		if cursor != "" {
+			params.Add("cursor", cursor)
+		}
+	}, result); err != nil {
+		return nil, err
+	}
+
 	return result, nil
 }
