@@ -43,17 +43,6 @@ func initAuthorizer() *messageItem {
 	}
 }
 
-func TestCustomerMessage(t *testing.T) {
-	ctx := context.Background()
-	for _, client := range []*messageItem{
-		initOfficialAccount(),
-		initAuthorizer(),
-	} {
-		messageApi := NewApi(client.Client)
-		messageApi.SendCustomTextMessage(ctx, client.OpenID, "发多了开发")
-	}
-}
-
 /*
 测试号模板
 {{title.DATA}}
@@ -72,7 +61,7 @@ func TestTemplateMessage(t *testing.T) {
 		messageApi := NewApi(client.Client)
 		id, err := messageApi.SendTemplateMessage(ctx, &TemplateMessage{
 			ToUser:     client.OpenID,
-			TemplateID: "pBP6oKHSz4UOkadAYsLw-ug5G495JRZsEVu626eJEmo",
+			TemplateID: "RxLqD6HvGTZb5UCfknkGf4KwRzNIorlg9jRBE1TqBq8",
 			Datas: map[string]*TemplateMessageData{
 				"title": {
 					Value: "标题",
@@ -96,5 +85,43 @@ func TestTemplateMessage(t *testing.T) {
 		})
 		require.Equal(t, nil, err)
 		fmt.Println(id)
+	}
+}
+
+// 支持 测试号 https://mp.weixin.qq.com/debug/cgi-bin/sandboxinfo
+func TestTemplateIndustry(t *testing.T) {
+	ctx := context.Background()
+	for _, client := range []*messageItem{
+		initOfficialAccount(),
+	} {
+		messageApi := NewApi(client.Client)
+		err := messageApi.SetIndustry(ctx, "1", "2")
+		require.Equal(t, nil, err)
+
+		industryInfo, err := messageApi.GetIndustry(ctx)
+		require.Equal(t, nil, err)
+		fmt.Println(industryInfo)
+	}
+}
+
+// 支持 测试号 https://mp.weixin.qq.com/debug/cgi-bin/sandboxinfo
+func TestPrivateTemplate(t *testing.T) {
+	ctx := context.Background()
+	for _, client := range []*messageItem{
+		initOfficialAccount(),
+	} {
+		messageApi := NewApi(client.Client)
+		templateID, err := messageApi.AddTemplate(ctx, "TM00210")
+		require.Equal(t, nil, err)
+		fmt.Println(templateID)
+
+		privateTemplates, err := messageApi.GetAllPrivateTemplate(ctx)
+		require.Equal(t, nil, err)
+		fmt.Println(privateTemplates)
+
+		for _, privateTemplate := range privateTemplates {
+			err = messageApi.DelPrivateTemplate(ctx, privateTemplate.TemplateID)
+			require.Equal(t, nil, err)
+		}
 	}
 }
