@@ -2,8 +2,6 @@ package message_api
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/url"
 	"strconv"
 
@@ -13,9 +11,11 @@ import (
 // 订阅消息
 // https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/sendMessage.html
 // https://developers.weixin.qq.com/minigame/dev/api-backend/open-api/subscribe-message/subscribeMessage.send.html
+// https://developers.weixin.qq.com/doc/offiaccount/Subscription_Messages/api.html#send%E5%8F%91%E9%80%81%E8%AE%A2%E9%98%85%E9%80%9A%E7%9F%A5
 
 const (
 	apiSubscribeMsgSend                = "/cgi-bin/message/subscribe/send"
+	apiSubscribeMsgBizSend             = "/cgi-bin/message/subscribe/bizsend" //
 	apiSubscribeAddTemplate            = "/wxaapi/newtmpl/addtemplate"
 	apiSubscribeGetTemplate            = "/wxaapi/newtmpl/gettemplate"
 	apiSubscribeDelTemplate            = "/wxaapi/newtmpl/deltemplate"
@@ -31,39 +31,62 @@ const (
 	MiniProgramStateFormal    = "formal"
 )
 
-type SendSubscribeMessageRequest struct {
-	TemplateID       string `json:"template_id"`       // 所需下发的订阅模板id
-	Page             string `json:"page"`              // 点击模板卡片后的跳转页面，仅限本小程序内的页面。支持带参数,（示例index?foo=bar）。该字段不填则模板无跳转
-	Touser           string `json:"touser"`            // 接收者（用户）的 openid
-	Data             string `json:"data"`              // 模板内容，格式形如 { "key1": { "value": any }, "key2": { "value": any } }的object
-	MiniprogramState string `json:"miniprogram_state"` // 跳转小程序类型：developer为开发版；trial为体验版；formal为正式版；默认为正式版
-	Lang             string `json:"lang"`              // 进入小程序查看”的语言类型，支持zh_CN(简体中文)、en_US(英文)、zh_HK(繁体中文)、zh_TW(繁体中文)，默认为zh_CN
+type SendSubscribeMpMessageRequest struct {
+	TemplateID       string            `json:"template_id"`       // 所需下发的订阅模板id
+	Page             string            `json:"page,omitempty"`    // 点击模板卡片后的跳转页面，仅限本小程序内的页面。支持带参数,（示例index?foo=bar）。该字段不填则模板无跳转
+	Touser           string            `json:"touser"`            // 接收者（用户）的 openid
+	Data             map[string]*Value `json:"data"`              // 模板内容，格式形如 { "key1": { "value": any }, "key2": { "value": any } }的object
+	MiniprogramState string            `json:"miniprogram_state"` // 跳转小程序类型：developer为开发版；trial为体验版；formal为正式版；默认为正式版
+	Lang             string            `json:"lang,omitempty"`    // 进入小程序查看”的语言类型，支持zh_CN(简体中文)、en_US(英文)、zh_HK(繁体中文)、zh_TW(繁体中文)，默认为zh_CN
 }
 
-type value struct {
+type Value struct {
 	Value string `json:"value"`
 }
 
-// 发送订阅消息
+// 发送(小程序)订阅消息
 // https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/sendMessage.html
-func (api MessageApi) SendSubscribeMessage(
+func (api MessageApi) SendSubscribeMpMessage(
 	ctx context.Context,
-	req *SendSubscribeMessageRequest,
+	req *SendSubscribeMpMessageRequest,
 	payload map[string]string,
 ) error {
-	data := map[string]*value{}
+	req.Data = map[string]*Value{}
 	for k, v := range payload {
-		data[k] = &value{Value: v}
+		req.Data[k] = &Value{Value: v}
 	}
-
-	bData, err := json.Marshal(data)
-	if err != nil {
-		return fmt.Errorf("marshal body fail, err '%w'", err)
-	}
-	req.Data = string(bData)
 
 	if err := api.Client.HTTPPostJson(
 		ctx, apiSubscribeMsgSend, req, nil,
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type SendSubscribeOaMessageRequest struct {
+	TemplateID  string             `json:"template_id"`    // 所需下发的订阅模板id
+	Page        string             `json:"page,omitempty"` // 跳转网页时填写
+	Touser      string             `json:"touser"`         // 接收者（用户）的 openid
+	MiniProgram *TemplateMessageMp `json:"miniprogram,omitempty"`
+	Data        map[string]*Value  `json:"data"` // 模板内容，格式形如 { "key1": { "value": any }, "key2": { "value": any } }的object
+}
+
+// 发送(服务号)订阅消息
+// https://developers.weixin.qq.com/doc/offiaccount/Subscription_Messages/api.html#send%E5%8F%91%E9%80%81%E8%AE%A2%E9%98%85%E9%80%9A%E7%9F%A5
+func (api MessageApi) SendSubscribeOaMessage(
+	ctx context.Context,
+	req *SendSubscribeOaMessageRequest,
+	payload map[string]string,
+) error {
+	req.Data = map[string]*Value{}
+	for k, v := range payload {
+		req.Data[k] = &Value{Value: v}
+	}
+
+	if err := api.Client.HTTPPostJson(
+		ctx, apiSubscribeMsgBizSend, req, nil,
 	); err != nil {
 		return err
 	}
