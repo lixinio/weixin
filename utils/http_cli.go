@@ -43,6 +43,8 @@ type ClientAccessTokenGetter interface {
 
 type EmptyClientAccessTokenGetter int
 
+type MultipartWriter func(writer *multipart.Writer) error
+
 func (EmptyClientAccessTokenGetter) GetAccessToken() (string, error) {
 	return "", errors.New("can NOT get token from empty client access-token getter")
 }
@@ -150,7 +152,7 @@ func (client *Client) HTTPGetRaw(
 	}
 
 	// 如果Content-Type 是 Json, 那出错了
-	if hasJsonContentType(resp) {
+	if hasTextContentType(resp) {
 		defer resp.Body.Close()
 		result := &WeixinError{}
 		if err = doWeixinError(resp, result); err != nil {
@@ -197,7 +199,7 @@ func (client *Client) HTTPPostDownload(
 	}
 
 	// 如果Content-Type 是 Json, 那出错了
-	if hasJsonContentType(resp) {
+	if hasTextContentType(resp) {
 		defer resp.Body.Close()
 		result := &WeixinError{}
 		if err = doWeixinError(resp, result); err != nil {
@@ -219,11 +221,20 @@ func (client *Client) HTTPPostDownload(
 // https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Transfer-Encoding
 func (client *Client) HTTPUpload(
 	ctx context.Context, uri string, payload io.Reader,
-	key, filename string, length int64, result interface{},
+	key, filename string, length int64,
+	querysFunc func(url.Values), result interface{},
+	multipartWriters ...MultipartWriter,
 ) error {
 	// 头部大小
 	bodyBuffer := new(bytes.Buffer)
 	bodyWriter := multipart.NewWriter(bodyBuffer)
+
+	for _, multipartWriter := range multipartWriters {
+		if err := multipartWriter(bodyWriter); err != nil {
+			return err
+		}
+	}
+
 	_, err := bodyWriter.CreateFormFile(key, path.Base(filename))
 	if err != nil {
 		return err
@@ -231,7 +242,7 @@ func (client *Client) HTTPUpload(
 	// 尾部
 	closeBuffer := bytes.NewBufferString(fmt.Sprintf("\r\n--%s--\r\n", bodyWriter.Boundary()))
 
-	newUrl, err := client.applyAccessToken(uri, nil, true)
+	newUrl, err := client.applyAccessToken(uri, querysFunc, true)
 	if err != nil {
 		return err
 	}
@@ -253,12 +264,19 @@ func (client *Client) HTTPUpload(
 func (client *Client) HttpFile(
 	ctx context.Context, path, key, filename string,
 	content io.Reader, querysFunc func(url.Values), result interface{},
+	multipartWriters ...MultipartWriter,
 ) (err error) {
 	r, w := io.Pipe()
 	m := multipart.NewWriter(w)
 	go func() {
 		defer w.Close()
 		defer m.Close()
+
+		for _, multipartWriter := range multipartWriters {
+			if err = multipartWriter(m); err != nil {
+				return
+			}
+		}
 
 		part, err := m.CreateFormFile(key, filepath.Base(filename))
 		if err != nil {
@@ -352,10 +370,13 @@ func (client *Client) httpDo(
 	return nil
 }
 
-func hasJsonContentType(resp *http.Response) bool {
+func hasTextContentType(resp *http.Response) bool {
 	ct := resp.Header.Get("Content-Type")
 	if len(ct) > 0 {
-		return strings.HasPrefix(ct, "application/json")
+		// https://developers.weixin.qq.com/doc/offiaccount/Asset_Management/Get_temporary_materials.html
+		// 素材管理 /获取临时素材 是  "text/plain"
+		return strings.HasPrefix(ct, "application/json") ||
+			strings.HasPrefix(ct, "text/plain")
 	}
 	return false
 }
