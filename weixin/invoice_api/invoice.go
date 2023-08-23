@@ -334,7 +334,7 @@ func (api *InvoiceApi) PlatformSetPdf(
 		SMediaID string `json:"s_media_id"`
 	}{}
 	if err := api.Client.HTTPUpload(
-		ctx, apiPlatformSetpdf, content, "pdf", filename, length, result,
+		ctx, apiPlatformSetpdf, content, "pdf", filename, length, nil, result,
 	); err != nil {
 		return "", err
 	}
