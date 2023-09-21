@@ -82,18 +82,20 @@ type UGCDeclare struct {
 	AuditDesc      string `json:"audit_desc,omitempty"`
 }
 type AuditParams struct {
-	ItemList      []AuditParamsItem `json:"item_list,omitempty"`
-	PreviewInfo   PreviewInfo       `json:"preview_info,omitempty"`
-	VersionDesc   string            `json:"version_desc,omitempty"`
-	FeedbackInfo  string            `json:"feedback_info,omitempty"`
-	FeedbackStuff string            `json:"feedback_stuff,omitempty"`
-	UGCDecalre    UGCDeclare        `json:"ugc_declare,omitempty"`
+	ItemList         []AuditParamsItem `json:"item_list,omitempty"`
+	PreviewInfo      PreviewInfo       `json:"preview_info,omitempty"`
+	VersionDesc      string            `json:"version_desc,omitempty"`
+	FeedbackInfo     string            `json:"feedback_info,omitempty"`
+	FeedbackStuff    string            `json:"feedback_stuff,omitempty"`
+	PrivacyApiNotUse bool              `json:"privacy_api_not_use,omitempty"`
+	UGCDecalre       UGCDeclare        `json:"ugc_declare,omitempty"`
 }
 
 /*
 提交审核
 在调用上传代码接口为小程序上传代码后，可以调用本接口，将上传的代码提交审核。
 https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/code/submit_audit.html
+https://developers.weixin.qq.com/doc/oplatform/openApi/OpenApiDoc/miniprogram-management/code-management/submitAudit.html
 POST https://api.weixin.qq.com/wxa/submit_audit?access_token=ACCESS_TOKEN
 */
 func (api *Authorizer) CodeSubmitAudit(
