@@ -169,6 +169,16 @@ func (client *Client) HTTPGetRaw(
 	return resp, nil
 }
 
+// 因为转义的问题 (& => \u0026), 需要特殊处理, 参考
+// https://pkg.go.dev/encoding/json#Encoder.SetEscapeHTML
+func jsonMarshal(t interface{}) (*bytes.Buffer, error) {
+	buffer := &bytes.Buffer{}
+	encoder := json.NewEncoder(buffer)
+	encoder.SetEscapeHTML(false)
+	err := encoder.Encode(t)
+	return buffer, err
+}
+
 // 生成二维码， 需要根据Content-Type来判断Body， 可以是json，可能是二进制
 // HTTPGetRaw 素材下载， 需要根据Content-Type来判断Body， 可以是json，可能是二进制
 // 例如 https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/qr-code/wxacode.getUnlimited.html
@@ -181,8 +191,7 @@ func (client *Client) HTTPPostDownload(
 		return
 	}
 
-	payload := new(bytes.Buffer)
-	err = json.NewEncoder(payload).Encode(body)
+	payload, err := jsonMarshal(body)
 	if err != nil {
 		return nil, err
 	}
@@ -302,8 +311,7 @@ func (client *Client) HTTPPost(
 	ctx context.Context, path string, body interface{},
 	querysFunc func(url.Values), result interface{}, contentType string,
 ) (err error) {
-	payload := new(bytes.Buffer)
-	err = json.NewEncoder(payload).Encode(body)
+	payload, err := jsonMarshal(body)
 	if err != nil {
 		return err
 	}
@@ -315,8 +323,7 @@ func (client *Client) HTTPPost(
 func (client *Client) HTTPPostToken(
 	ctx context.Context, path string, body interface{}, result interface{},
 ) (err error) {
-	payload := new(bytes.Buffer)
-	err = json.NewEncoder(payload).Encode(body)
+	payload, err := jsonMarshal(body)
 	if err != nil {
 		return err
 	}
