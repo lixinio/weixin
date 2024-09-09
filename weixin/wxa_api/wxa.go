@@ -7,10 +7,11 @@ import (
 )
 
 const (
-	apiGenerateUrlLink = "/wxa/generate_urllink"
-	apiQueryUrlLink    = "/wxa/query_urllink"
-	apiGenerateScheme  = "/wxa/generatescheme"
-	apiQueryScheme     = "/wxa/queryscheme"
+	apiGenerateUrlLink    = "/wxa/generate_urllink"
+	apiQueryUrlLink       = "/wxa/query_urllink"
+	apiGenerateScheme     = "/wxa/generatescheme"
+	apiQueryScheme        = "/wxa/queryscheme"
+	apiGetUserPhonenumber = "/wxa/business/getuserphonenumber"
 )
 
 type WxaApi struct {
@@ -146,4 +147,39 @@ func (api *WxaApi) GetSchema(
 		return nil, err
 	}
 	return &result.SchemaInfo, nil
+}
+
+type PhoneInfoWatermark struct {
+	Timestamp int64  `json:"timestamp"`
+	AppID     string `json:"appid"`
+}
+
+type PhoneInfo struct {
+	PhoneNumber     string              `json:"phoneNumber"`
+	PurePhoneNumber string              `json:"purePhoneNumber"`
+	CountryCode     string              `json:"countryCode"`
+	Watermark       *PhoneInfoWatermark `json:"watermark"`
+}
+
+// 该接口用于将code换取用户手机号。 说明，每个code只能使用一次，code的有效期为5min。
+// https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/user-info/phone-number/getPhoneNumber.html
+func (api *WxaApi) GetPhoneNumber(
+	ctx context.Context, code, openid string,
+) (*PhoneInfo, error) {
+	param := &struct {
+		Code   string `json:"code"`
+		OpenID string `json:"openid"`
+	}{
+		Code:   code,
+		OpenID: openid,
+	}
+
+	result := &struct {
+		utils.WeixinError
+		PhoneInfo PhoneInfo `json:"phone_info"`
+	}{}
+	if err := api.Client.HTTPPostJson(ctx, apiGetUserPhonenumber, param, result); err != nil {
+		return nil, err
+	}
+	return &result.PhoneInfo, nil
 }
