@@ -21,7 +21,7 @@ const (
 	// 获取客户详情
 	apiGetExternalContact = "/cgi-bin/externalcontact/get"
 	// 批量获取客户详情
-	// apiGetExternalContactBatch = "/cgi-bin/externalcontact/batch/get_by_user"
+	apiListExternalContactDetails = "/cgi-bin/externalcontact/batch/get_by_user"
 
 	// https://developer.work.weixin.qq.com/document/path/92577
 	// 配置客户联系「联系我」方式
@@ -102,7 +102,7 @@ type ExternalContact struct {
 	Gender          uint8            `json:"gender"`
 	Unionid         string           `json:"unionid"`
 	ExternalProfile *ExternalProfile `json:"external_profile"`
-	FolloweUsers    []*FollowUser    `json:"follow_user"`
+	FollowUsers     []*FollowUser    `json:"follow_user"`
 }
 
 type ExternalProfile struct {
@@ -156,6 +156,52 @@ func (api *ExternalContactApi) GetExternalContact(
 			params.Add("cursor", cursor)
 		}
 	}, result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// ListExternalContactRequest 批量获取客户详情请求
+type ListExternalContactRequest struct {
+	UseridList []string `json:"userid_list"`
+	Cursor     string   `json:"cursor"`
+	Limit      int32    `json:"limit"`
+}
+
+// ListExternalContactResponse 批量获取客户详情响应
+type ListExternalContactResponse struct {
+	utils.WeixinError
+	ExternalContactList []*struct {
+		// 外部联系人
+		ExternalContact ExternalContact `json:"external_contact"`
+		FollowUser      FollowUser      `json:"follow_info"`
+	} `json:"external_contact_list"`
+	NextCursor string `json:"next_cursor"`
+	FailInfo   []*struct {
+		UnlicensedUseridList []string `json:"unlicensed_userid_list"`
+	}
+}
+
+// ListExternalContactDetails 批量获取客户详情
+func (api *ExternalContactApi) ListExternalContactDetails(
+	ctx context.Context,
+	userIds []string,
+	cursor string,
+	limit int32,
+) (*ListExternalContactResponse, error) {
+	result := &ListExternalContactResponse{}
+
+	if err := api.Client.HTTPPostJson(
+		ctx,
+		apiListExternalContactDetails,
+		&ListExternalContactRequest{
+			UseridList: userIds,
+			Cursor:     cursor,
+			Limit:      limit,
+		},
+		result,
+	); err != nil {
 		return nil, err
 	}
 

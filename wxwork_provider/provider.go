@@ -30,9 +30,13 @@ func New(cache utils.Cache, locker utils.Lock, config *Config) *WxWorkProvider {
 	accessTokenCache := utils.NewAccessTokenCache(
 		newAccessTokenAdaptor(config), cache, locker,
 	)
+
+	client := utils.NewClient(WXServerUrl, accessTokenCache)
+	client.UpdateAccessTokenKey("provider_access_token")
+
 	instance := &WxWorkProvider{
 		Config:           config,
-		Client:           utils.NewClient(WXServerUrl, accessTokenCache),
+		Client:           client,
 		accessTokenCache: accessTokenCache,
 	}
 	return instance
