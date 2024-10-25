@@ -96,8 +96,9 @@ type GenerateSchemeRequest struct {
 		Query      string `json:"query,omitempty"`
 		EnvVersion string `json:"env_version,omitempty"`
 	} `json:"jump_wxa"`
-	IsExpire   bool  `json:"is_expire"`
-	ExpireTime int64 `json:"expire_time,omitempty"`
+	ExpireTime     int64 `json:"expire_time,omitempty"`
+	ExpireType     int64 `json:"expire_type,omitempty"`
+	ExpireInterval int64 `json:"expire_interval,omitempty"`
 }
 
 func (api *WxaApi) GenerateScheme(
