@@ -22,6 +22,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/url"
+	"strconv"
 
 	"github.com/lixinio/weixin/utils"
 )
@@ -31,6 +32,8 @@ const (
 	apiUploadImg = "/cgi-bin/media/uploadimg"
 	apiGet       = "/cgi-bin/media/get"
 	apiJssdk     = "/cgi-bin/media/get/jssdk"
+	// 上传附件资源
+	apiUploadTempMedia = "/cgi-bin/media/upload_attachment"
 )
 
 const (
@@ -38,6 +41,14 @@ const (
 	MediaTypeVoice = "voice"
 	MediaTypeVideo = "video"
 	MediaTypeFile  = "file"
+)
+
+// 附件类型，不同的附件类型用于不同的场景。1：朋友圈；2:商品图册
+type AttachmentType int
+
+const (
+	AttachmentTypeMoment AttachmentType = 1
+	AttachmentTypeGoods  AttachmentType = 2
 )
 
 type MaterialApi struct {
@@ -156,3 +167,31 @@ func (api *MaterialApi) Save(ctx context.Context, mediaID string, saver io.Write
 
 // 	return http.DefaultClient.Do(req)
 // }
+
+type AttachmentID struct {
+	utils.WeixinError
+	MediaID   string `json:"media_id"`
+	Type      string `json:"type"`
+	CreatedAt int    `json:"created_at"`
+}
+
+// 上传附件资源
+func (api *MaterialApi) UploadAttachment(
+	ctx context.Context,
+	filename string,
+	content io.Reader,
+	mediaType string,
+	aType AttachmentType,
+) (result *AttachmentID, err error) {
+	result = &AttachmentID{}
+	if err := api.Client.HttpFile(
+		ctx, apiUploadTempMedia, "media", filename, content, func(params url.Values) {
+			params.Add("media_type", mediaType)
+			params.Add("attachment_type", strconv.Itoa(int(aType)))
+		}, result,
+	); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
