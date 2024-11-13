@@ -69,7 +69,7 @@ func TestSchema(t *testing.T) {
 			}{
 				Path: "/modules/usedcar/Showroom/index",
 			},
-			IsExpire:   true,
+			ExpireType: 0,
 			ExpireTime: time.Now().Add(time.Hour).Unix(),
 		})
 		require.Equal(t, nil, err)
