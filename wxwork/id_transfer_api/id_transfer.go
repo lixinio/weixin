@@ -8,6 +8,7 @@ import (
 const (
 	apiUnionID2ExternalUserID   = "/cgi-bin/idconvert/unionid_to_external_userid"
 	apiExternalUserID2PendingID = "/cgi-bin/idconvert/batch/external_userid_to_pending_id"
+	apiUserID2OpenUserID        = "/cgi-bin/batch/userid_to_openuserid"
 )
 
 type idTransferApi struct {
@@ -91,6 +92,39 @@ func (api *idTransferApi) ExternalUserID2PendingID(
 		&ExternalUserID2PendingIDParam{
 			ChatID:         chatID,
 			ExternalUserID: externalUserIDs,
+		},
+		result,
+	); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+type UserID2OpenUserIDParam struct {
+	UserIDList []string `json:"userid_list"`
+}
+
+type UserID2OpenUserIDResponse struct {
+	utils.WeixinError
+	OpenUserIDList []struct {
+		UserID     string `json:"userid"`
+		OpenUserID string `json:"open_userid"`
+	} `json:"open_userid_list"`
+	InvalidUserIDList []string `json:"invalid_userid_list"`
+}
+
+func (api *idTransferApi) UserID2OpenUserID(
+	ctx context.Context,
+	userIDs []string,
+) (*UserID2OpenUserIDResponse, error) {
+	result := &UserID2OpenUserIDResponse{}
+
+	if err := api.Client.HTTPPostJson(
+		ctx,
+		apiUserID2OpenUserID,
+		&UserID2OpenUserIDParam{
+			UserIDList: userIDs,
 		},
 		result,
 	); err != nil {
