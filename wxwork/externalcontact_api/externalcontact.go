@@ -89,6 +89,7 @@ type GetExternalContactResponse struct {
 	utils.WeixinError
 	// ExternalContact map[string]interface{} `json:"external_contact"`
 	ExternalContact ExternalContact `json:"external_contact"`
+	FollowUsers     []*FollowUser   `json:"follow_user"`
 }
 
 type ExternalContact struct {
@@ -102,7 +103,6 @@ type ExternalContact struct {
 	Gender          uint8            `json:"gender"`
 	Unionid         string           `json:"unionid"`
 	ExternalProfile *ExternalProfile `json:"external_profile"`
-	FollowUsers     []*FollowUser    `json:"follow_user"`
 }
 
 type ExternalProfile struct {
