@@ -103,15 +103,18 @@ func (api *MessageApi) GetIndustry(ctx context.Context) (*IndustryInfo, error) {
 https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Template_Message_Interface.html
 */
 func (api *MessageApi) AddTemplate(
-	ctx context.Context, templateIdShort string,
+	ctx context.Context,
+	templateIdShort string,
+	keywords ...string,
 ) (string, error) {
 	resp := &struct {
 		utils.WeixinError
 		TemplateID string `json:"template_id"`
 	}{}
 
-	if err := api.Client.HTTPPostJson(ctx, apiAddTemplate, map[string]string{
+	if err := api.Client.HTTPPostJson(ctx, apiAddTemplate, map[string]interface{}{
 		"template_id_short": templateIdShort,
+		"keyword_name_list": keywords,
 	}, resp); err != nil {
 		return "", err
 	}
