@@ -23,6 +23,11 @@ const (
 	// 批量获取客户详情
 	apiListExternalContactDetails = "/cgi-bin/externalcontact/batch/get_by_user"
 
+	// 获取客户群列表
+	apiGetGroupChatList = "/cgi-bin/externalcontact/groupchat/list"
+	// 获取客户群详情
+	apiGetGroupChat = "/cgi-bin/externalcontact/groupchat/get"
+
 	// https://developer.work.weixin.qq.com/document/path/92577
 	// 配置客户联系「联系我」方式
 	// apiUpdateTaskcard = "/cgi-bin/externalcontact/add_contact_way"
@@ -205,5 +210,94 @@ func (api *ExternalContactApi) ListExternalContactDetails(
 		return nil, err
 	}
 
+	return result, nil
+}
+
+type GetGroupChatListResponse struct {
+	utils.WeixinError
+	GroupChatList []*struct {
+		ChatId string `json:"chat_id"`
+		Status uint8  `json:"status"`
+	} `json:"group_chat_list"`
+	NextCursor string `json:"next_cursor"`
+}
+
+func (api *ExternalContactApi) GetGroupChatList(
+	ctx context.Context,
+	status uint8,
+	ownerUserIDs []string,
+	cursor string,
+	limit int32,
+) (*GetGroupChatListResponse, error) {
+	result := &GetGroupChatListResponse{}
+	// {
+	// 	"status_filter": 0,
+	// 	"owner_filter": {
+	// 		"userid_list": ["abel"]
+	// 	},
+	// 	"cursor" : "r9FqSqsI8fgNbHLHE5QoCP50UIg2cFQbfma3l2QsmwI",
+	// 	"limit" : 10
+	// }
+	body := map[string]interface{}{
+		"status_filter": status,
+		"cursor":        cursor,
+		"limit":         limit,
+	}
+	if len(ownerUserIDs) > 0 {
+		body["owner_filter"] = map[string]interface{}{
+			"userid_list": ownerUserIDs,
+		}
+	}
+	if err := api.Client.HTTPPostJson(ctx, apiGetGroupChatList, body, result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+type GroupChatMember struct {
+	Userid    string `json:"userid"`
+	Type      uint8  `json:"type"`
+	JoinTime  uint64 `json:"join_time"`
+	JoinScene uint8  `json:"join_scene"`
+	Invitor   *struct {
+		Userid string `json:"userid"`
+	} `json:"invitor"`
+	GroupNickname string `json:"group_nickname"`
+	Name          string `json:"name"`
+	Unionid       string `json:"unionid"`
+}
+
+type GroupChat struct {
+	ChatId     string             `json:"chat_id"`
+	Name       string             `json:"name"`
+	Owner      string             `json:"owner"`
+	CreateTime uint64             `json:"create_time"`
+	Notice     string             `json:"notice"`
+	MemberList []*GroupChatMember `json:"member_list"`
+	AdminList  []*struct {
+		Userid string `json:"userid"`
+	} `json:"admin_list"`
+	MemberVersion string `json:"member_version"`
+}
+
+type GetGroupChatResponse struct {
+	utils.WeixinError
+	GroupChat *GroupChat `json:"group_chat"`
+}
+
+func (api *ExternalContactApi) GetGroupChat(
+	ctx context.Context,
+	chatId string,
+	needName uint8,
+) (*GetGroupChatResponse, error) {
+	result := &GetGroupChatResponse{}
+
+	if err := api.Client.HTTPPostJson(ctx, apiGetGroupChat, map[string]interface{}{
+		"chat_id":   chatId,
+		"need_name": needName,
+	}, result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }
