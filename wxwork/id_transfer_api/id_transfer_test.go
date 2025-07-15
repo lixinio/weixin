@@ -3,6 +3,8 @@ package id_transfer_api
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/lixinio/weixin/test"
 	"github.com/lixinio/weixin/utils"
 	"github.com/lixinio/weixin/utils/redis"
@@ -10,7 +12,6 @@ import (
 	"github.com/lixinio/weixin/wxwork/agent"
 	"github.com/lixinio/weixin/wxwork/authorizer"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 type item struct {

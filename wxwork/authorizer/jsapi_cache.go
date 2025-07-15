@@ -15,8 +15,10 @@ type corpJsApiTicketGetterAdapter struct {
 }
 
 // GetAccessToken 接口 utils.AccessTokenGetter 实现
-func (adapter *corpJsApiTicketGetterAdapter) GetAccessToken() (string, int, error) {
-	return adapter.accessTokenGetter()
+func (adapter *corpJsApiTicketGetterAdapter) GetAccessToken(
+	ctx context.Context,
+) (string, int, error) {
+	return adapter.accessTokenGetter(ctx)
 }
 
 // GetAccessTokenKey 接口 utils.AccessTokenGetter 实现
@@ -43,17 +45,25 @@ func newCorpJsApiTicketAdapter(
 	}
 }
 
-func (authorizer *Authorizer) EnableCorpJSApiTicketCache(cache utils.Cache, locker utils.Lock) {
+func (authorizer *Authorizer) EnableCorpJSApiTicketCache(
+	cache utils.Cache,
+	locker utils.Lock,
+	tokenRefreshHandler utils.TokenRefreshHandler, // 刷新callback
+) {
 	if authorizer.corpJsApiTicketCache != nil {
 		return
 	}
 
 	authorizer.corpJsApiTicketCache = utils.NewAccessTokenCache(
-		newCorpJsApiTicketAdapter(authorizer.SuiteID, authorizer.CorpID, func() (string, int, error) {
-			ticket, expiresIn, err := authorizer.getCorpJSApiTicket(context.TODO())
-			return ticket, int(expiresIn), err
-		}),
+		newCorpJsApiTicketAdapter(
+			authorizer.SuiteID,
+			authorizer.CorpID,
+			func(ctx context.Context) (string, int, error) {
+				ticket, expiresIn, err := authorizer.getCorpJSApiTicket(ctx)
+				return ticket, int(expiresIn), err
+			}),
 		cache, locker,
+		utils.CacheClientTokenOptWithExpireBefore(tokenRefreshHandler),
 	)
 }
 
@@ -65,8 +75,10 @@ type agentJsApiTicketGetterAdapter struct {
 }
 
 // GetAccessToken 接口 utils.AccessTokenGetter 实现
-func (adapter *agentJsApiTicketGetterAdapter) GetAccessToken() (string, int, error) {
-	return adapter.accessTokenGetter()
+func (adapter *agentJsApiTicketGetterAdapter) GetAccessToken(
+	ctx context.Context,
+) (string, int, error) {
+	return adapter.accessTokenGetter(ctx)
 }
 
 // GetAccessTokenKey 接口 utils.AccessTokenGetter 实现
@@ -93,16 +105,24 @@ func newAgentJsApiTicketAdapter(
 	}
 }
 
-func (authorizer *Authorizer) EnableAgentJSApiTicketCache(cache utils.Cache, locker utils.Lock) {
+func (authorizer *Authorizer) EnableAgentJSApiTicketCache(
+	cache utils.Cache,
+	locker utils.Lock,
+	tokenRefreshHandler utils.TokenRefreshHandler, // 刷新callback
+) {
 	if authorizer.agentJsApiTicketCache != nil {
 		return
 	}
 
 	authorizer.agentJsApiTicketCache = utils.NewAccessTokenCache(
-		newAgentJsApiTicketAdapter(authorizer.SuiteID, authorizer.CorpID, func() (string, int, error) {
-			ticket, expiresIn, err := authorizer.getAgentJSApiTicket(context.TODO())
-			return ticket, int(expiresIn), err
-		}),
+		newAgentJsApiTicketAdapter(
+			authorizer.SuiteID,
+			authorizer.CorpID,
+			func(ctx context.Context) (string, int, error) {
+				ticket, expiresIn, err := authorizer.getAgentJSApiTicket(ctx)
+				return ticket, int(expiresIn), err
+			}),
 		cache, locker,
+		utils.CacheClientTokenOptWithExpireBefore(tokenRefreshHandler),
 	)
 }

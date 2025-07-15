@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/url"
 
@@ -90,7 +89,8 @@ func (api *MaterialApi) GetMedia(ctx context.Context, mediaID string) ([]byte, e
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +186,7 @@ func (api *MaterialApi) UploadVideoMaterial(
 		return nil
 	}
 
-	//multipartWriter,
+	// multipartWriter,
 	if err = api.Client.HTTPUpload(
 		ctx, apiUploadMaterial, content, "media", filename, length, func(params url.Values) {
 			params.Add("type", MediaTypeVideo)
@@ -211,7 +211,8 @@ func (api *MaterialApi) GetMaterial(ctx context.Context, mediaID string) ([]byte
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

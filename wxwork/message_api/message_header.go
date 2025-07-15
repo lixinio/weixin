@@ -32,11 +32,11 @@ func (h *MessageHeader) SetDuplicateCheckInterval(duplicateCheckInterval int) *M
 	return h
 }
 
-/**
+/*
 touser	否	成员ID列表（消息接收者，多个接收者用‘|’分隔，最多支持1000个）。特殊情况：指定为@all，则向关注该企业应用的全部成员发送
 toparty	否	部门ID列表，多个接收者用‘|’分隔，最多支持100个。当touser为@all时忽略本参数
 totag	否	标签ID列表，多个接收者用‘|’分隔，最多支持100个。当touser为@all时忽略本参数
-**/
+*/
 func NewMessageHeaderByUser(user string) *MessageHeader {
 	return &MessageHeader{
 		ToUser: user,

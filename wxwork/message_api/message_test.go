@@ -59,7 +59,6 @@ func TestSendMessage(t *testing.T) {
 		initWxWorkAgent(),
 		initWxWorkSuiteAuthorizer(),
 	} {
-
 		userApi := user_api.NewApi(cli.client)
 		userid, err := userApi.MobileGetUserId(ctx, test.AgentUserMobile)
 		require.Equal(t, nil, err)
@@ -300,7 +299,6 @@ func TestSendMpNoticeMessage(t *testing.T) {
 	for _, cli := range []*item{
 		initWxWorkSuiteAuthorizer(),
 	} {
-
 		userApi := user_api.NewApi(cli.client)
 		userid, err := userApi.MobileGetUserId(ctx, test.AgentUserMobile)
 		require.Equal(t, nil, err)

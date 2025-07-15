@@ -38,7 +38,7 @@ type TagItem struct {
 	Count int64  `json:"count"`
 }
 
-//TagInfo 标签信息
+// TagInfo 标签信息
 type TagInfo struct {
 	utils.WeixinError
 	Tag TagItem `json:"tag"`

@@ -12,13 +12,13 @@ func GetAuthorizerAccessToken(
 	tokenCache TokenCache,
 	corpID string,
 ) authorizer.RefreshAccessToken {
-	return func() (string, int, error) {
-		permanentCode, err := tokenCache.GetPermanentCode()
+	return func(ctx context.Context) (string, int, error) {
+		permanentCode, err := tokenCache.GetPermanentCode(ctx)
 		if err != nil {
 			return "", 0, err
 		}
 		resp, err := suite.GetCorpToken(
-			context.TODO(),
+			ctx,
 			corpID,
 			permanentCode,
 		)

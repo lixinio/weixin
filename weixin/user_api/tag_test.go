@@ -54,7 +54,6 @@ func TestUserTag(t *testing.T) {
 		{
 			// 编辑标签
 			require.Equal(t, nil, userApi.UpdateTag(ctx, tagID, tagName))
-
 		}
 
 		{

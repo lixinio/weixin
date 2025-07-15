@@ -3,7 +3,7 @@ package wxopen
 import (
 	"encoding/xml"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/lixinio/weixin/utils"
@@ -29,7 +29,7 @@ func (wxopen *WxOpen) ServeData(
 	r *http.Request,
 	processor utils.XmlHandlerFunc,
 ) error {
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		return err
 	}
@@ -64,8 +64,8 @@ func (wxopen *WxOpen) ServeData(
 }
 
 // ParseXML 解析微信推送过来的消息/事件
-func (wxopen *WxOpen) ParseXML(body []byte) (m interface{}, err error) {
-	event := &Event{}
+func (wxopen *WxOpen) ParseXML(body []byte) (event *Event, m interface{}, err error) {
+	event = &Event{}
 	if err = xml.Unmarshal(body, event); err != nil {
 		return
 	}
@@ -76,43 +76,43 @@ func (wxopen *WxOpen) ParseXML(body []byte) (m interface{}, err error) {
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return event, msg, nil
 	case EventTypeAuthorized:
 		msg := &EventAuthorized{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return event, msg, nil
 	case EventTypeUnauthorized:
 		msg := &EventUnauthorized{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return event, msg, nil
 	case EventTypeUpdateAuthorized:
 		msg := &EventUpdateAuthorized{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return event, msg, nil
 	case EventTypeThirdFastRegisterBetaApp:
 		msg := &EventThirdFastRegisterBetaApp{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return event, msg, nil
 	case EventTypeThirdFastVerifyBetaApp:
 		msg := &EventThirdFastVerifyBetaApp{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return event, msg, nil
 	case EventTypeThirdFastRegister:
 		msg := &EventThirdFastRegister{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return event, msg, nil
 	}
 	return
 }

@@ -45,12 +45,13 @@ type ReplyMessage struct {
 /*
 加密处理后 的 回复 消息体
 <xml>
-   <Encrypt><![CDATA[msg_encrypt]]></Encrypt>
-   <MsgSignature><![CDATA[msg_signature]]></MsgSignature>
-   <TimeStamp>timestamp</TimeStamp>
-   <Nonce><![CDATA[nonce]]></Nonce>
-</xml>
 
+	<Encrypt><![CDATA[msg_encrypt]]></Encrypt>
+	<MsgSignature><![CDATA[msg_signature]]></MsgSignature>
+	<TimeStamp>timestamp</TimeStamp>
+	<Nonce><![CDATA[nonce]]></Nonce>
+
+</xml>
 */
 type ReplyEncryptMessage struct {
 	XMLName      xml.Name `xml:"xml"`
@@ -61,16 +62,15 @@ type ReplyEncryptMessage struct {
 }
 
 /*
-
 <xml>
-   <ToUserName><![CDATA[toUser]]></ToUserName>
-   <FromUserName><![CDATA[fromUser]]></FromUserName>
-   <CreateTime>1348831860</CreateTime>
-   <MsgType><![CDATA[text]]></MsgType>
-   <Content><![CDATA[this is a test]]></Content>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>1348831860</CreateTime>
+	<MsgType><![CDATA[text]]></MsgType>
+	<Content><![CDATA[this is a test]]></Content>
+
 </xml>
-
-
 */
 type ReplyMessageText struct {
 	ReplyMessage
@@ -78,18 +78,17 @@ type ReplyMessageText struct {
 }
 
 /*
-
 <xml>
-   <ToUserName><![CDATA[toUser]]></ToUserName>
-   <FromUserName><![CDATA[fromUser]]></FromUserName>
-   <CreateTime>1348831860</CreateTime>
-   <MsgType><![CDATA[image]]></MsgType>
-   <Image>
-       <MediaId><![CDATA[media_id]]></MediaId>
-   </Image>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>1348831860</CreateTime>
+	<MsgType><![CDATA[image]]></MsgType>
+	<Image>
+		<MediaId><![CDATA[media_id]]></MediaId>
+	</Image>
+
 </xml>
-
-
 */
 type ReplyMessageImage struct {
 	ReplyMessage
@@ -99,18 +98,17 @@ type ReplyMessageImage struct {
 }
 
 /*
-
 <xml>
-   <ToUserName><![CDATA[toUser]]></ToUserName>
-   <FromUserName><![CDATA[fromUser]]></FromUserName>
-   <CreateTime>1357290913</CreateTime>
-   <MsgType><![CDATA[voice]]></MsgType>
-   <Voice>
-       <MediaId><![CDATA[media_id]]></MediaId>
-   </Voice>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>1357290913</CreateTime>
+	<MsgType><![CDATA[voice]]></MsgType>
+	<Voice>
+		<MediaId><![CDATA[media_id]]></MediaId>
+	</Voice>
+
 </xml>
-
-
 */
 type ReplyMessageVoice struct {
 	ReplyMessage
@@ -122,15 +120,17 @@ type ReplyMessageVoice struct {
 
 /*
 <xml>
-  <ToUserName><![CDATA[toUser]]></ToUserName>
-  <FromUserName><![CDATA[fromUser]]></FromUserName>
-  <CreateTime>12345678</CreateTime>
-  <MsgType><![CDATA[video]]></MsgType>
-  <Video>
-    <MediaId><![CDATA[media_id]]></MediaId>
-    <Title><![CDATA[title]]></Title>
-    <Description><![CDATA[description]]></Description>
-  </Video>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>12345678</CreateTime>
+	<MsgType><![CDATA[video]]></MsgType>
+	<Video>
+		<MediaId><![CDATA[media_id]]></MediaId>
+		<Title><![CDATA[title]]></Title>
+		<Description><![CDATA[description]]></Description>
+	</Video>
+
 </xml>
 */
 type ReplyMessageVideo struct {
@@ -144,20 +144,20 @@ type ReplyMessageVideo struct {
 
 /*
 <xml>
-  <ToUserName><![CDATA[toUser]]></ToUserName>
-  <FromUserName><![CDATA[fromUser]]></FromUserName>
-  <CreateTime>12345678</CreateTime>
-  <MsgType><![CDATA[news]]></MsgType>
-  <ArticleCount>1</ArticleCount>
-  <Articles>
-    <item>
-      <Title><![CDATA[title1]]></Title>
-      <Description><![CDATA[description1]]></Description>
-      <PicUrl><![CDATA[picurl]]></PicUrl>
-      <Url><![CDATA[url]]></Url>
-    </item>
-  </Articles>
-</xml>
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>12345678</CreateTime>
+	<MsgType><![CDATA[news]]></MsgType>
+	<ArticleCount>1</ArticleCount>
+	<Articles>
+	<item>
+		<Title><![CDATA[title1]]></Title>
+		<Description><![CDATA[description1]]></Description>
+		<PicUrl><![CDATA[picurl]]></PicUrl>
+		<Url><![CDATA[url]]></Url>
+	</item>
+	</Articles>
+	</xml>
 */
 
 type ReplyMessageNewsItem struct {
@@ -177,13 +177,15 @@ type ReplyMessageNews struct {
 
 /*
 <xml>
-   <ToUserName><![CDATA[toUser]]></ToUserName>
-   <FromUserName><![CDATA[fromUser]]></FromUserName>
-   <CreateTime>1357290913</CreateTime>
-   <MsgType><![CDATA[update_taskcard]]></MsgType>
-   <TaskCard>
-       <ReplaceName><![CDATA[ReplaceName]]></ReplaceName>
-   </TaskCard>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>1357290913</CreateTime>
+	<MsgType><![CDATA[update_taskcard]]></MsgType>
+	<TaskCard>
+		<ReplaceName><![CDATA[ReplaceName]]></ReplaceName>
+	</TaskCard>
+
 </xml>
 */
 type ReplyMessageTaskCard struct {

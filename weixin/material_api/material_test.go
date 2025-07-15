@@ -139,7 +139,13 @@ func TestUploadImageMaterial(t *testing.T) {
 		fi, err := file.Stat()
 		require.Empty(t, err)
 
-		result, err := materialApi.UploadMaterial(ctx, test.ImagePath, fi.Size(), file, MediaTypeImage)
+		result, err := materialApi.UploadMaterial(
+			ctx,
+			test.ImagePath,
+			fi.Size(),
+			file,
+			MediaTypeImage,
+		)
 		require.Empty(t, err)
 		fmt.Println(result.MediaID, result.URL)
 
@@ -185,7 +191,13 @@ func TestUploadVoiceMaterial(t *testing.T) {
 		fi, err := file.Stat()
 		require.Empty(t, err)
 
-		result, err := materialApi.UploadMaterial(ctx, test.AudioPath, fi.Size(), file, MediaTypeVoice)
+		result, err := materialApi.UploadMaterial(
+			ctx,
+			test.AudioPath,
+			fi.Size(),
+			file,
+			MediaTypeVoice,
+		)
 		require.Empty(t, err)
 		fmt.Println(result.MediaID, result.URL)
 

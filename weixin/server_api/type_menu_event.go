@@ -30,12 +30,14 @@ const (
 
 /*
 <xml>
-  <ToUserName><![CDATA[toUser]]></ToUserName>
-  <FromUserName><![CDATA[FromUser]]></FromUserName>
-  <CreateTime>123456789</CreateTime>
-  <MsgType><![CDATA[event]]></MsgType>
-  <Event><![CDATA[CLICK]]></Event>
-  <EventKey><![CDATA[EVENTKEY]]></EventKey>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[FromUser]]></FromUserName>
+	<CreateTime>123456789</CreateTime>
+	<MsgType><![CDATA[event]]></MsgType>
+	<Event><![CDATA[CLICK]]></Event>
+	<EventKey><![CDATA[EVENTKEY]]></EventKey>
+
 </xml>
 */
 type EventMenuClick struct {
@@ -45,6 +47,7 @@ type EventMenuClick struct {
 
 /*
 <xml>
+
 	<ToUserName><![CDATA[toUser]]></ToUserName>
 	<FromUserName><![CDATA[FromUser]]></FromUserName>
 	<CreateTime>123456789</CreateTime>
@@ -52,6 +55,7 @@ type EventMenuClick struct {
 	<Event><![CDATA[VIEW]]></Event>
 	<EventKey><![CDATA[www.qq.com]]></EventKey>
 	<MenuId>MENUID</MenuId>
+
 </xml>
 */
 type EventMenuView struct {

@@ -12,20 +12,20 @@ func GetAuthorizerAccessToken(
 	tokenCache TokenCache,
 	appid string,
 ) authorizer.RefreshAccessToken {
-	return func() (string, int, error) {
-		refreshToken, err := tokenCache.GetRefreshToken()
+	return func(ctx context.Context) (string, int, error) {
+		refreshToken, err := tokenCache.GetRefreshToken(ctx)
 		if err != nil {
 			return "", 0, err
 		}
 		resp, err := wxOpen.GetAuthorizerToken(
-			context.TODO(),
+			ctx,
 			appid,
 			refreshToken,
 		)
 		if err != nil {
 			return "", 0, err
 		}
-		tokenCache.SetRefreshToken(resp.RefreshToken) // noqa
+		tokenCache.SetRefreshToken(ctx, resp.RefreshToken) // noqa
 		return resp.AccessToken, resp.ExpiresIn, nil
 	}
 }

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -11,14 +12,35 @@ import (
 // 在Trace的时候， 移除access-token / secret
 // 	secret : https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage_authorization.html
 
-type AccessTokenStripTransport struct {
-	Base http.RoundTripper
+type (
+	AccessTokenStripTransport struct {
+		Base http.RoundTripper
+	}
+	stripKeyContext int
+)
+
+var stripKeyContextKey = stripKeyContext(0)
+
+func NewStripContext(ctx context.Context, keys ...string) context.Context {
+	return context.WithValue(ctx, stripKeyContextKey, keys)
+}
+
+func parseStripContext(ctx context.Context) ([]string, bool) {
+	v := ctx.Value(stripKeyContextKey)
+	if v != nil {
+		if k, ok := v.([]string); ok && len(k) > 0 {
+			return k, true
+		}
+	}
+
+	return nil, false
 }
 
 func (t *AccessTokenStripTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	resp, err := t.Base.RoundTrip(req)
+	ctx := req.Context()
 
-	span := trace.FromContext(req.Context())
+	span := trace.FromContext(ctx)
 	if span == nil {
 		return nil, err
 	}
@@ -32,10 +54,14 @@ func (t *AccessTokenStripTransport) RoundTrip(req *http.Request) (*http.Response
 		q.Set("access_token", "")
 		edit = true
 	}
-	if q.Get("secret") != "" {
-		// https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage_authorization.html
-		q.Set("secret", "")
-		edit = true
+
+	if stripKeys, ok := parseStripContext(ctx); ok {
+		for _, stripKey := range stripKeys {
+			if q.Get(stripKey) != "" {
+				q.Set(stripKey, "")
+				edit = true
+			}
+		}
 	}
 
 	if edit {
@@ -48,10 +74,8 @@ func (t *AccessTokenStripTransport) RoundTrip(req *http.Request) (*http.Response
 	return resp, err
 }
 
-func newTransport() http.RoundTripper {
-	return &ochttp.Transport{
-		Base: &AccessTokenStripTransport{
-			Base: http.DefaultTransport,
-		},
-	}
+var DefaultTransport http.RoundTripper = &ochttp.Transport{
+	Base: &AccessTokenStripTransport{
+		Base: http.DefaultTransport,
+	},
 }

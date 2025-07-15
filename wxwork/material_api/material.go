@@ -20,7 +20,6 @@ package material_api
 import (
 	"context"
 	"io"
-	"io/ioutil"
 	"net/url"
 	"strconv"
 
@@ -126,7 +125,8 @@ func (api *MaterialApi) Get(ctx context.Context, mediaID string) ([]byte, error)
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

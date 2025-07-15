@@ -50,7 +50,7 @@ func (api *WxOpen) GetSnsAccessToken(
 	authorizerAppID, code string,
 ) (*OauthAccessToken, error) {
 	result := &OauthAccessToken{}
-	if err := api.Client.HTTPGetWithParams(context.TODO(), apiAccessToken, func(params url.Values) {
+	if err := api.Client.HTTPGetWithParams(ctx, apiAccessToken, func(params url.Values) {
 		params.Add("appid", authorizerAppID)
 		params.Add("component_appid", api.Config.Appid)
 		params.Add("code", code)
@@ -67,7 +67,7 @@ func (api *WxOpen) RefreshSnsToken(
 	authorizerAppID, refreshToken string,
 ) (*OauthAccessToken, error) {
 	result := &OauthAccessToken{}
-	if err := api.Client.HTTPGetWithParams(context.TODO(), apiRefreshToken, func(params url.Values) {
+	if err := api.Client.HTTPGetWithParams(ctx, apiRefreshToken, func(params url.Values) {
 		params.Add("appid", authorizerAppID)
 		params.Add("component_appid", api.Config.Appid)
 		params.Add("grant_type", "refresh_token")
@@ -103,7 +103,7 @@ func (api *WxOpen) GetUserInfo(
 	ctx context.Context, accessToken string, openid string, lang string,
 ) (*OauthUserInfo, error) {
 	result := &OauthUserInfo{}
-	if err := api.Client.HTTPGetToken(context.TODO(), apiUserInfo, func(params url.Values) {
+	if err := api.Client.HTTPGetToken(ctx, apiUserInfo, func(params url.Values) {
 		params.Add("access_token", accessToken)
 		params.Add("openid", openid)
 		params.Add("lang", lang)

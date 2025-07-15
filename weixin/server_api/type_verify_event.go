@@ -27,12 +27,14 @@ const (
 
 /*
 <xml>
-  <ToUserName><![CDATA[toUser]]></ToUserName>
-  <FromUserName><![CDATA[fromUser]]></FromUserName>
-  <CreateTime>1442401156</CreateTime>
-  <MsgType><![CDATA[event]]></MsgType>
-  <Event><![CDATA[qualification_verify_success]]></Event>
-  <ExpiredTime>1442401156</ExpiredTime>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>1442401156</CreateTime>
+	<MsgType><![CDATA[event]]></MsgType>
+	<Event><![CDATA[qualification_verify_success]]></Event>
+	<ExpiredTime>1442401156</ExpiredTime>
+
 </xml>
 */
 type EventQualificationVerifySuccess struct {
@@ -41,15 +43,16 @@ type EventQualificationVerifySuccess struct {
 }
 
 /*
-
 <xml>
-  <ToUserName><![CDATA[toUser]]></ToUserName>
-  <FromUserName><![CDATA[fromUser]]></FromUserName>
-  <CreateTime>1442401156</CreateTime>
-  <MsgType><![CDATA[event]]></MsgType>
-  <Event><![CDATA[qualification_verify_fail]]></Event>
-  <FailTime>1442401122</FailTime>
-  <FailReason><![CDATA[by time]]></FailReason>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>1442401156</CreateTime>
+	<MsgType><![CDATA[event]]></MsgType>
+	<Event><![CDATA[qualification_verify_fail]]></Event>
+	<FailTime>1442401122</FailTime>
+	<FailReason><![CDATA[by time]]></FailReason>
+
 </xml>
 */
 type EventQualificationVerifyFail struct {
@@ -59,14 +62,15 @@ type EventQualificationVerifyFail struct {
 }
 
 /*
-
 <xml>
-  <ToUserName><![CDATA[toUser]]></ToUserName>
-  <FromUserName><![CDATA[fromUser]]></FromUserName>
-  <CreateTime>1442401093</CreateTime>
-  <MsgType><![CDATA[event]]></MsgType>
-  <Event><![CDATA[naming_verify_success]]></Event>
-  <ExpiredTime>1442401093</ExpiredTime>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>1442401093</CreateTime>
+	<MsgType><![CDATA[event]]></MsgType>
+	<Event><![CDATA[naming_verify_success]]></Event>
+	<ExpiredTime>1442401093</ExpiredTime>
+
 </xml>
 */
 type EventNamingVerifySuccess struct {
@@ -77,15 +81,16 @@ type EventNamingVerifySuccess struct {
 /*
 名称认证失败
 <xml>
-  <ToUserName><![CDATA[toUser]]></ToUserName>
-  <FromUserName><![CDATA[fromUser]]></FromUserName>
-  <CreateTime>1442401061</CreateTime>
-  <MsgType><![CDATA[event]]></MsgType>
-  <Event><![CDATA[naming_verify_fail]]></Event>
-  <FailTime>1442401061</FailTime>
-  <FailReason><![CDATA[by time]]></FailReason>
-</xml>
 
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>1442401061</CreateTime>
+	<MsgType><![CDATA[event]]></MsgType>
+	<Event><![CDATA[naming_verify_fail]]></Event>
+	<FailTime>1442401061</FailTime>
+	<FailReason><![CDATA[by time]]></FailReason>
+
+</xml>
 */
 type EventNamingVerifyFail struct {
 	Event
@@ -96,14 +101,15 @@ type EventNamingVerifyFail struct {
 /*
 年审通知
 <xml>
-  <ToUserName><![CDATA[toUser]]></ToUserName>
-  <FromUserName><![CDATA[fromUser]]></FromUserName>
-  <CreateTime>1442401004</CreateTime>
-  <MsgType><![CDATA[event]]></MsgType>
-  <Event><![CDATA[annual_renew]]></Event>
-  <ExpiredTime>1442401004</ExpiredTime>
-</xml>
 
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>1442401004</CreateTime>
+	<MsgType><![CDATA[event]]></MsgType>
+	<Event><![CDATA[annual_renew]]></Event>
+	<ExpiredTime>1442401004</ExpiredTime>
+
+</xml>
 */
 type EventAnnualRenew struct {
 	Event
@@ -113,12 +119,14 @@ type EventAnnualRenew struct {
 /*
 认证过期失效通知审通知
 <xml>
-  <ToUserName><![CDATA[toUser]]></ToUserName>
-  <FromUserName><![CDATA[fromUser]]></FromUserName>
-  <CreateTime>1442400900</CreateTime>
-  <MsgType><![CDATA[event]]></MsgType>
-  <Event><![CDATA[verify_expired]]></Event>
-  <ExpiredTime>1442400900</ExpiredTime>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>1442400900</CreateTime>
+	<MsgType><![CDATA[event]]></MsgType>
+	<Event><![CDATA[verify_expired]]></Event>
+	<ExpiredTime>1442400900</ExpiredTime>
+
 </xml>
 */
 type EventVerifyExpired struct {

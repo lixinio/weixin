@@ -15,8 +15,10 @@ type jsApiTicketGetterAdapter struct {
 }
 
 // GetAccessToken 接口 utils.AccessTokenGetter 实现
-func (adapter *jsApiTicketGetterAdapter) GetAccessToken() (string, int, error) {
-	return adapter.accessTokenGetter()
+func (adapter *jsApiTicketGetterAdapter) GetAccessToken(
+	ctx context.Context,
+) (string, int, error) {
+	return adapter.accessTokenGetter(ctx)
 }
 
 // GetAccessTokenKey 接口 utils.AccessTokenGetter 实现
@@ -49,10 +51,13 @@ func (api *Authorizer) EnableJSApiTicketCache(cache utils.Cache, locker utils.Lo
 	}
 
 	api.jsApiTicketCache = utils.NewAccessTokenCache(
-		newJsApiTicketAdapter(api.ComponentAppid, api.Appid, func() (string, int, error) {
-			ticket, expiresIn, err := api.getJSApiTicket(context.TODO())
-			return ticket, int(expiresIn), err
-		}),
+		newJsApiTicketAdapter(
+			api.ComponentAppid,
+			api.Appid,
+			func(ctx context.Context) (string, int, error) {
+				ticket, expiresIn, err := api.getJSApiTicket(ctx)
+				return ticket, int(expiresIn), err
+			}),
 		cache, locker,
 	)
 }
@@ -65,8 +70,10 @@ type wxCardTicketGetterAdapter struct {
 }
 
 // GetAccessToken 接口 utils.AccessTokenGetter 实现
-func (adapter *wxCardTicketGetterAdapter) GetAccessToken() (string, int, error) {
-	return adapter.accessTokenGetter()
+func (adapter *wxCardTicketGetterAdapter) GetAccessToken(
+	ctx context.Context,
+) (string, int, error) {
+	return adapter.accessTokenGetter(ctx)
 }
 
 // GetAccessTokenKey 接口 utils.AccessTokenGetter 实现
@@ -99,10 +106,13 @@ func (api *Authorizer) EnableWxCardTicketCache(cache utils.Cache, locker utils.L
 	}
 
 	api.wxCardTicketCache = utils.NewAccessTokenCache(
-		newWxCardTicketAdapter(api.ComponentAppid, api.Appid, func() (string, int, error) {
-			ticket, expiresIn, err := api.getWxCardApiTicket(context.TODO())
-			return ticket, int(expiresIn), err
-		}),
+		newWxCardTicketAdapter(
+			api.ComponentAppid,
+			api.Appid,
+			func(ctx context.Context) (string, int, error) {
+				ticket, expiresIn, err := api.getWxCardApiTicket(ctx)
+				return ticket, int(expiresIn), err
+			}),
 		cache, locker,
 	)
 }

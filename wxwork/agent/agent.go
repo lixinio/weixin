@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/lixinio/weixin/utils"
@@ -24,7 +25,11 @@ func New(corp *work.WxWork, cache utils.Cache, locker utils.Lock, config *Config
 		wxwork: corp,
 	}
 	instance.Client = corp.NewClient(utils.NewAccessTokenCache(
-		newAdapter(corp.Config.Corpid, config.AgentID, instance.refreshAccessTokenFromWXServer),
+		newAdapter(
+			corp.Config.Corpid,
+			config.AgentID,
+			instance.refreshAccessTokenFromWXServer,
+		),
 		cache, locker,
 	))
 	return instance
@@ -35,12 +40,15 @@ func NewLite(
 ) *Agent {
 	client := corp.NewClient(
 		utils.NewAccessTokenCache(
-			newAdapter(corp.Config.Corpid, agentID, func() (string, int, error) {
-				return "", 0, fmt.Errorf(
-					"can NOT refresh token in lite mod, corp(%s), agentid(%d), %w",
-					corp.Config.Corpid, agentID, ErrTokenUpdateForbidden,
-				)
-			}),
+			newAdapter(
+				corp.Config.Corpid,
+				agentID,
+				func(ctx context.Context) (string, int, error) {
+					return "", 0, fmt.Errorf(
+						"can NOT refresh token in lite mod, corp(%s), agentid(%d), %w",
+						corp.Config.Corpid, agentID, ErrTokenUpdateForbidden,
+					)
+				}),
 			cache, locker,
 		),
 	)

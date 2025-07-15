@@ -2,7 +2,7 @@ package authorizer
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"net/url"
 
 	"github.com/lixinio/weixin/utils"
@@ -52,7 +52,8 @@ func (api *Authorizer) GetTestQrcode(ctx context.Context, path string) ([]byte, 
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

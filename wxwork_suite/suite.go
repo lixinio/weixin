@@ -1,6 +1,7 @@
 package wxwork_suite
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -40,10 +41,17 @@ type WxWorkSuite struct {
 	accessTokenCache *utils.AccessTokenCache
 }
 
-func New(cache utils.Cache, locker utils.Lock, config *Config) *WxWorkSuite {
+func New(
+	cache utils.Cache,
+	locker utils.Lock,
+	config *Config,
+	tokenRefreshHandler utils.TokenRefreshHandler, // 刷新callback
+) *WxWorkSuite {
 	ticketCache := utils.NewAccessTokenCache(newTicketAdapter(config.SuiteID), cache, locker)
 	accessTokenCache := utils.NewAccessTokenCache(
-		newAccessTokenAdaptor(config, ticketCache), cache, locker,
+		newAccessTokenAdaptor(config, ticketCache),
+		cache, locker,
+		utils.CacheClientTokenOptWithExpireBefore(tokenRefreshHandler),
 	)
 	instance := &WxWorkSuite{
 		Config:           config,
@@ -72,31 +80,35 @@ func NewLite(
 }
 
 // 当收到EventComponentVerifyTicket时， 用于更新ticket到cache
-func (suite *WxWorkSuite) UpdateTicket(token string) error {
+func (suite *WxWorkSuite) UpdateTicket(
+	ctx context.Context, token string,
+) error {
 	if suite.ticketCache == nil {
 		return fmt.Errorf(
 			"wxcorp suite appid : %s, error: %w", suite.Config.SuiteID, ErrTicketUpdateForbidden,
 		)
 	}
-	_, err := suite.ticketCache.UpdateAccessToken(token, ticketExpiresIn)
+	_, err := suite.ticketCache.UpdateAccessToken(ctx, token, ticketExpiresIn)
 	return err
 }
 
-func (suite *WxWorkSuite) RefreshAccessToken(expireBefore int) (string, error) {
+func (suite *WxWorkSuite) RefreshAccessToken(
+	ctx context.Context, expireBefore int,
+) (string, error) {
 	if suite.accessTokenCache == nil {
 		return "", fmt.Errorf(
 			"wxopen appid : %s, error: %w", suite.Config.SuiteID, ErrTokenUpdateForbidden,
 		)
 	}
-	return suite.accessTokenCache.RefreshAccessToken(expireBefore)
+	return suite.accessTokenCache.RefreshAccessToken(ctx, expireBefore)
 }
 
-func (suite *WxWorkSuite) ClearAccessToken() error {
+func (suite *WxWorkSuite) ClearAccessToken(ctx context.Context) error {
 	if suite.accessTokenCache == nil {
 		return fmt.Errorf(
 			"suiteid : %s, error: %w",
 			suite.Config.SuiteID, ErrTokenUpdateForbidden,
 		)
 	}
-	return suite.accessTokenCache.ClearAccessToken()
+	return suite.accessTokenCache.ClearAccessToken(ctx)
 }

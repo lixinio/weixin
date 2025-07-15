@@ -2,6 +2,7 @@ package group_msg_api
 
 import (
 	"context"
+
 	"github.com/lixinio/weixin/utils"
 )
 

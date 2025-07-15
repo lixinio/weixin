@@ -48,7 +48,7 @@ func main() {
 	provider := wxwork_provider.New(redis, redis, &wxwork_provider.Config{
 		CorpID:         test.WxWorkProviderCorpID,
 		ProviderSecret: test.WxWorkProviderSecret,
-	})
+	}, nil)
 
 	http.HandleFunc("/", index(provider))
 	http.HandleFunc("/login_sso", login(provider))

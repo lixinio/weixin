@@ -23,6 +23,7 @@ const (
 	EventTypeMenuPicSysPhotoOrAlbum = "pic_photo_or_album" // 弹出拍照或者相册发图的事件推送
 	EventTypeMenuPicWeixin          = "pic_weixin"         // 弹出微信相册发图器的事件推送
 	EventTypeMenuLocationSelect     = "location_select"    // 弹出地理位置选择器的事件推送
+	EventTypeEnterAgent             = "enter_agent"        // 进入应用
 )
 
 /*
@@ -61,6 +62,7 @@ type EventMenuView struct {
 
 /*
 <xml>
+
 	<ToUserName><![CDATA[toUser]]></ToUserName>
 	<FromUserName><![CDATA[FromUser]]></FromUserName>
 	<CreateTime>1408090502</CreateTime>
@@ -72,6 +74,7 @@ type EventMenuView struct {
 		<ScanResult><![CDATA[1]]></ScanResult>
 	</ScanCodeInfo>
 	<AgentID>1</AgentID>
+
 </xml>
 */
 type EventMenuScanCodePush struct {
@@ -92,8 +95,10 @@ type EventMenuScanCodePush struct {
 <Event><![CDATA[scancode_waitmsg]]></Event>
 <EventKey><![CDATA[6]]></EventKey>
 <ScanCodeInfo>
+
 	<ScanType><![CDATA[qrcode]]></ScanType>
 	<ScanResult><![CDATA[2]]></ScanResult>
+
 </ScanCodeInfo>
 <AgentID>1</AgentID>
 </xml>
@@ -235,4 +240,22 @@ type EventMenuLocationSelect struct {
 	} `xml:"SendLocationInfo"`
 	AgentID string `xml:"AgentID"`
 	AppType string `xml:"AppType"`
+}
+
+// https://developer.work.weixin.qq.com/document/path/90240#%E8%BF%9B%E5%85%A5%E5%BA%94%E7%94%A8
+/*
+<xml>
+<ToUserName><![CDATA[toUser]]></ToUserName>
+<FromUserName><![CDATA[FromUser]]></FromUserName>
+<CreateTime>1408091189</CreateTime>
+<MsgType><![CDATA[event]]></MsgType>
+<Event><![CDATA[enter_agent]]></Event>
+<EventKey><![CDATA[]]></EventKey>
+<AgentID>1</AgentID>
+</xml>
+*/
+type EventEnterAgent struct {
+	Event
+	EventKey string `xml:"EventKey"`
+	AgentID  string `xml:"AgentID"`
 }

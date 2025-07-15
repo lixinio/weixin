@@ -1,6 +1,7 @@
 package authorizer
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/lixinio/weixin/utils"
@@ -8,7 +9,7 @@ import (
 
 // 需要通过wxopen对象刷新authorizer Access token
 // https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/ThirdParty/token/api_authorizer_token.html
-type RefreshAccessToken func() (string, int, error) // 直接获取token， 不做任何缓存
+type RefreshAccessToken func(context.Context) (string, int, error) // 直接获取token， 不做任何缓存
 
 // utils.AccessTokenGetter 接口实现
 type authorizerAccessTokenGetterAdapter struct {
@@ -18,8 +19,10 @@ type authorizerAccessTokenGetterAdapter struct {
 }
 
 // GetAccessToken 接口 utils.AccessTokenGetter 实现
-func (adapter *authorizerAccessTokenGetterAdapter) GetAccessToken() (string, int, error) {
-	return adapter.accessTokenGetter()
+func (adapter *authorizerAccessTokenGetterAdapter) GetAccessToken(
+	ctx context.Context,
+) (string, int, error) {
+	return adapter.accessTokenGetter(ctx)
 }
 
 // GetAccessTokenKey 接口 utils.AccessTokenGetter 实现

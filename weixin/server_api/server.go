@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -82,7 +81,7 @@ func (s *ServerApi) ServeData(
 		)
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		utils.HttpAbortBadRequest(w)
 		return err
@@ -118,8 +117,8 @@ func (s *ServerApi) ServeData(
 }
 
 // ParseXML 解析微信推送过来的消息/事件
-func (s *ServerApi) ParseXML(body []byte) (m interface{}, err error) {
-	message := &Message{}
+func (s *ServerApi) ParseXML(body []byte) (message *Message, m interface{}, err error) {
+	message = &Message{}
 	if err = xml.Unmarshal(body, message); err != nil {
 		return
 	}
@@ -130,51 +129,51 @@ func (s *ServerApi) ParseXML(body []byte) (m interface{}, err error) {
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return message, msg, nil
 	case MsgTypeImage:
 		msg := &MessageImage{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return message, msg, nil
 	case MsgTypeVoice:
 		msg := &MessageVoice{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return message, msg, nil
 	case MsgTypeVideo:
 		msg := &MessageVideo{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return message, msg, nil
 	case MsgTypeShortVideo:
 		msg := &MessageShortVideo{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return message, msg, nil
 	case MsgTypeLocation:
 		msg := &MessageLocation{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return message, msg, nil
 	case MsgTypeLink:
 		msg := &MessageLink{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return message, msg, nil
 	case MsgTypeFile:
 		msg := &MessageFile{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return message, msg, nil
 	case MsgTypeEvent:
-		return parseEvent(body)
+		m, err = parseEvent(body)
 	}
 	return
 }
@@ -186,7 +185,6 @@ func parseEvent(body []byte) (m interface{}, err error) {
 		return
 	}
 	switch event.Event {
-
 	// 关注事件
 	case EventTypeSubscribe:
 		msg := &EventSubscribe{}
@@ -452,7 +450,6 @@ func (s *ServerApi) response(
 	r *http.Request,
 	reply interface{},
 ) (err error) {
-
 	// 如果 开启加密，微信服务器 发过来的请求 带有 如下参数
 	//signature=c44d29564aa1d57bd0e274c37baa92bd5b3da5bd
 	//&timestamp=1596184957
@@ -460,7 +457,6 @@ func (s *ServerApi) response(
 	//&openid=oEnxesxpxWw-PKkz-vW5IMdfcQaE
 	//&encrypt_type=aes
 	//&msg_signature=cc24cc38467417603fc3689170e8b0fd3c9bf4a2
-
 	output := []byte("success") // 默认回复
 	if reply != nil {
 		output, err = xml.Marshal(reply)

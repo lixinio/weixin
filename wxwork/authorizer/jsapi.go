@@ -53,7 +53,7 @@ func (authorizer *Authorizer) GetCorpJSApiTicket(
 			ErrCorpJsApiTicketForbidden,
 		)
 	}
-	return authorizer.corpJsApiTicketCache.GetAccessToken()
+	return authorizer.corpJsApiTicketCache.GetAccessToken(ctx)
 }
 
 type JsApiCorpConfig struct {
@@ -66,7 +66,7 @@ type JsApiCorpConfig struct {
 
 // https://work.weixin.qq.com/api/doc/90000/90136/90506
 func (authorizer *Authorizer) GetCorpJSApiConfig(
-	ctx context.Context, url string,
+	ctx context.Context, uri string,
 ) (*JsApiCorpConfig, error) {
 	jsApiTicket, err := authorizer.GetCorpJSApiTicket(ctx)
 	if err != nil {
@@ -77,12 +77,12 @@ func (authorizer *Authorizer) GetCorpJSApiConfig(
 	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 	plain := fmt.Sprintf(
 		"jsapi_ticket=%s&noncestr=%s&timestamp=%s&url=%s",
-		jsApiTicket, nonceStr, timestamp, url,
+		jsApiTicket, nonceStr, timestamp, uri,
 	)
 	signature := fmt.Sprintf("%x", sha1.Sum([]byte(plain)))
 
 	return &JsApiCorpConfig{
-		Url:       url,
+		Url:       uri,
 		NonceStr:  nonceStr,
 		AppID:     authorizer.CorpID,
 		TimeStamp: timestamp,
@@ -111,7 +111,7 @@ func (authorizer *Authorizer) GetAgentJSApiTicket(
 			ErrAgentJsApiTicketForbidden,
 		)
 	}
-	return authorizer.agentJsApiTicketCache.GetAccessToken()
+	return authorizer.agentJsApiTicketCache.GetAccessToken(ctx)
 }
 
 type JsApiAgentConfig struct {
@@ -125,7 +125,7 @@ type JsApiAgentConfig struct {
 
 // https://work.weixin.qq.com/api/doc/90000/90136/90506
 func (authorizer *Authorizer) GetAgentJSApiConfig(
-	ctx context.Context, url string,
+	ctx context.Context, uri string,
 ) (*JsApiAgentConfig, error) {
 	jsApiTicket, err := authorizer.GetAgentJSApiTicket(ctx)
 	if err != nil {
@@ -136,12 +136,12 @@ func (authorizer *Authorizer) GetAgentJSApiConfig(
 	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 	plain := fmt.Sprintf(
 		"jsapi_ticket=%s&noncestr=%s&timestamp=%s&url=%s",
-		jsApiTicket, nonceStr, timestamp, url,
+		jsApiTicket, nonceStr, timestamp, uri,
 	)
 	signature := fmt.Sprintf("%x", sha1.Sum([]byte(plain)))
 
 	return &JsApiAgentConfig{
-		Url:       url,
+		Url:       uri,
 		NonceStr:  nonceStr,
 		CorpID:    authorizer.CorpID,
 		AgentID:   authorizer.AgentID,

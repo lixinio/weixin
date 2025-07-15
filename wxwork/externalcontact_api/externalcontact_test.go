@@ -76,7 +76,6 @@ func TestGetExternalContactList(t *testing.T) {
 
 		require.Equal(t, nil, err)
 		fmt.Println(listResult.ExternalUserids)
-
 	}
 }
 

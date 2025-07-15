@@ -47,7 +47,7 @@ func TestUser(t *testing.T) {
 
 		openid := resp.Data.OpenIDs[0]
 
-		remark := time.Now().Format("2006-02-01 15:04:05")
+		remark := time.Now().Format("2006-01-02 15:04:05")
 		{
 			// 设置备注
 			err := userApi.UpdateRemark(ctx, openid, remark)

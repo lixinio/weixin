@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -12,7 +13,9 @@ type authorizerAccessTokenAdaptor struct {
 	appid          string
 }
 
-func (ta *authorizerAccessTokenAdaptor) GetAccessToken() (accessToken string, expiresIn int, err error) {
+func (ta *authorizerAccessTokenAdaptor) GetAccessToken(
+	ctx context.Context,
+) (accessToken string, expiresIn int, err error) {
 	return "", 0, errors.New("can NOT update authorizer access token")
 }
 
@@ -31,7 +34,9 @@ type authorizerRefreshTokenAdaptor struct {
 	appid          string
 }
 
-func (ta *authorizerRefreshTokenAdaptor) GetAccessToken() (accessToken string, expiresIn int, err error) {
+func (ta *authorizerRefreshTokenAdaptor) GetAccessToken(
+	ctx context.Context,
+) (accessToken string, expiresIn int, err error) {
 	return "", 0, errors.New("can NOT refresh authorizer refresh code")
 }
 
@@ -50,22 +55,30 @@ type AuthorizerTokenCache struct {
 	refreshToken *utils.AccessTokenCache
 }
 
-func (tc *AuthorizerTokenCache) SetAccessToken(token string, expiresIn int) error {
-	_, err := tc.accessToken.UpdateAccessToken(token, expiresIn)
+func (tc *AuthorizerTokenCache) SetAccessToken(
+	ctx context.Context, token string, expiresIn int,
+) error {
+	_, err := tc.accessToken.UpdateAccessToken(ctx, token, expiresIn)
 	return err
 }
 
-func (tc *AuthorizerTokenCache) GetAccessToken() (string, error) {
-	return tc.accessToken.GetAccessToken()
+func (tc *AuthorizerTokenCache) GetAccessToken(
+	ctx context.Context,
+) (string, error) {
+	return tc.accessToken.GetAccessToken(ctx)
 }
 
-func (tc *AuthorizerTokenCache) SetRefreshToken(token string) error {
-	_, err := tc.refreshToken.UpdateAccessToken(token, 3600*24*365) // 一年， 长期有效
+func (tc *AuthorizerTokenCache) SetRefreshToken(
+	ctx context.Context, token string,
+) error {
+	_, err := tc.refreshToken.UpdateAccessToken(ctx, token, 3600*24*365) // 一年， 长期有效
 	return err
 }
 
-func (tc *AuthorizerTokenCache) GetRefreshToken() (string, error) {
-	return tc.refreshToken.GetAccessToken()
+func (tc *AuthorizerTokenCache) GetRefreshToken(
+	ctx context.Context,
+) (string, error) {
+	return tc.refreshToken.GetAccessToken(ctx)
 }
 
 func NewAuthorizerTokenCache(

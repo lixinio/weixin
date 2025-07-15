@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -9,10 +10,11 @@ import (
 )
 
 func RefreshWxOpenToken(wxOpen *wxopen.WxOpen) {
+	ctx := context.TODO()
 	for {
 		endTime := time.After(10 * time.Second)
 		<-endTime
-		token, err := wxOpen.RefreshAccessToken(0)
+		token, err := wxOpen.RefreshAccessToken(ctx, 0)
 		if err != nil {
 			fmt.Println("refresh wxopen token fail", err)
 		} else {
@@ -22,11 +24,12 @@ func RefreshWxOpenToken(wxOpen *wxopen.WxOpen) {
 }
 
 func RefreshAuthorizerToken(authorizers []*authorizer.Authorizer) {
+	ctx := context.TODO()
 	for {
 		endTime := time.After(10 * time.Second)
 		<-endTime
 		for _, auth := range authorizers {
-			token, err := auth.RefreshAccessToken(0)
+			token, err := auth.RefreshAccessToken(ctx, 0)
 			if err != nil {
 				fmt.Printf(
 					"refresh authorizer(%s %s) fail, error %s\n",

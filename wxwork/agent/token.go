@@ -12,12 +12,19 @@ import (
 
 See: https://developers.weixin.qq.com/doc/corporation/Basic_Information/Get_access_token.html
 */
-func (agent *Agent) refreshAccessTokenFromWXServer() (accessToken string, expiresIn int, err error) {
+func (agent *Agent) refreshAccessTokenFromWXServer(
+	ctx context.Context,
+) (accessToken string, expiresIn int, err error) {
 	var result utils.TokenResponse
-	if err := agent.Client.HTTPGetToken(context.TODO(), "/cgi-bin/gettoken", func(params url.Values) {
-		params.Add("corpid", agent.wxwork.Config.Corpid)
-		params.Add("corpsecret", agent.Config.Secret)
-	}, &result); err != nil {
+	if err := agent.Client.HTTPGetToken(
+		utils.NewStripContext(ctx, "corpsecret"),
+		"/cgi-bin/gettoken",
+		func(params url.Values) {
+			params.Add("corpid", agent.wxwork.Config.Corpid)
+			params.Add("corpsecret", agent.Config.Secret)
+		},
+		&result,
+	); err != nil {
 		return "", 0, err
 	}
 	return result.AccessToken, result.ExpiresIn, nil

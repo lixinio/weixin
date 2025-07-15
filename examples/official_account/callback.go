@@ -12,7 +12,7 @@ import (
 
 func serveData(serverApi *server_api.ServerApi) utils.XmlHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, body []byte) error {
-		content, err := serverApi.ParseXML(body)
+		_, content, err := serverApi.ParseXML(body)
 		if err != nil {
 			utils.HttpAbortBadRequest(w)
 			return err

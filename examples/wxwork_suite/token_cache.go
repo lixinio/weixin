@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -8,10 +9,10 @@ import (
 )
 
 type TokenCache interface {
-	SetAccessToken(string, int) error  // 保存 Access token
-	GetAccessToken() (string, error)   // 获取 Access token
-	SetPermanentCode(string) error     // 保存 Permanent code
-	GetPermanentCode() (string, error) // 获取 PermanentCode code
+	SetAccessToken(context.Context, string, int) error // 保存 Access token
+	GetAccessToken(context.Context) (string, error)    // 获取 Access token
+	SetPermanentCode(context.Context, string) error    // 保存 Permanent code
+	GetPermanentCode(context.Context) (string, error)  // 获取 PermanentCode code
 }
 
 // 获取特定的 服务号&小程序 的 TokenCache
