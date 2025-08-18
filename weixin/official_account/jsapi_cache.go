@@ -15,8 +15,10 @@ type jsApiTicketGetterAdapter struct {
 }
 
 // GetAccessToken 接口 utils.AccessTokenGetter 实现
-func (adapter *jsApiTicketGetterAdapter) GetAccessToken() (string, int, error) {
-	return adapter.accessTokenGetter()
+func (adapter *jsApiTicketGetterAdapter) GetAccessToken(
+	ctx context.Context,
+) (string, int, error) {
+	return adapter.accessTokenGetter(ctx)
 }
 
 // GetAccessTokenKey 接口 utils.AccessTokenGetter 实现
@@ -43,16 +45,20 @@ func newJsApiTicketAdapter(
 	}
 }
 
-func (officialAccount *OfficialAccount) EnableJSApiTicketCache(cache utils.Cache, locker utils.Lock) {
+func (officialAccount *OfficialAccount) EnableJSApiTicketCache(
+	cache utils.Cache, locker utils.Lock,
+) {
 	if officialAccount.jsApiTicketCache != nil {
 		return
 	}
 
 	officialAccount.jsApiTicketCache = utils.NewAccessTokenCache(
-		newJsApiTicketAdapter(officialAccount.Config.Appid, func() (string, int, error) {
-			ticket, expiresIn, err := officialAccount.getJSApiTicket(context.TODO())
-			return ticket, int(expiresIn), err
-		}),
+		newJsApiTicketAdapter(
+			officialAccount.Config.Appid,
+			func(ctx context.Context) (string, int, error) {
+				ticket, expiresIn, err := officialAccount.getJSApiTicket(ctx)
+				return ticket, int(expiresIn), err
+			}),
 		cache, locker,
 	)
 }
@@ -65,8 +71,10 @@ type wxCardTicketGetterAdapter struct {
 }
 
 // GetAccessToken 接口 utils.AccessTokenGetter 实现
-func (adapter *wxCardTicketGetterAdapter) GetAccessToken() (string, int, error) {
-	return adapter.accessTokenGetter()
+func (adapter *wxCardTicketGetterAdapter) GetAccessToken(
+	ctx context.Context,
+) (string, int, error) {
+	return adapter.accessTokenGetter(ctx)
 }
 
 // GetAccessTokenKey 接口 utils.AccessTokenGetter 实现
@@ -93,16 +101,20 @@ func newWxCardTicketAdapter(
 	}
 }
 
-func (officialAccount *OfficialAccount) EnableWxCardTicketCache(cache utils.Cache, locker utils.Lock) {
+func (officialAccount *OfficialAccount) EnableWxCardTicketCache(
+	cache utils.Cache, locker utils.Lock,
+) {
 	if officialAccount.wxCardTicketCache != nil {
 		return
 	}
 
 	officialAccount.wxCardTicketCache = utils.NewAccessTokenCache(
-		newWxCardTicketAdapter(officialAccount.Config.Appid, func() (string, int, error) {
-			ticket, expiresIn, err := officialAccount.getWxCardApiTicket(context.TODO())
-			return ticket, int(expiresIn), err
-		}),
+		newWxCardTicketAdapter(
+			officialAccount.Config.Appid,
+			func(ctx context.Context) (string, int, error) {
+				ticket, expiresIn, err := officialAccount.getWxCardApiTicket(ctx)
+				return ticket, int(expiresIn), err
+			}),
 		cache, locker,
 	)
 }

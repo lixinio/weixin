@@ -22,7 +22,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -38,20 +37,24 @@ const (
 )
 
 type ClientAccessTokenGetter interface {
-	GetAccessToken() (string, error)
+	GetAccessToken(context.Context) (string, error)
 }
 
 type EmptyClientAccessTokenGetter int
 
 type MultipartWriter func(writer *multipart.Writer) error
 
-func (EmptyClientAccessTokenGetter) GetAccessToken() (string, error) {
+func (EmptyClientAccessTokenGetter) GetAccessToken(
+	context.Context,
+) (string, error) {
 	return "", errors.New("can NOT get token from empty client access-token getter")
 }
 
 type StaticClientAccessTokenGetter string
 
-func (s StaticClientAccessTokenGetter) GetAccessToken() (string, error) {
+func (s StaticClientAccessTokenGetter) GetAccessToken(
+	context.Context,
+) (string, error) {
 	return string(s), nil
 }
 
@@ -80,21 +83,26 @@ func (client *Client) UpdateAccessTokenKey(accessTokenKey string) {
 
 // HTTPGet GET 请求
 func (client *Client) HTTPGet(
-	ctx context.Context, path string, result interface{},
+	ctx context.Context, uri string, result interface{},
 ) (err error) {
-	return client.HTTPGetWithParams(ctx, path, nil, result)
+	return client.HTTPGetWithParams(ctx, uri, nil, result)
 }
 
 // HTTPGetWithParams GET 请求， 支持query参数
 func (client *Client) HTTPGetWithParams(
-	ctx context.Context, path string, querysFunc func(url.Values), result interface{},
+	ctx context.Context,
+	uri string,
+	querysFunc func(url.Values),
+	result interface{},
 ) (err error) {
-	newPath, err := client.applyAccessToken(path, querysFunc, true)
+	newPath, err := client.applyAccessToken(ctx, uri, querysFunc, true)
 	if err != nil {
 		return
 	}
 
-	req, err := http.NewRequest(http.MethodGet, client.serverUrl+newPath, nil)
+	req, err := http.NewRequestWithContext(
+		ctx, http.MethodGet, client.serverUrl+newPath, nil,
+	)
 	if err != nil {
 		return
 	}
@@ -104,15 +112,18 @@ func (client *Client) HTTPGetWithParams(
 
 // 用来 刷新Token 等不用access-token的接口
 func (client *Client) HTTPGetToken(
-	ctx context.Context, path string, querysFunc func(url.Values), result interface{},
+	ctx context.Context,
+	uri string,
+	querysFunc func(url.Values),
+	result interface{},
 ) (err error) {
-	newPath, err := client.applyAccessToken(path, querysFunc, false)
+	newPath, err := client.applyAccessToken(ctx, uri, querysFunc, false)
 	if err != nil {
 		return
 	}
 
 	// 调用http请求
-	req, err := http.NewRequest(http.MethodGet, client.serverUrl+newPath, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, client.serverUrl+newPath, nil)
 	if err != nil {
 		return
 	}
@@ -123,25 +134,22 @@ func (client *Client) HTTPGetToken(
 	}
 
 	defer resp.Body.Close()
-	if err = doWeixinError(resp, result); err != nil {
-		return err
-	}
 
-	return nil
+	return doWeixinError(resp, result)
 }
 
 // 素材下载， 需要根据Content-Type来判断Body， 可以是json，可能是二进制
 // HTTPGetRaw 素材下载， 需要根据Content-Type来判断Body， 可以是json，可能是二进制
 func (client *Client) HTTPGetRaw(
-	ctx context.Context, path string, querysFunc func(url.Values),
+	ctx context.Context, uri string, querysFunc func(url.Values),
 ) (resp *http.Response, err error) {
-	newPath, err := client.applyAccessToken(path, querysFunc, true)
+	newPath, err := client.applyAccessToken(ctx, uri, querysFunc, true)
 	if err != nil {
 		return
 	}
 
 	// 调用http请求
-	req, err := http.NewRequest(http.MethodGet, client.serverUrl+newPath, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, client.serverUrl+newPath, nil)
 	if err != nil {
 		return
 	}
@@ -183,10 +191,10 @@ func jsonMarshal(t interface{}) (*bytes.Buffer, error) {
 // HTTPGetRaw 素材下载， 需要根据Content-Type来判断Body， 可以是json，可能是二进制
 // 例如 https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/qr-code/wxacode.getUnlimited.html
 func (client *Client) HTTPPostDownload(
-	ctx context.Context, path string,
+	ctx context.Context, uri string,
 	body interface{}, querysFunc func(url.Values),
 ) (resp *http.Response, err error) {
-	newPath, err := client.applyAccessToken(path, querysFunc, true)
+	newPath, err := client.applyAccessToken(ctx, uri, querysFunc, true)
 	if err != nil {
 		return
 	}
@@ -197,7 +205,9 @@ func (client *Client) HTTPPostDownload(
 	}
 
 	// 调用http请求
-	req, err := http.NewRequest(http.MethodPost, client.serverUrl+newPath, payload)
+	req, err := http.NewRequestWithContext(
+		ctx, http.MethodPost, client.serverUrl+newPath, payload,
+	)
 	if err != nil {
 		return
 	}
@@ -251,13 +261,16 @@ func (client *Client) HTTPUpload(
 	// 尾部
 	closeBuffer := bytes.NewBufferString(fmt.Sprintf("\r\n--%s--\r\n", bodyWriter.Boundary()))
 
-	newUrl, err := client.applyAccessToken(uri, querysFunc, true)
+	newUrl, err := client.applyAccessToken(ctx, uri, querysFunc, true)
 	if err != nil {
 		return err
 	}
 
 	reader := io.MultiReader(bodyBuffer, payload, closeBuffer)
-	req, err := http.NewRequest(http.MethodPost, client.serverUrl+newUrl, ioutil.NopCloser(reader))
+
+	req, err := http.NewRequestWithContext(
+		ctx, http.MethodPost, client.serverUrl+newUrl, io.NopCloser(reader),
+	)
 	if err != nil {
 		return err
 	}
@@ -271,7 +284,7 @@ func (client *Client) HTTPUpload(
 // Upload 上传文件
 // HttpFile 上传文件, 适合没有什么定制的文件上传
 func (client *Client) HttpFile(
-	ctx context.Context, path, key, filename string,
+	ctx context.Context, uri, key, filename string,
 	content io.Reader, querysFunc func(url.Values), result interface{},
 	multipartWriters ...MultipartWriter,
 ) (err error) {
@@ -296,19 +309,19 @@ func (client *Client) HttpFile(
 		}
 	}()
 
-	return client.HTTPPostRaw(ctx, path, r, querysFunc, result, m.FormDataContentType(), true)
+	return client.HTTPPostRaw(ctx, uri, r, querysFunc, result, m.FormDataContentType(), true)
 }
 
-//HTTPPost POST 请求
+// HTTPPost POST 请求
 func (client *Client) HTTPPostJson(
-	ctx context.Context, path string, body interface{}, result interface{},
+	ctx context.Context, uri string, body interface{}, result interface{},
 ) (err error) {
-	return client.HTTPPost(ctx, path, body, nil, result, "")
+	return client.HTTPPost(ctx, uri, body, nil, result, "")
 }
 
-//HTTPPost POST 请求(json, 文件上传)
+// HTTPPost POST 请求(json, 文件上传)
 func (client *Client) HTTPPost(
-	ctx context.Context, path string, body interface{},
+	ctx context.Context, uri string, body interface{},
 	querysFunc func(url.Values), result interface{}, contentType string,
 ) (err error) {
 	payload, err := jsonMarshal(body)
@@ -316,32 +329,32 @@ func (client *Client) HTTPPost(
 		return err
 	}
 
-	return client.HTTPPostRaw(ctx, path, payload, querysFunc, result, contentType, true)
+	return client.HTTPPostRaw(ctx, uri, payload, querysFunc, result, contentType, true)
 }
 
-//HTTPPost POST 请求(无需access-token认证)
+// HTTPPost POST 请求(无需access-token认证)
 func (client *Client) HTTPPostToken(
-	ctx context.Context, path string, body interface{}, result interface{},
+	ctx context.Context, uri string, body interface{}, result interface{},
 ) (err error) {
 	payload, err := jsonMarshal(body)
 	if err != nil {
 		return err
 	}
 
-	return client.HTTPPostRaw(ctx, path, payload, nil, result, "", false)
+	return client.HTTPPostRaw(ctx, uri, payload, nil, result, "", false)
 }
 
-//HTTPPostRaw POST 请求, 不做内容的序列化， 适合特殊的文件上传
+// HTTPPostRaw POST 请求, 不做内容的序列化， 适合特殊的文件上传
 func (client *Client) HTTPPostRaw(
-	ctx context.Context, path string, payload io.Reader, querysFunc func(url.Values),
+	ctx context.Context, uri string, payload io.Reader, querysFunc func(url.Values),
 	result interface{}, contentType string, auth bool,
 ) (err error) {
-	newPath, err := client.applyAccessToken(path, querysFunc, auth)
+	newPath, err := client.applyAccessToken(ctx, uri, querysFunc, auth)
 	if err != nil {
 		return
 	}
 
-	req, err := http.NewRequest(http.MethodPost, client.serverUrl+newPath, payload)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, client.serverUrl+newPath, payload)
 	if err != nil {
 		return
 	}
@@ -354,7 +367,7 @@ func (client *Client) HTTPPostRaw(
 	return client.httpDo(ctx, req, result)
 }
 
-//httpDo httpDoRaw加上结果反序列化， 适合返回json的普通请求
+// httpDo httpDoRaw加上结果反序列化， 适合返回json的普通请求
 func (client *Client) httpDo(
 	ctx context.Context, req *http.Request, result interface{},
 ) (err error) {
@@ -370,11 +383,7 @@ func (client *Client) httpDo(
 		weixinResult = &WeixinError{}
 	}
 
-	if err = doWeixinError(response, weixinResult); err != nil {
-		return err
-	}
-
-	return nil
+	return doWeixinError(response, weixinResult)
 }
 
 func hasTextContentType(resp *http.Response) bool {
@@ -420,18 +429,13 @@ func doWeixinError(response *http.Response, result interface{}) error {
 	}
 }
 
-//httpDoRaw 执行具体的请求发送， 处理认证， user-agent, trace, 判断http code等细节
+// httpDoRaw 执行具体的请求发送， 处理认证， user-agent, trace, 判断http code等细节
 // 不做结果反序列化， 考虑文件下载
 func (client *Client) httpDoRaw(
 	ctx context.Context, req *http.Request,
 ) (resp *http.Response, err error) {
 	req.Header.Add("User-Agent", client.userAgent)
-
-	cli := http.DefaultClient
-	if ctx != context.TODO() {
-		req = req.WithContext(ctx)
-		cli = &http.Client{Transport: newTransport()}
-	}
+	cli := &http.Client{Transport: DefaultTransport}
 
 	resp, err = cli.Do(req)
 	if err != nil {
@@ -440,7 +444,7 @@ func (client *Client) httpDoRaw(
 
 	// 根据规范，有些接口返回20x，这里暂不考虑
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusPartialContent {
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		err = fmt.Errorf("status %s", resp.Status)
 		resp = nil
 		return
@@ -453,7 +457,10 @@ func (client *Client) httpDoRaw(
 在请求地址上附加上 access_token
 */
 func (client *Client) applyAccessToken(
-	oldUrl string, querysFunc func(url.Values), auth bool,
+	ctx context.Context,
+	oldUrl string,
+	querysFunc func(url.Values),
+	auth bool,
 ) (newUrl string, err error) {
 	querys := url.Values{}
 	// 客户自定义
@@ -463,7 +470,7 @@ func (client *Client) applyAccessToken(
 
 	// 认证
 	if auth {
-		accessToken, err := client.accessTokenGetter.GetAccessToken()
+		accessToken, err := client.accessTokenGetter.GetAccessToken(ctx)
 		if err != nil {
 			return "", err
 		}

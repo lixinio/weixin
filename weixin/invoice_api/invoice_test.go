@@ -136,7 +136,6 @@ func TestInvoiceInsert(t *testing.T) {
 	result, err := api.Insert(ctx, param)
 	require.Equal(t, nil, err)
 	fmt.Printf("code : %s, openid: %s, unionid: %s\n", result.Code, result.OpenID, result.UnionID)
-
 }
 
 func TestRejectInsert(t *testing.T) {

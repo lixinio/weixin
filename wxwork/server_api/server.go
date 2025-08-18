@@ -20,7 +20,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -77,7 +77,7 @@ func (s *ServerApi) ServeData(
 	r *http.Request,
 	processor utils.XmlHandlerFunc,
 ) error {
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		return err
 	}
@@ -118,13 +118,15 @@ POST /api/callback?msg_signature=ASDFQWEXZCVAQFASDFASDFSS
 &nonce=123412323
 
 <xml>
-   <ToUserName><![CDATA[toUser]]></ToUserName>
-   <AgentID><![CDATA[toAgentID]]></AgentID>
-   <Encrypt><![CDATA[msg_encrypt]]></Encrypt>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<AgentID><![CDATA[toAgentID]]></AgentID>
+	<Encrypt><![CDATA[msg_encrypt]]></Encrypt>
+
 </xml>
 */
-func (s *ServerApi) ParseXML(body []byte) (m interface{}, err error) {
-	message := &Message{}
+func (s *ServerApi) ParseXML(body []byte) (message *Message, m interface{}, err error) {
+	message = &Message{}
 	if err = xml.Unmarshal(body, message); err != nil {
 		return
 	}
@@ -135,39 +137,39 @@ func (s *ServerApi) ParseXML(body []byte) (m interface{}, err error) {
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return message, msg, nil
 	case MsgTypeImage:
 		msg := &MessageImage{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return message, msg, nil
 	case MsgTypeVoice:
 		msg := &MessageVoice{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return message, msg, nil
 	case MsgTypeVideo:
 		msg := &MessageVideo{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return message, msg, nil
 	case MsgTypeLocation:
 		msg := &MessageLocation{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return message, msg, nil
 	case MsgTypeLink:
 		msg := &MessageLink{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}
-		return msg, nil
+		return message, msg, nil
 	case MsgTypeEvent:
-		return parseEvent(body)
+		m, err = parseEvent(body)
 	}
 
 	return
@@ -242,49 +244,6 @@ func parseEvent(body []byte) (m interface{}, err error) {
 			return
 		}
 		return msg, nil
-	case EventTypeChangeExternalContact:
-		msg := &EventChangeExternalContact{}
-		if err = xml.Unmarshal(body, msg); err != nil {
-			return
-		}
-		switch msg.ChangeType {
-		case EventTypeChangeExternalContactAddExternalContact:
-			msg := &EventChangeExternalContactAddExternalContact{}
-			if err = xml.Unmarshal(body, msg); err != nil {
-				return
-			}
-			return msg, nil
-		case EventTypeChangeExternalContactAddHalfExternalContact:
-			msg := &EventChangeExternalContactAddHalfExternalContact{}
-			if err = xml.Unmarshal(body, msg); err != nil {
-				return
-			}
-			return msg, nil
-		case EventTypeChangeExternalContactChangeExternalChat:
-			msg := &EventChangeExternalContactChangeExternalChat{}
-			if err = xml.Unmarshal(body, msg); err != nil {
-				return
-			}
-			return msg, nil
-		case EventTypeChangeExternalContactDelExternalContact:
-			msg := &EventChangeExternalContactDelExternalContact{}
-			if err = xml.Unmarshal(body, msg); err != nil {
-				return
-			}
-			return msg, nil
-		case EventTypeChangeExternalContactEditExternalContact:
-			msg := &EventChangeExternalContactEditExternalContact{}
-			if err = xml.Unmarshal(body, msg); err != nil {
-				return
-			}
-			return msg, nil
-		case EventTypeChangeExternalContactDelFollowUser:
-			msg := &EventChangeExternalContactDelFollowUser{}
-			if err = xml.Unmarshal(body, msg); err != nil {
-				return
-			}
-			return msg, nil
-		}
 	case EventTypeTaskCardClick:
 		msg := &EventTaskCardClick{}
 		if err = xml.Unmarshal(body, msg); err != nil {
@@ -339,6 +298,12 @@ func parseEvent(body []byte) (m interface{}, err error) {
 			return
 		}
 		return msg, nil
+	case EventTypeEnterAgent:
+		msg := &EventEnterAgent{}
+		if err = xml.Unmarshal(body, msg); err != nil {
+			return
+		}
+		return msg, nil
 	}
 
 	return
@@ -350,7 +315,6 @@ func (s *ServerApi) response(
 	r *http.Request,
 	reply interface{},
 ) (err error) {
-
 	output := []byte("") // 默认回复
 	if reply != nil {
 		output, err = xml.Marshal(reply)
@@ -369,7 +333,6 @@ func (s *ServerApi) response(
 		if err != nil {
 			return
 		}
-
 	}
 
 	_, err = w.Write(output)

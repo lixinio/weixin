@@ -157,7 +157,6 @@ func AESDecryptMsg(
 
 // AESDecryptData 数据解密
 func AESDecryptData(cipherText []byte, aesKey []byte, iv []byte) (rawData []byte, err error) {
-
 	const (
 		BLOCK_SIZE = 32             // PKCS#7
 		BLOCK_MASK = BLOCK_SIZE - 1 // BLOCK_SIZE 为 2^n 时, 可以用 mask 获取针对 BLOCK_SIZE 的余数

@@ -70,12 +70,17 @@ func (sso *WebSSO) GetSnsAccessToken(
 ) (*OauthAccessToken, error) {
 	result := &OauthAccessToken{}
 	// 无需 access token
-	if err := sso.Client.HTTPGetToken(context.TODO(), apiAccessToken, func(params url.Values) {
-		params.Add("appid", sso.Config.Appid)
-		params.Add("secret", sso.Config.Secret)
-		params.Add("code", code)
-		params.Add("grant_type", "authorization_code")
-	}, result); err != nil {
+	if err := sso.Client.HTTPGetToken(
+		utils.NewStripContext(ctx, "secret"),
+		apiAccessToken,
+		func(params url.Values) {
+			params.Add("appid", sso.Config.Appid)
+			params.Add("secret", sso.Config.Secret)
+			params.Add("code", code)
+			params.Add("grant_type", "authorization_code")
+		},
+		result,
+	); err != nil {
 		return nil, err
 	}
 	return result, nil
@@ -90,7 +95,7 @@ func (sso *WebSSO) RefreshSnsToken(
 ) (*OauthAccessToken, error) {
 	result := &OauthAccessToken{}
 	// 无需 access token
-	if err := sso.Client.HTTPGetToken(context.TODO(), apiRefreshToken, func(params url.Values) {
+	if err := sso.Client.HTTPGetToken(ctx, apiRefreshToken, func(params url.Values) {
 		params.Add("appid", sso.Config.Appid)
 		params.Add("grant_type", "refresh_token")
 		params.Add("refresh_token", refreshToken)
@@ -131,7 +136,7 @@ func (sso *WebSSO) GetUserInfo(
 		lang = LANG_zh_CN // 国家地区语言版本，zh_CN 简体，zh_TW 繁体，en 英语，默认为en
 	}
 	// 无需 access token
-	if err := sso.Client.HTTPGetToken(context.TODO(), apiUserInfo, func(params url.Values) {
+	if err := sso.Client.HTTPGetToken(ctx, apiUserInfo, func(params url.Values) {
 		params.Add("access_token", accessToken)
 		params.Add("openid", openid)
 		params.Add("lang", lang)

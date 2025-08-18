@@ -12,7 +12,7 @@ import (
 
 func serveData(serverApi *wxwork_suite.WxWorkSuite) utils.XmlHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, body []byte) error {
-		content, err := serverApi.ParseXML(body)
+		_, content, err := serverApi.ParseXML(body)
 		if err != nil {
 			utils.HttpAbortBadRequest(w)
 			return err
@@ -23,7 +23,7 @@ func serveData(serverApi *wxwork_suite.WxWorkSuite) utils.XmlHandlerFunc {
 			fmt.Printf("Suite Ticket : %s\n", v.SuiteTicket)
 			// todo save to db
 			// 刷新Ticket到Cache
-			serverApi.UpdateTicket(v.SuiteTicket)
+			serverApi.UpdateTicket(r.Context(), v.SuiteTicket)
 		case *wxwork_suite.EventAuthorized:
 			fmt.Printf("EventAuthorized : %s\n", v.SuiteId)
 		case *wxwork_suite.EventUnauthorized:

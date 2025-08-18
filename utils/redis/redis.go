@@ -2,6 +2,7 @@ package redis
 
 // https://github.com/silenceper/wechat/blob/master/cache/redis.go
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"time"
@@ -9,7 +10,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
-//Redis redis cache
+// Redis redis cache
 type Redis struct {
 	conn *redis.Pool
 }
@@ -19,10 +20,10 @@ type Config struct {
 	RedisUrl    string
 	MaxIdle     int   `yml:"max_idle"     json:"max_idle"`
 	MaxActive   int   `yml:"max_active"   json:"max_active"`
-	IdleTimeout int32 `yml:"idle_timeout" json:"idle_timeout"` //second
+	IdleTimeout int32 `yml:"idle_timeout" json:"idle_timeout"` // second
 }
 
-//NewRedis 实例化
+// NewRedis 实例化
 func NewRedis(opts *Config) *Redis {
 	redisDB, redisHost, redisPwd, err := parseRedisURL(opts.RedisUrl)
 	if err != nil {
@@ -50,13 +51,15 @@ func NewRedis(opts *Config) *Redis {
 	return &Redis{pool}
 }
 
-//SetConn 设置conn
+// SetConn 设置conn
 func (r *Redis) SetConn(conn *redis.Pool) {
 	r.conn = conn
 }
 
-//Get 获取一个值
-func (r *Redis) Get(key string, value interface{}) (exist bool, err error) {
+// Get 获取一个值
+func (r *Redis) Get(
+	_ context.Context, key string, value interface{},
+) (exist bool, err error) {
 	conn := r.conn.Get()
 	defer conn.Close()
 
@@ -78,8 +81,10 @@ func (r *Redis) Get(key string, value interface{}) (exist bool, err error) {
 	return true, nil
 }
 
-//Set 设置一个值
-func (r *Redis) Set(key string, val interface{}, timeout time.Duration) (err error) {
+// Set 设置一个值
+func (r *Redis) Set(
+	_ context.Context, key string, val interface{}, timeout time.Duration,
+) (err error) {
 	conn := r.conn.Get()
 	defer conn.Close()
 
@@ -94,8 +99,8 @@ func (r *Redis) Set(key string, val interface{}, timeout time.Duration) (err err
 	return
 }
 
-//IsExist 判断key是否存在
-func (r *Redis) IsExist(key string) bool {
+// IsExist 判断key是否存在
+func (r *Redis) IsExist(_ context.Context, key string) bool {
 	conn := r.conn.Get()
 	defer conn.Close()
 
@@ -104,8 +109,8 @@ func (r *Redis) IsExist(key string) bool {
 	return i > 0
 }
 
-//Delete 删除
-func (r *Redis) Delete(key string) error {
+// Delete 删除
+func (r *Redis) Delete(_ context.Context, key string) error {
 	conn := r.conn.Get()
 	defer conn.Close()
 
@@ -117,7 +122,7 @@ func (r *Redis) Delete(key string) error {
 }
 
 // 获得剩余时间(秒)
-func (r *Redis) TTL(key string) (int, error) {
+func (r *Redis) TTL(_ context.Context, key string) (int, error) {
 	conn := r.conn.Get()
 	defer conn.Close()
 
@@ -137,7 +142,9 @@ func (r *Redis) TTL(key string) (int, error) {
 
 // https://www.programmersought.com/article/85921351841/
 // http://xiaorui.cc/archives/3028
-func (r *Redis) Lock(key string, expire time.Duration) (bool, error) {
+func (r *Redis) Lock(
+	_ context.Context, key string, expire time.Duration,
+) (bool, error) {
 	conn := r.conn.Get()
 	defer conn.Close()
 
@@ -152,10 +159,12 @@ func (r *Redis) Lock(key string, expire time.Duration) (bool, error) {
 	return true, nil
 }
 
-func (r *Redis) LockTimeout(key string, expire, timeout, sleep time.Duration) (bool, error) {
+func (r *Redis) LockTimeout(
+	ctx context.Context, key string, expire, timeout, sleep time.Duration,
+) (bool, error) {
 	var total time.Duration = 0
 	for total < timeout {
-		result, err := r.Lock(key, expire)
+		result, err := r.Lock(ctx, key, expire)
 		if err == nil {
 			if result {
 				// lock success
@@ -174,7 +183,7 @@ func (r *Redis) LockTimeout(key string, expire, timeout, sleep time.Duration) (b
 	return false, nil
 }
 
-func (r *Redis) UnLock(key string) error {
+func (r *Redis) UnLock(_ context.Context, key string) error {
 	conn := r.conn.Get()
 	defer conn.Close()
 

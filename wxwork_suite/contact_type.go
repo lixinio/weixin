@@ -1,13 +1,13 @@
 package wxwork_suite
 
 const (
-	EventTypeCreateUser  = "create_user"
-	EventTypeUpdateUser  = "update_user"
-	EventTypeDeleteUser  = "delete_user"
-	EventTypeCreateParty = "create_party"
-	EventTypeUpdateParty = "update_party"
-	EventTypeDeleteParty = "delete_party"
-	EventTypeUpdateTag   = "update_tag"
+	EventSubTypeCreateUser  = "create_user"
+	EventSubTypeUpdateUser  = "update_user"
+	EventSubTypeDeleteUser  = "delete_user"
+	EventSubTypeCreateParty = "create_party"
+	EventSubTypeUpdateParty = "update_party"
+	EventSubTypeDeleteParty = "delete_party"
+	EventSubTypeUpdateTag   = "update_tag"
 )
 
 type EventCreateUser struct {

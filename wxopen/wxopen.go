@@ -84,26 +84,28 @@ func (wxopen *WxOpen) StartPushTicket(ctx context.Context) error {
 	}
 
 	return wxopen.Client.HTTPPostToken(
-		context.TODO(), apiStartPushTicket, payload, nil,
+		ctx, apiStartPushTicket, payload, nil,
 	)
 }
 
 // 当收到EventComponentVerifyTicket时， 用于更新ticket到cache
-func (wxopen *WxOpen) UpdateTicket(token string) error {
+func (wxopen *WxOpen) UpdateTicket(ctx context.Context, token string) error {
 	if wxopen.ticketCache == nil {
 		return fmt.Errorf(
 			"wxopen appid : %s, error: %w", wxopen.Config.Appid, ErrTicketUpdateForbidden,
 		)
 	}
-	_, err := wxopen.ticketCache.UpdateAccessToken(token, ticketExpiresIn)
+	_, err := wxopen.ticketCache.UpdateAccessToken(ctx, token, ticketExpiresIn)
 	return err
 }
 
-func (wxopen *WxOpen) RefreshAccessToken(expireBefore int) (string, error) {
+func (wxopen *WxOpen) RefreshAccessToken(
+	ctx context.Context, expireBefore int,
+) (string, error) {
 	if wxopen.accessTokenCache == nil {
 		return "", fmt.Errorf(
 			"wxopen appid : %s, error: %w", wxopen.Config.Appid, ErrTokenUpdateForbidden,
 		)
 	}
-	return wxopen.accessTokenCache.RefreshAccessToken(expireBefore)
+	return wxopen.accessTokenCache.RefreshAccessToken(ctx, expireBefore)
 }

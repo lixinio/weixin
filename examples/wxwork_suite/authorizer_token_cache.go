@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -13,7 +14,9 @@ type authorizerAccessTokenAdaptor struct {
 	agentID int
 }
 
-func (ta *authorizerAccessTokenAdaptor) GetAccessToken() (accessToken string, expiresIn int, err error) {
+func (ta *authorizerAccessTokenAdaptor) GetAccessToken(
+	ctx context.Context,
+) (accessToken string, expiresIn int, err error) {
 	return "", 0, errors.New("can NOT update authorizer access token")
 }
 
@@ -38,7 +41,9 @@ type authorizerPermanentCodeAdaptor struct {
 	agentID int
 }
 
-func (ta *authorizerPermanentCodeAdaptor) GetAccessToken() (accessToken string, expiresIn int, err error) {
+func (ta *authorizerPermanentCodeAdaptor) GetAccessToken(
+	ctx context.Context,
+) (accessToken string, expiresIn int, err error) {
 	return "", 0, errors.New("can NOT refresh authorizer permanent code")
 }
 
@@ -67,22 +72,26 @@ type AuthorizerTokenCache struct {
 	permanentCode *utils.AccessTokenCache
 }
 
-func (tc *AuthorizerTokenCache) SetAccessToken(token string, expiresIn int) error {
-	_, err := tc.accessToken.UpdateAccessToken(token, expiresIn)
+func (tc *AuthorizerTokenCache) SetAccessToken(
+	ctx context.Context, token string, expiresIn int,
+) error {
+	_, err := tc.accessToken.UpdateAccessToken(ctx, token, expiresIn)
 	return err
 }
 
-func (tc *AuthorizerTokenCache) GetAccessToken() (string, error) {
-	return tc.accessToken.GetAccessToken()
+func (tc *AuthorizerTokenCache) GetAccessToken(ctx context.Context) (string, error) {
+	return tc.accessToken.GetAccessToken(ctx)
 }
 
-func (tc *AuthorizerTokenCache) SetPermanentCode(token string) error {
-	_, err := tc.permanentCode.UpdateAccessToken(token, 3600*24*365) // 一年， 长期有效
+func (tc *AuthorizerTokenCache) SetPermanentCode(
+	ctx context.Context, token string,
+) error {
+	_, err := tc.permanentCode.UpdateAccessToken(ctx, token, 3600*24*365) // 一年， 长期有效
 	return err
 }
 
-func (tc *AuthorizerTokenCache) GetPermanentCode() (string, error) {
-	return tc.permanentCode.GetAccessToken()
+func (tc *AuthorizerTokenCache) GetPermanentCode(ctx context.Context) (string, error) {
+	return tc.permanentCode.GetAccessToken(ctx)
 }
 
 func NewAuthorizerTokenCache(

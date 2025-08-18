@@ -82,7 +82,7 @@ func (api *WxOpen) ServeRelease(
 				return
 			}
 			if msg.Content == "TESTCOMPONENT_MSG_TYPE_TEXT" {
-				serverApi.ResponseText(w, r, &server_api.ReplyMessageText{
+				_ = serverApi.ResponseText(w, r, &server_api.ReplyMessageText{
 					ReplyMessage: *msg.Reply(),
 					Content:      server_api.CDATA("TESTCOMPONENT_MSG_TYPE_TEXT_callback"),
 				})

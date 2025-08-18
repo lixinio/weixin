@@ -27,7 +27,9 @@ func (api *WxOpen) Jscode2Session(
 	// 无需 access token
 	result := &MpSession{}
 	if err := api.Client.HTTPGetWithParams(
-		context.TODO(), apiJscode2Session, func(params url.Values) {
+		ctx,
+		apiJscode2Session,
+		func(params url.Values) {
 			params.Add("appid", authorizerAppID)
 			params.Add("component_appid", api.Config.Appid)
 			params.Add("js_code", jsCode)

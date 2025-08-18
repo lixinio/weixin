@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -15,28 +16,29 @@ const (
 )
 
 func TestRedis(t *testing.T) {
+	ctx := context.Background()
 	redis := NewRedis(&Config{RedisUrl: "redis://127.0.0.1:6379/1"})
-	err := redis.Set(key, value, time.Second*ttl)
+	err := redis.Set(ctx, key, value, time.Second*ttl)
 	require.Equal(t, err, nil)
 
 	var val string
-	exist, err := redis.Get(key, &val)
+	exist, err := redis.Get(ctx, key, &val)
 	require.Equal(t, err, nil)
 	require.Equal(t, exist, true)
 	require.Equal(t, val, value)
 
-	ttl, err := redis.TTL(key)
+	ttl, err := redis.TTL(ctx, key)
 	require.Equal(t, err, nil)
 	fmt.Println("ttl", ttl)
 
-	err = redis.Delete(key)
+	err = redis.Delete(ctx, key)
 	require.Equal(t, err, nil)
 
-	exist, err = redis.Get(key, &val)
+	exist, err = redis.Get(ctx, key, &val)
 	require.Equal(t, err, nil)
 	require.Equal(t, exist, false)
 
-	ttl, err = redis.TTL(key)
+	ttl, err = redis.TTL(ctx, key)
 	require.Equal(t, err, nil)
 	require.Less(t, ttl, 0)
 	fmt.Println("ttl", ttl)

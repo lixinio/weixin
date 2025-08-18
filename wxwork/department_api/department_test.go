@@ -91,5 +91,4 @@ func TestDepartment(t *testing.T) {
 
 		require.Empty(t, department)
 	}
-
 }

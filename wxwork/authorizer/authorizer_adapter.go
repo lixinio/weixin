@@ -1,13 +1,14 @@
 package authorizer
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/lixinio/weixin/utils"
 )
 
 // https://open.work.weixin.qq.com/api/doc/90001/90143/90605
-type RefreshAccessToken func() (string, int, error) // 直接获取token， 不做任何缓存
+type RefreshAccessToken func(ctx context.Context) (string, int, error) // 直接获取token， 不做任何缓存
 
 // utils.AccessTokenGetter 接口实现
 type authorizerAccessTokenGetterAdapter struct {
@@ -17,8 +18,10 @@ type authorizerAccessTokenGetterAdapter struct {
 }
 
 // GetAccessToken 接口 utils.AccessTokenGetter 实现
-func (adapter *authorizerAccessTokenGetterAdapter) GetAccessToken() (string, int, error) {
-	return adapter.accessTokenGetter()
+func (adapter *authorizerAccessTokenGetterAdapter) GetAccessToken(
+	ctx context.Context,
+) (string, int, error) {
+	return adapter.accessTokenGetter(ctx)
 }
 
 // GetAccessTokenKey 接口 utils.AccessTokenGetter 实现
@@ -32,7 +35,7 @@ func (adapter *authorizerAccessTokenGetterAdapter) GetAccessTokenLockKey() strin
 }
 
 func newAdapter(
-	suiteID, corpID string, agentID int,
+	suiteID, corpID string, _ int,
 	accessTokenGetter RefreshAccessToken,
 ) utils.AccessTokenGetter {
 	return &authorizerAccessTokenGetterAdapter{

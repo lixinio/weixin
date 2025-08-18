@@ -15,7 +15,9 @@ type ticketAdaptor struct {
 	lockerKey string
 }
 
-func (ta *ticketAdaptor) GetAccessToken() (accessToken string, expiresIn int, err error) {
+func (ta *ticketAdaptor) GetAccessToken(
+	ctx context.Context,
+) (accessToken string, expiresIn int, err error) {
 	return "", 0, errors.New("can NOT update wxopen ticket")
 }
 
@@ -55,14 +57,16 @@ func (ta *accessTokenAdaptor) GetAccessTokenLockKey() string {
 	return ta.lockerKey
 }
 
-func (ta *accessTokenAdaptor) GetAccessToken() (accessToken string, expiresIn int, err error) {
+func (ta *accessTokenAdaptor) GetAccessToken(
+	ctx context.Context,
+) (accessToken string, expiresIn int, err error) {
 	if ta.ticketCache == nil {
 		return "", 0, fmt.Errorf(
 			"wxopen appid : %s, error: %w", ta.config.Appid, ErrTokenUpdateForbidden,
 		)
 	}
 
-	ticket, err := ta.ticketCache.GetAccessToken()
+	ticket, err := ta.ticketCache.GetAccessToken(ctx)
 	if err != nil {
 		return "", 0, fmt.Errorf("can NOT get wxopen access token without ticket, %w", err)
 	}
@@ -80,7 +84,7 @@ func (ta *accessTokenAdaptor) GetAccessToken() (accessToken string, expiresIn in
 		"component_verify_ticket": ticket,
 	}
 	if err := ta.client.HTTPPostToken(
-		context.TODO(), apiGetComponentToken, payload, &result,
+		ctx, apiGetComponentToken, payload, &result,
 	); err != nil {
 		return "", 0, err
 	}

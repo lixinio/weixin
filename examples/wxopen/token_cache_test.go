@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"testing"
 
 	"github.com/lixinio/weixin/test"
@@ -9,6 +10,7 @@ import (
 )
 
 func TestTokenCache(t *testing.T) {
+	ctx := context.Background()
 	componentAppid, appid := "abcdefg", "hijklmn"
 	token := "1234567890"
 	token2 := token + "refresh"
@@ -17,16 +19,16 @@ func TestTokenCache(t *testing.T) {
 	authorizer, err := manager.GetTokenCache(componentAppid, appid)
 	require.Equal(t, err, nil)
 
-	err = authorizer.SetAccessToken(token, 3600)
+	err = authorizer.SetAccessToken(ctx, token, 3600)
 	require.Equal(t, err, nil)
-	err = authorizer.SetRefreshToken(token2)
+	err = authorizer.SetRefreshToken(ctx, token2)
 	require.Equal(t, err, nil)
 
-	newToken, err := authorizer.GetAccessToken()
+	newToken, err := authorizer.GetAccessToken(ctx)
 	require.Equal(t, err, nil)
 	require.Equal(t, newToken, token)
 
-	newToken, err = authorizer.GetRefreshToken()
+	newToken, err = authorizer.GetRefreshToken(ctx)
 	require.Equal(t, err, nil)
 	require.Equal(t, newToken, token2)
 }

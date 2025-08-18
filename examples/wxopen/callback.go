@@ -12,7 +12,7 @@ import (
 
 func serveData(serverApi *wxopen.WxOpen, apps wxopen.ReleaseApps) utils.XmlHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, body []byte) error {
-		content, err := serverApi.ParseXML(body)
+		_, content, err := serverApi.ParseXML(body)
 		if err != nil {
 			utils.HttpAbortBadRequest(w)
 			return err
@@ -23,7 +23,7 @@ func serveData(serverApi *wxopen.WxOpen, apps wxopen.ReleaseApps) utils.XmlHandl
 			fmt.Printf("ComponentVerifyTicket : %s\n", v.ComponentVerifyTicket)
 			// todo save to db
 			// 刷新Ticket到Cache
-			serverApi.UpdateTicket(v.ComponentVerifyTicket)
+			serverApi.UpdateTicket(r.Context(), v.ComponentVerifyTicket)
 		case *wxopen.EventAuthorized:
 			if app, ok := apps[v.AuthorizerAppid]; ok {
 				fmt.Printf("release app %s %v\n", app.UserName, app.IsMp)

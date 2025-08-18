@@ -5,11 +5,14 @@ import (
 )
 
 const (
-	EventTypeSuiteTicket      = "suite_ticket"
-	EventTypeAuthorized       = "create_auth"
-	EventTypeUnauthorized     = "cancel_auth"
-	EventTypeChangeAuthorized = "change_auth"
-	EventTypeChangeContact    = "change_contact"
+	EventTypeSuiteTicket           = "suite_ticket"
+	EventTypeAuthorized            = "create_auth"
+	EventTypeUnauthorized          = "cancel_auth"
+	EventTypeChangeAuthorized      = "change_auth"
+	EventTypeChangeContact         = "change_contact"
+	EventTypeChangeExternalContact = "change_external_contact" // 企业客户变更
+	EventTypeChangeExternalChat    = "change_external_chat"    // 客户群事件
+	EventTypeChangeExternalTag     = "change_external_tag"     // 企业客户标签事件
 )
 
 type Event struct {
@@ -22,12 +25,12 @@ type Event struct {
 
 // https://open.work.weixin.qq.com/api/doc/90001/90143/90628
 /*
-   <xml>
-       <SuiteId><![CDATA[ww4asffe99e54c0fxxxx]]></SuiteId>
-       <InfoType> <![CDATA[suite_ticket]]></InfoType>
-       <TimeStamp>1403610513</TimeStamp>
-       <SuiteTicket><![CDATA[asdfasfdasdfasdf]]></SuiteTicket>
-   </xml>
+<xml>
+	<SuiteId><![CDATA[ww4asffe99e54c0fxxxx]]></SuiteId>
+	<InfoType> <![CDATA[suite_ticket]]></InfoType>
+	<TimeStamp>1403610513</TimeStamp>
+	<SuiteTicket><![CDATA[asdfasfdasdfasdf]]></SuiteTicket>
+</xml>
 */
 type EventSuiteTicket struct {
 	Event
@@ -54,10 +57,12 @@ type EventAuthorized struct {
 /*
 取消授权通知
 <xml>
-    <SuiteId><![CDATA[ww4asffe99e54cxxxx]]></SuiteId>
-    <InfoType><![CDATA[cancel_auth]]></InfoType>
-    <TimeStamp>1403610513</TimeStamp>
-    <AuthCorpId><![CDATA[wxf8b4f85fxx794xxx]]></AuthCorpId>
+
+	<SuiteId><![CDATA[ww4asffe99e54cxxxx]]></SuiteId>
+	<InfoType><![CDATA[cancel_auth]]></InfoType>
+	<TimeStamp>1403610513</TimeStamp>
+	<AuthCorpId><![CDATA[wxf8b4f85fxx794xxx]]></AuthCorpId>
+
 </xml>
 */
 type EventUnauthorized struct {
@@ -68,10 +73,12 @@ type EventUnauthorized struct {
 /*
 变更授权通知
 <xml>
-    <SuiteId><![CDATA[ww4asffe99exxx0f4c]]></SuiteId>
-    <InfoType><![CDATA[change_auth]]></InfoType>
-    <TimeStamp>1403610513</TimeStamp>
-    <AuthCorpId><![CDATA[wxf8b4f85f3a794e77]]></AuthCorpId>
+
+	<SuiteId><![CDATA[ww4asffe99exxx0f4c]]></SuiteId>
+	<InfoType><![CDATA[change_auth]]></InfoType>
+	<TimeStamp>1403610513</TimeStamp>
+	<AuthCorpId><![CDATA[wxf8b4f85f3a794e77]]></AuthCorpId>
+
 </xml>
 */
 type EventUpdateAuthorized struct {

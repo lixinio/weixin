@@ -80,7 +80,7 @@ func (api *Authorizer) GetJSApiTicket(
 			ErrJsApiTicketForbidden,
 		)
 	}
-	return api.jsApiTicketCache.GetAccessToken()
+	return api.jsApiTicketCache.GetAccessToken(ctx)
 }
 
 /*
@@ -108,7 +108,7 @@ func (api *Authorizer) GetWxCardApiTicket(
 			ErrWxCardTicketForbidden,
 		)
 	}
-	return api.wxCardTicketCache.GetAccessToken()
+	return api.wxCardTicketCache.GetAccessToken(ctx)
 }
 
 func (api *Authorizer) getApiTicket(

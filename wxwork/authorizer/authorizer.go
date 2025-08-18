@@ -1,6 +1,7 @@
 package authorizer
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -12,9 +13,13 @@ const (
 )
 
 var (
-	ErrTokenUpdateForbidden      = errors.New("can NOT refresh&update token in wxwork lite mode")
-	ErrCorpJsApiTicketForbidden  = errors.New("can NOT refresh&update corp jsapi ticket without enable it")
-	ErrAgentJsApiTicketForbidden = errors.New("can NOT refresh&update agent jsapi ticket without enable it")
+	ErrTokenUpdateForbidden     = errors.New("can NOT refresh&update token in wxwork lite mode")
+	ErrCorpJsApiTicketForbidden = errors.New(
+		"can NOT refresh&update corp jsapi ticket without enable it",
+	)
+	ErrAgentJsApiTicketForbidden = errors.New(
+		"can NOT refresh&update agent jsapi ticket without enable it",
+	)
 )
 
 type Authorizer struct {
@@ -32,9 +37,12 @@ func New(
 	locker utils.Lock,
 	suiteID, corpID string, agentID int,
 	accessTokenGetter RefreshAccessToken,
+	tokenRefreshHandler utils.TokenRefreshHandler, // 刷新callback
 ) *Authorizer {
 	accessTokenCache := utils.NewAccessTokenCache(
-		newAdapter(suiteID, corpID, agentID, accessTokenGetter), cache, locker,
+		newAdapter(suiteID, corpID, agentID, accessTokenGetter),
+		cache, locker,
+		utils.CacheClientTokenOptWithExpireBefore(tokenRefreshHandler),
 	)
 	return &Authorizer{
 		SuiteID:          suiteID,
@@ -52,12 +60,17 @@ func NewLite(
 	suiteID, corpID string, agentID int,
 ) *Authorizer {
 	accessTokenCache := utils.NewAccessTokenCache(
-		newAdapter(suiteID, corpID, agentID, func() (string, int, error) {
-			return "", 0, fmt.Errorf(
-				"can NOT refresh token in lite mod, appid(%s , %s , %d), %w",
-				suiteID, corpID, agentID, ErrTokenUpdateForbidden,
-			)
-		}), cache, locker,
+		newAdapter(
+			suiteID,
+			corpID,
+			agentID,
+			func(context.Context) (string, int, error) {
+				return "", 0, fmt.Errorf(
+					"can NOT refresh token in lite mod, appid(%s , %s , %d), %w",
+					suiteID, corpID, agentID, ErrTokenUpdateForbidden,
+				)
+			},
+		), cache, locker,
 	)
 	return &Authorizer{
 		SuiteID: suiteID,
@@ -67,7 +80,9 @@ func NewLite(
 	}
 }
 
-func (authorizer *Authorizer) RefreshAccessToken(expireBefore int) (string, error) {
+func (authorizer *Authorizer) RefreshAccessToken(
+	ctx context.Context, expireBefore int,
+) (string, error) {
 	if authorizer.accessTokenCache == nil {
 		return "", fmt.Errorf(
 			"authorizer appid : %s,%s,%d, error: %w",
@@ -75,10 +90,10 @@ func (authorizer *Authorizer) RefreshAccessToken(expireBefore int) (string, erro
 			ErrTokenUpdateForbidden,
 		)
 	}
-	return authorizer.accessTokenCache.RefreshAccessToken(expireBefore)
+	return authorizer.accessTokenCache.RefreshAccessToken(ctx, expireBefore)
 }
 
-func (authorizer *Authorizer) ClearAccessToken() error {
+func (authorizer *Authorizer) ClearAccessToken(ctx context.Context) error {
 	if authorizer.accessTokenCache == nil {
 		return fmt.Errorf(
 			"authorizer appid : %s,%s,%d, error: %w",
@@ -86,10 +101,12 @@ func (authorizer *Authorizer) ClearAccessToken() error {
 			ErrTokenUpdateForbidden,
 		)
 	}
-	return authorizer.accessTokenCache.ClearAccessToken()
+	return authorizer.accessTokenCache.ClearAccessToken(ctx)
 }
 
-func (authorizer *Authorizer) RefreshCorpJsApiTicket(expireBefore int) (string, error) {
+func (authorizer *Authorizer) RefreshCorpJsApiTicket(
+	ctx context.Context, expireBefore int,
+) (string, error) {
 	if authorizer.corpJsApiTicketCache == nil {
 		return "", fmt.Errorf(
 			"authorizer appid : %s,%s,%d, error: %w",
@@ -97,10 +114,10 @@ func (authorizer *Authorizer) RefreshCorpJsApiTicket(expireBefore int) (string, 
 			ErrCorpJsApiTicketForbidden,
 		)
 	}
-	return authorizer.corpJsApiTicketCache.RefreshAccessToken(expireBefore)
+	return authorizer.corpJsApiTicketCache.RefreshAccessToken(ctx, expireBefore)
 }
 
-func (authorizer *Authorizer) ClearCorpJsApiTicket() error {
+func (authorizer *Authorizer) ClearCorpJsApiTicket(ctx context.Context) error {
 	if authorizer.corpJsApiTicketCache == nil {
 		return fmt.Errorf(
 			"authorizer appid : %s,%s,%d, error: %w",
@@ -108,10 +125,12 @@ func (authorizer *Authorizer) ClearCorpJsApiTicket() error {
 			ErrCorpJsApiTicketForbidden,
 		)
 	}
-	return authorizer.corpJsApiTicketCache.ClearAccessToken()
+	return authorizer.corpJsApiTicketCache.ClearAccessToken(ctx)
 }
 
-func (authorizer *Authorizer) RefreshAgentJsApiTicket(expireBefore int) (string, error) {
+func (authorizer *Authorizer) RefreshAgentJsApiTicket(
+	ctx context.Context, expireBefore int,
+) (string, error) {
 	if authorizer.agentJsApiTicketCache == nil {
 		return "", fmt.Errorf(
 			"authorizer appid : %s,%s,%d, error: %w",
@@ -119,10 +138,10 @@ func (authorizer *Authorizer) RefreshAgentJsApiTicket(expireBefore int) (string,
 			ErrAgentJsApiTicketForbidden,
 		)
 	}
-	return authorizer.agentJsApiTicketCache.RefreshAccessToken(expireBefore)
+	return authorizer.agentJsApiTicketCache.RefreshAccessToken(ctx, expireBefore)
 }
 
-func (authorizer *Authorizer) ClearAgentJsApiTicket() error {
+func (authorizer *Authorizer) ClearAgentJsApiTicket(ctx context.Context) error {
 	if authorizer.agentJsApiTicketCache == nil {
 		return fmt.Errorf(
 			"authorizer appid : %s,%s,%d, error: %w",
@@ -130,5 +149,5 @@ func (authorizer *Authorizer) ClearAgentJsApiTicket() error {
 			ErrAgentJsApiTicketForbidden,
 		)
 	}
-	return authorizer.agentJsApiTicketCache.ClearAccessToken()
+	return authorizer.agentJsApiTicketCache.ClearAccessToken(ctx)
 }

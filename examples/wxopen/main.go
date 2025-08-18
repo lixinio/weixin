@@ -70,13 +70,14 @@ func callback(wo *wxopen.WxOpen, manager TokenCacheManager) http.HandlerFunc {
 		}
 
 		// 保存refresh token
-		err = authorizer.SetRefreshToken(authorizationInfo.AuthorizerRefreshToken)
+		err = authorizer.SetRefreshToken(r.Context(), authorizationInfo.AuthorizerRefreshToken)
 		if err != nil {
 			panic(err)
 		}
 
 		// 保存 access token
 		err = authorizer.SetAccessToken(
+			r.Context(),
 			authorizationInfo.AuthorizerAccessToken,
 			authorizationInfo.ExpiresIn,
 		)

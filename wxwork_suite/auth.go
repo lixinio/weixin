@@ -8,13 +8,15 @@ import (
 )
 
 const (
-	apiInstall          = "https://open.work.weixin.qq.com/3rdapp/install"
-	apiGetPreAuthCode   = "/cgi-bin/service/get_pre_auth_code"
-	apiSetSessionInfo   = "/cgi-bin/service/set_session_info"
-	apiGetPermanentCode = "/cgi-bin/service/get_permanent_code"
-	apiGetAuthInfo      = "/cgi-bin/service/get_auth_info"
-	apiGetCorpToken     = "/cgi-bin/service/get_corp_token"
-	apiGetAdminList     = "/cgi-bin/service/get_admin_list"
+	apiInstall            = "https://open.work.weixin.qq.com/3rdapp/install"
+	apiGetPreAuthCode     = "/cgi-bin/service/get_pre_auth_code"
+	apiSetSessionInfo     = "/cgi-bin/service/set_session_info"
+	apiGetPermanentCode   = "/cgi-bin/service/get_permanent_code"
+	apiGetAuthInfo        = "/cgi-bin/service/get_auth_info"
+	apiGetPermanentCodeV2 = "/cgi-bin/service/v2/get_permanent_code"
+	apiGetAuthInfoV2      = "/cgi-bin/service/v2/get_auth_info"
+	apiGetCorpToken       = "/cgi-bin/service/get_corp_token"
+	apiGetAdminList       = "/cgi-bin/service/get_admin_list"
 )
 
 type PreAuthCode struct {
@@ -73,12 +75,15 @@ func (suite *WxWorkSuite) SetSessionInfo(
 	}, nil)
 }
 
+// v2 如果需要获取 CorpWxQrcode ， 单独调用接口
+// get_app_qrcode
+// https://developer.work.weixin.qq.com/document/path/95430
 type AuthCorpInfo struct {
 	CorpID            string `json:"corpid"`
 	CorpName          string `json:"corp_name"`
 	CorpFullName      string `json:"corp_full_name"`
 	CorpType          string `json:"corp_type"`
-	CorpWxQrcode      string `json:"corp_wxqrcode"`
+	CorpWxQrcode      string `json:"corp_wxqrcode"` // v2 不支持
 	CorpScale         string `json:"corp_scale"`
 	CorpIndustry      string `json:"corp_industry"`
 	CorpSubIndustry   string `json:"corp_sub_industry"`
@@ -148,6 +153,32 @@ func (suite *WxWorkSuite) GetPermanentCode(
 	return result, nil
 }
 
+type PermanentCodeInfoV2 struct {
+	utils.WeixinError
+	PermanentCode string `json:"permanent_code"`
+	State         string `json:"state"`
+	AuthCorpInfo  *struct {
+		CorpID   string `json:"corpid"`
+		CorpName string `json:"corp_name"`
+	} `json:"auth_corp_info"`
+	AuthUserInfo     *AuthUserInfo     `json:"auth_user_info"`
+	RegisterCodeInfo *RegisterCodeInfo `json:"register_code_info"`
+}
+
+// 获取企业永久授权码
+// https://developer.work.weixin.qq.com/document/path/100776
+func (suite *WxWorkSuite) GetPermanentCodeV2(
+	ctx context.Context, authCode string,
+) (*PermanentCodeInfoV2, error) {
+	result := &PermanentCodeInfoV2{}
+	if err := suite.Client.HTTPPostJson(ctx, apiGetPermanentCodeV2, map[string]string{
+		"auth_code": authCode,
+	}, result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 type AuthInfo struct {
 	utils.WeixinError
 	DealerCorpInfo *DealerCorpInfo `json:"dealer_corp_info"`
@@ -164,6 +195,21 @@ func (suite *WxWorkSuite) GetAuthInfo(
 ) (*AuthInfo, error) {
 	result := &AuthInfo{}
 	if err := suite.Client.HTTPPostJson(ctx, apiGetAuthInfo, map[string]string{
+		"auth_corpid":    authCorpID,
+		"permanent_code": permanentCode,
+	}, result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// 获取企业授权信息
+// https://developer.work.weixin.qq.com/document/path/100779
+func (suite *WxWorkSuite) GetAuthInfoV2(
+	ctx context.Context, authCorpID, permanentCode string,
+) (*AuthInfo, error) {
+	result := &AuthInfo{}
+	if err := suite.Client.HTTPPostJson(ctx, apiGetAuthInfoV2, map[string]string{
 		"auth_corpid":    authCorpID,
 		"permanent_code": permanentCode,
 	}, result); err != nil {

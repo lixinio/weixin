@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -83,6 +84,7 @@ func install_callback(
 	suite *wxwork_suite.WxWorkSuite, manager TokenCacheManager,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		code := r.URL.Query().Get("auth_code")
 		info, err := suite.GetPermanentCode(r.Context(), code)
 		if err != nil {
@@ -132,10 +134,10 @@ func install_callback(
 		}
 
 		// 存起来
-		if err = authorizer.SetAccessToken(token.AccessToken, token.ExpiresIn); err != nil {
+		if err = authorizer.SetAccessToken(ctx, token.AccessToken, token.ExpiresIn); err != nil {
 			panic(err)
 		}
-		if err = authorizer.SetPermanentCode(info.PermanentCode); err != nil {
+		if err = authorizer.SetPermanentCode(ctx, info.PermanentCode); err != nil {
 			panic(err)
 		}
 
@@ -144,13 +146,14 @@ func install_callback(
 }
 
 func main() {
+	ctx := context.Background()
 	redis := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
 	suite := wxwork_suite.New(redis, redis, &wxwork_suite.Config{
 		SuiteID:        test.WxWorkSuiteID,
 		SuiteSecret:    test.WxWorkSuiteSecret,
 		Token:          test.WxWorkSuiteToken,
 		EncodingAESKey: test.WxWorkSuiteEncodingAESKey,
-	})
+	}, nil)
 
 	// 存储授权后的access token, refresh token
 	// 生产环境应该存储到DB
@@ -169,6 +172,7 @@ func main() {
 		test.WxWorkSuiteCorpID,
 		test.WxWorkSuiteAgentID,
 		GetAuthorizerAccessToken(suite, oaTokenCache, test.WxWorkSuiteCorpID),
+		nil,
 	)
 	// server
 	serverApi := server_api.NewApi(
@@ -183,7 +187,7 @@ func main() {
 	// fmt.Printf("oa template id %s\n", tmplID)
 
 	// 立即刷新Token
-	if token, err := wxworkSuiteAgent.RefreshAccessToken(0); err != nil {
+	if token, err := wxworkSuiteAgent.RefreshAccessToken(ctx, 0); err != nil {
 		fmt.Printf("refresh token fail %s\n", err.Error())
 	} else {
 		fmt.Printf("refresh token success '%s'\n", token)

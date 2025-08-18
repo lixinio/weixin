@@ -1,6 +1,7 @@
 package official_account
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/lixinio/weixin/utils"
@@ -8,7 +9,7 @@ import (
 
 // 刷新 Access token
 // https://developers.weixin.qq.com/doc/offiaccount/Basic_Information/Get_access_token.html
-type RefreshAccessToken func() (string, int, error) // 直接获取token， 不做任何缓存
+type RefreshAccessToken func(ctx context.Context) (string, int, error) // 直接获取token， 不做任何缓存
 
 // utils.AccessTokenGetter 接口实现
 type oaAccessTokenGetterAdapter struct {
@@ -18,8 +19,10 @@ type oaAccessTokenGetterAdapter struct {
 }
 
 // GetAccessToken 接口 utils.AccessTokenGetter 实现
-func (adapter *oaAccessTokenGetterAdapter) GetAccessToken() (string, int, error) {
-	return adapter.accessTokenGetter()
+func (adapter *oaAccessTokenGetterAdapter) GetAccessToken(
+	ctx context.Context,
+) (string, int, error) {
+	return adapter.accessTokenGetter(ctx)
 }
 
 // GetAccessTokenKey 接口 utils.AccessTokenGetter 实现

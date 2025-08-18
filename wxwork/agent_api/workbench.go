@@ -65,7 +65,9 @@ type WorkBenchWebviewItem WorkBenchImageItem
 /*
 获取应用在工作台展示的模版
 See: https://work.weixin.qq.com/api/doc/90000/90135/92535
+
 	https://work.weixin.qq.com/api/doc/90001/90143/94620
+
 POST https://qyapi.weixin.qq.com/cgi-bin/agent/get_workbench_template?access_token=ACCESS_TOKEN
 */
 type WorkbenchTemplate struct {
@@ -98,7 +100,9 @@ func (api *AgentApi) GetWorkbenchTemplate(
 /*
 设置应用在工作台展示的模版
 See: https://work.weixin.qq.com/api/doc/90000/90135/92535
+
 	https://work.weixin.qq.com/api/doc/90001/90143/94620
+
 POST https://qyapi.weixin.qq.com/cgi-bin/agent/set_workbench_template?access_token=ACCESS_TOKEN
 */
 type WorkbenchTemplateParam struct {
@@ -115,7 +119,9 @@ func (api *AgentApi) SetWorkbenchTemplate(
 /*
 设置应用在用户工作台展示的数据
 See: https://work.weixin.qq.com/api/doc/90000/90135/92535
+
 	https://work.weixin.qq.com/api/doc/90001/90143/94620
+
 POST https://qyapi.weixin.qq.com/cgi-bin/agent/set_workbench_data?access_token=ACCESS_TOKEN
 */
 type WorkbenchDataParam struct {

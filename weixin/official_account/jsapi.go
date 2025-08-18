@@ -73,7 +73,7 @@ func (officialAccount *OfficialAccount) GetJSApiTicket(
 			ErrJsApiTicketForbidden,
 		)
 	}
-	return officialAccount.jsApiTicketCache.GetAccessToken()
+	return officialAccount.jsApiTicketCache.GetAccessToken(ctx)
 }
 
 /*
@@ -101,7 +101,7 @@ func (officialAccount *OfficialAccount) GetWxCardApiTicket(
 			ErrWxCardTicketForbidden,
 		)
 	}
-	return officialAccount.wxCardTicketCache.GetAccessToken()
+	return officialAccount.wxCardTicketCache.GetAccessToken(ctx)
 }
 
 func (officialAccount *OfficialAccount) getApiTicket(

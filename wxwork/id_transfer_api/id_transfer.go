@@ -2,6 +2,7 @@ package id_transfer_api
 
 import (
 	"context"
+
 	"github.com/lixinio/weixin/utils"
 )
 
@@ -68,7 +69,7 @@ func (api *idTransferApi) UnionID2ExternalUserID(
 type ExternalUserID2PendingIDParam struct {
 	// 群聊Id, 如果有传入该参数，则只检查群主是否在可见范围，同时会忽略在该群以外的external_userid。如果不传入该参数，则只检查客户跟进人是否在可见范围内。
 	ChatID         string   `json:"chat_id,omitempty"`
-	ExternalUserID []string `json:"external_userid"` //外部联系人ID，最多可同时查询100个外部联系人
+	ExternalUserID []string `json:"external_userid"` // 外部联系人ID，最多可同时查询100个外部联系人
 }
 
 type ExternalUserID2PendingIDResponse struct {

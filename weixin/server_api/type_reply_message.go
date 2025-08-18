@@ -63,11 +63,13 @@ type ReplyEncryptMessage struct {
 
 /*
 <xml>
-  <ToUserName><![CDATA[toUser]]></ToUserName>
-  <FromUserName><![CDATA[fromUser]]></FromUserName>
-  <CreateTime>12345678</CreateTime>
-  <MsgType><![CDATA[text]]></MsgType>
-  <Content><![CDATA[你好]]></Content>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>12345678</CreateTime>
+	<MsgType><![CDATA[text]]></MsgType>
+	<Content><![CDATA[你好]]></Content>
+
 </xml>
 */
 type ReplyMessageText struct {
@@ -77,13 +79,15 @@ type ReplyMessageText struct {
 
 /*
 <xml>
-  <ToUserName><![CDATA[toUser]]></ToUserName>
-  <FromUserName><![CDATA[fromUser]]></FromUserName>
-  <CreateTime>12345678</CreateTime>
-  <MsgType><![CDATA[image]]></MsgType>
-  <Image>
-    <MediaId><![CDATA[media_id]]></MediaId>
-  </Image>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>12345678</CreateTime>
+	<MsgType><![CDATA[image]]></MsgType>
+	<Image>
+	  <MediaId><![CDATA[media_id]]></MediaId>
+	</Image>
+
 </xml>
 */
 type ReplyMessageImage struct {
@@ -95,13 +99,15 @@ type ReplyMessageImage struct {
 
 /*
 <xml>
-  <ToUserName><![CDATA[toUser]]></ToUserName>
-  <FromUserName><![CDATA[fromUser]]></FromUserName>
-  <CreateTime>12345678</CreateTime>
-  <MsgType><![CDATA[voice]]></MsgType>
-  <Voice>
-    <MediaId><![CDATA[media_id]]></MediaId>
-  </Voice>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>12345678</CreateTime>
+	<MsgType><![CDATA[voice]]></MsgType>
+	<Voice>
+	  <MediaId><![CDATA[media_id]]></MediaId>
+	</Voice>
+
 </xml>
 */
 type ReplyMessageVoice struct {
@@ -113,15 +119,17 @@ type ReplyMessageVoice struct {
 
 /*
 <xml>
-  <ToUserName><![CDATA[toUser]]></ToUserName>
-  <FromUserName><![CDATA[fromUser]]></FromUserName>
-  <CreateTime>12345678</CreateTime>
-  <MsgType><![CDATA[video]]></MsgType>
-  <Video>
-    <MediaId><![CDATA[media_id]]></MediaId>
-    <Title><![CDATA[title]]></Title>
-    <Description><![CDATA[description]]></Description>
-  </Video>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>12345678</CreateTime>
+	<MsgType><![CDATA[video]]></MsgType>
+	<Video>
+	  <MediaId><![CDATA[media_id]]></MediaId>
+	  <Title><![CDATA[title]]></Title>
+	  <Description><![CDATA[description]]></Description>
+	</Video>
+
 </xml>
 */
 type ReplyMessageVideo struct {
@@ -135,17 +143,19 @@ type ReplyMessageVideo struct {
 
 /*
 <xml>
-  <ToUserName><![CDATA[toUser]]></ToUserName>
-  <FromUserName><![CDATA[fromUser]]></FromUserName>
-  <CreateTime>12345678</CreateTime>
-  <MsgType><![CDATA[music]]></MsgType>
-  <Music>
-    <Title><![CDATA[TITLE]]></Title>
-    <Description><![CDATA[DESCRIPTION]]></Description>
-    <MusicUrl><![CDATA[MUSIC_Url]]></MusicUrl>
-    <HQMusicUrl><![CDATA[HQ_MUSIC_Url]]></HQMusicUrl>
-    <ThumbMediaId><![CDATA[media_id]]></ThumbMediaId>
-  </Music>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>12345678</CreateTime>
+	<MsgType><![CDATA[music]]></MsgType>
+	<Music>
+		<Title><![CDATA[TITLE]]></Title>
+		<Description><![CDATA[DESCRIPTION]]></Description>
+		<MusicUrl><![CDATA[MUSIC_Url]]></MusicUrl>
+		<HQMusicUrl><![CDATA[HQ_MUSIC_Url]]></HQMusicUrl>
+		<ThumbMediaId><![CDATA[media_id]]></ThumbMediaId>
+	</Music>
+
 </xml>
 */
 type ReplyMessageMusic struct {
@@ -162,19 +172,19 @@ type ReplyMessageMusic struct {
 
 /*
 <xml>
-  <ToUserName><![CDATA[toUser]]></ToUserName>
-  <FromUserName><![CDATA[fromUser]]></FromUserName>
-  <CreateTime>12345678</CreateTime>
-  <MsgType><![CDATA[news]]></MsgType>
-  <ArticleCount>1</ArticleCount>
-  <Articles>
-    <item>
-      <Title><![CDATA[title1]]></Title>
-      <Description><![CDATA[description1]]></Description>
-      <PicUrl><![CDATA[picurl]]></PicUrl>
-      <Url><![CDATA[url]]></Url>
-    </item>
-  </Articles>
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[fromUser]]></FromUserName>
+	<CreateTime>12345678</CreateTime>
+	<MsgType><![CDATA[news]]></MsgType>
+	<ArticleCount>1</ArticleCount>
+	<Articles>
+	<item>
+		<Title><![CDATA[title1]]></Title>
+		<Description><![CDATA[description1]]></Description>
+		<PicUrl><![CDATA[picurl]]></PicUrl>
+		<Url><![CDATA[url]]></Url>
+	</item>
+	</Articles>
 </xml>
 
 */
@@ -196,14 +206,14 @@ type ReplyMessageNews struct {
 
 /*
 <xml>
-  <ToUserName><![CDATA[touser]]></ToUserName>
-  <FromUserName><![CDATA[fromuser]]></FromUserName>
-  <CreateTime>1399197672</CreateTime>
-  <MsgType><![CDATA[transfer_customer_service]]></MsgType>
-  <TransInfo>
-    <KfAccount><![CDATA[test1@test]]></KfAccount>
-  </TransInfo>
-</xml>
+	<ToUserName><![CDATA[touser]]></ToUserName>
+	<FromUserName><![CDATA[fromuser]]></FromUserName>
+	<CreateTime>1399197672</CreateTime>
+	<MsgType><![CDATA[transfer_customer_service]]></MsgType>
+	<TransInfo>
+		<KfAccount><![CDATA[test1@test]]></KfAccount>
+	</TransInfo>
+	</xml>
 */
 
 type ReplyMessageTransferCustomerService struct {

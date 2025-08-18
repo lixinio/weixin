@@ -70,12 +70,12 @@ func (api *WxOpen) GetComponentLoginPage(
 	return "https://mp.weixin.qq.com/cgi-bin/componentloginpage?" + params.Encode()
 }
 
-// /*
-// 方式二：点击移动端链接快速授权
-// 第三方平台方可以生成授权链接，将链接通过移动端直接发给授权管理员，管理员确认后即授权成功
-// See: https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/Authorization_Process_Technical_Description.html
-// GET https://mp.weixin.qq.com/safe/bindcomponent?action=bindcomponent&auth_type=3&no_scan=1&component_appid=xxxx&pre_auth_code=xxxxx&redirect_uri=xxxx&auth_type=xxx&biz_appid=xxxx#wechat_redirect
-// */
+/*
+方式二：点击移动端链接快速授权
+第三方平台方可以生成授权链接，将链接通过移动端直接发给授权管理员，管理员确认后即授权成功
+See: https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/Authorization_Process_Technical_Description.html
+GET https://mp.weixin.qq.com/safe/bindcomponent?action=bindcomponent&auth_type=3&no_scan=1&component_appid=xxxx&pre_auth_code=xxxxx&redirect_uri=xxxx&auth_type=xxx&biz_appid=xxxx#wechat_redirect
+*/
 func (api *WxOpen) GetComponentLoginH5Page(
 	preAuthCode, redirectUri, authType, bizAppid string,
 ) (uri string) {

@@ -21,6 +21,6 @@ func New(config *Config) (corp *WxWork) {
 	return &instance
 }
 
-func (corp *WxWork) NewClient(accessTokenCache *utils.AccessTokenCache) *utils.Client {
+func (*WxWork) NewClient(accessTokenCache *utils.AccessTokenCache) *utils.Client {
 	return utils.NewClient(QyWXServerUrl, accessTokenCache)
 }

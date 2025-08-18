@@ -8,10 +8,8 @@ import (
 	"github.com/lixinio/weixin/utils"
 )
 
-var (
-	ErrTokenUpdateForbidden = errors.New(
-		"can NOT refresh&update token in wxwork provider lite mode",
-	)
+var ErrTokenUpdateForbidden = errors.New(
+	"can NOT refresh&update token in wxwork provider lite mode",
 )
 
 // access token的cache
@@ -32,7 +30,9 @@ func (ta *accessTokenAdaptor) GetAccessTokenLockKey() string {
 	return ta.lockerKey
 }
 
-func (ta *accessTokenAdaptor) GetAccessToken() (accessToken string, expiresIn int, err error) {
+func (ta *accessTokenAdaptor) GetAccessToken(
+	ctx context.Context,
+) (accessToken string, expiresIn int, err error) {
 	if ta.config.ProviderSecret == "" {
 		return "", 0, fmt.Errorf(
 			"wxopen appid : %s, error: %w", ta.config.CorpID, ErrTokenUpdateForbidden,
@@ -51,7 +51,7 @@ func (ta *accessTokenAdaptor) GetAccessToken() (accessToken string, expiresIn in
 		"provider_secret": ta.config.ProviderSecret,
 	}
 	if err := ta.client.HTTPPostToken(
-		context.TODO(), apiGetProviderToken, payload, &result,
+		ctx, apiGetProviderToken, payload, &result,
 	); err != nil {
 		return "", 0, err
 	}

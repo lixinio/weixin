@@ -11,6 +11,7 @@ import (
 )
 
 func TestTicket(t *testing.T) {
+	ctx := context.TODO()
 	redis := redis.NewRedis(&redis.Config{RedisUrl: test.CacheUrl})
 	officialAccount := New(redis, redis, &Config{
 		Appid:  test.OfficialAccountAppid,
@@ -19,11 +20,11 @@ func TestTicket(t *testing.T) {
 	officialAccount.EnableJSApiTicketCache(redis, redis)
 	officialAccount.EnableWxCardTicketCache(redis, redis)
 
-	ticket, err := officialAccount.GetJSApiTicket(context.TODO())
+	ticket, err := officialAccount.GetJSApiTicket(ctx)
 	require.Equal(t, nil, err)
 	fmt.Println(ticket)
 
-	ticket, err = officialAccount.GetWxCardApiTicket(context.TODO())
+	ticket, err = officialAccount.GetWxCardApiTicket(ctx)
 	require.Equal(t, nil, err)
 	fmt.Println(ticket)
 }

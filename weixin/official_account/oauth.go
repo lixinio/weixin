@@ -102,12 +102,17 @@ func (officialAccount *OfficialAccount) GetSnsAccessToken(
 ) (*OauthAccessToken, error) {
 	result := &OauthAccessToken{}
 	// 无需 access token
-	if err := officialAccount.Client.HTTPGetToken(context.TODO(), apiAccessToken, func(params url.Values) {
-		params.Add("appid", officialAccount.Config.Appid)
-		params.Add("secret", officialAccount.Config.Secret)
-		params.Add("code", code)
-		params.Add("grant_type", "authorization_code")
-	}, result); err != nil {
+	if err := officialAccount.Client.HTTPGetToken(
+		utils.NewStripContext(ctx, "secret"),
+		apiAccessToken,
+		func(params url.Values) {
+			params.Add("appid", officialAccount.Config.Appid)
+			params.Add("secret", officialAccount.Config.Secret)
+			params.Add("code", code)
+			params.Add("grant_type", "authorization_code")
+		},
+		result,
+	); err != nil {
 		return nil, err
 	}
 	return result, nil
@@ -128,7 +133,7 @@ func (officialAccount *OfficialAccount) RefreshSnsToken(
 ) (*OauthAccessToken, error) {
 	result := &OauthAccessToken{}
 	// 无需 access token
-	if err := officialAccount.Client.HTTPGetToken(context.TODO(), apiRefreshToken, func(params url.Values) {
+	if err := officialAccount.Client.HTTPGetToken(ctx, apiRefreshToken, func(params url.Values) {
 		params.Add("appid", officialAccount.Config.Appid)
 		params.Add("grant_type", "refresh_token")
 		params.Add("refresh_token", refreshToken)
@@ -172,7 +177,7 @@ func (officialAccount *OfficialAccount) GetUserInfo(
 ) (*OauthUserInfo, error) {
 	result := &OauthUserInfo{}
 	// 无需 access token
-	if err := officialAccount.Client.HTTPGetToken(context.TODO(), apiUserInfo, func(params url.Values) {
+	if err := officialAccount.Client.HTTPGetToken(ctx, apiUserInfo, func(params url.Values) {
 		params.Add("access_token", accessToken)
 		params.Add("openid", openid)
 		params.Add("lang", lang)
@@ -193,7 +198,7 @@ func (officialAccount *OfficialAccount) Auth(
 	ctx context.Context, accessToken string, openid string,
 ) error {
 	// 无需 access token
-	return officialAccount.Client.HTTPGetToken(context.TODO(), apiAuth, func(params url.Values) {
+	return officialAccount.Client.HTTPGetToken(ctx, apiAuth, func(params url.Values) {
 		params.Add("access_token", accessToken)
 		params.Add("openid", openid)
 	}, nil)
@@ -212,12 +217,16 @@ func (officialAccount *OfficialAccount) Jscode2Session(
 	// 无需 access token
 	result := &MpSession{}
 	if err := officialAccount.Client.HTTPGetToken(
-		context.TODO(), apiJscode2Session, func(params url.Values) {
+		utils.NewStripContext(ctx, "secret"),
+		apiJscode2Session,
+		func(params url.Values) {
 			params.Add("appid", officialAccount.Config.Appid)
 			params.Add("secret", officialAccount.Config.Secret)
 			params.Add("js_code", jsCode)
 			params.Add("grant_type", "authorization_code")
-		}, result); err != nil {
+		},
+		result,
+	); err != nil {
 		return nil, err
 	}
 	return result, nil

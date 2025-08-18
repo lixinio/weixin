@@ -1,6 +1,7 @@
 package official_account
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -48,7 +49,7 @@ func New(cache utils.Cache, locker utils.Lock, config *Config) *OfficialAccount 
 func NewLite(cache utils.Cache, locker utils.Lock, appid string) *OfficialAccount {
 	client := utils.NewClient(
 		WXServerUrl, utils.NewAccessTokenCache(
-			newAdapter(appid, func() (string, int, error) {
+			newAdapter(appid, func(ctx context.Context) (string, int, error) {
 				return "", 0, fmt.Errorf(
 					"can NOT refresh token in lite mod, appid(%s), %w",
 					appid, ErrTokenUpdateForbidden,

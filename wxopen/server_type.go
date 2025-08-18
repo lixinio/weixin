@@ -60,13 +60,15 @@ type EventComponentVerifyTicket struct {
 /*
 授权成功通知
 <xml>
-  <AppId>第三方平台appid</AppId>
-  <CreateTime>1413192760</CreateTime>
-  <InfoType>authorized</InfoType>
-  <AuthorizerAppid>公众号appid</AuthorizerAppid>
-  <AuthorizationCode>授权码</AuthorizationCode>
-  <AuthorizationCodeExpiredTime>过期时间</AuthorizationCodeExpiredTime>
-  <PreAuthCode>预授权码</PreAuthCode>
+
+	<AppId>第三方平台appid</AppId>
+	<CreateTime>1413192760</CreateTime>
+	<InfoType>authorized</InfoType>
+	<AuthorizerAppid>公众号appid</AuthorizerAppid>
+	<AuthorizationCode>授权码</AuthorizationCode>
+	<AuthorizationCodeExpiredTime>过期时间</AuthorizationCodeExpiredTime>
+	<PreAuthCode>预授权码</PreAuthCode>
+
 <xml>
 */
 type EventAuthorized struct {
@@ -80,10 +82,12 @@ type EventAuthorized struct {
 /*
 取消授权通知
 <xml>
-  <AppId>第三方平台appid</AppId>
-  <CreateTime>1413192760</CreateTime>
-  <InfoType>unauthorized</InfoType>
-  <AuthorizerAppid>公众号appid</AuthorizerAppid>
+
+	<AppId>第三方平台appid</AppId>
+	<CreateTime>1413192760</CreateTime>
+	<InfoType>unauthorized</InfoType>
+	<AuthorizerAppid>公众号appid</AuthorizerAppid>
+
 </xml>
 */
 type EventUnauthorized struct {
@@ -94,13 +98,15 @@ type EventUnauthorized struct {
 /*
 授权更新通知
 <xml>
-  <AppId>第三方平台appid</AppId>
-  <CreateTime>1413192760</CreateTime>
-  <InfoType>updateauthorized</InfoType>
-  <AuthorizerAppid>公众号appid</AuthorizerAppid>
-  <AuthorizationCode>授权码</AuthorizationCode>
-  <AuthorizationCodeExpiredTime>过期时间</AuthorizationCodeExpiredTime>
-  <PreAuthCode>预授权码</PreAuthCode>
+
+	<AppId>第三方平台appid</AppId>
+	<CreateTime>1413192760</CreateTime>
+	<InfoType>updateauthorized</InfoType>
+	<AuthorizerAppid>公众号appid</AuthorizerAppid>
+	<AuthorizationCode>授权码</AuthorizationCode>
+	<AuthorizationCodeExpiredTime>过期时间</AuthorizationCodeExpiredTime>
+	<PreAuthCode>预授权码</PreAuthCode>
+
 <xml>
 */
 type EventUpdateAuthorized struct {
@@ -114,16 +120,18 @@ type EventUpdateAuthorized struct {
 /*
 // https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/beta_Mini_Programs/fastregister.html
 <xml>
-    <AppId><![CDATA[第三方平台appid]]></AppId>
-    <CreateTime>1535442403</CreateTime>
-    <InfoType><![CDATA[notify_third_fastregisterbetaapp]]></InfoType>
-    <appid>创建小程序appid<appid>
-    <status>0</status>
-    <msg>OK</msg>
-    <info>
+
+	<AppId><![CDATA[第三方平台appid]]></AppId>
+	<CreateTime>1535442403</CreateTime>
+	<InfoType><![CDATA[notify_third_fastregisterbetaapp]]></InfoType>
+	<appid>创建小程序appid<appid>
+	<status>0</status>
+	<msg>OK</msg>
+	<info>
 		<unique_id><![CDATA[unique_id]]></unique_id>
 		<name><![CDATA[小程序名称]]></name>
-    </info>
+	</info>
+
 </xml>
 */
 type EventThirdFastRegisterBetaApp struct {
@@ -137,25 +145,27 @@ type EventThirdFastRegisterBetaApp struct {
 	} `xml:"info"`
 }
 
-/**
+/*
 https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/beta_Mini_Programs/fastverify.html
 <xml>
-    <AppId><![CDATA[第三方平台appid]]></AppId>
-    <CreateTime>1535442403</CreateTime>
-    <InfoType><![CDATA[notify_third_fastverifybetaapp]]></InfoType>
-    <appid>小程序appid<appid>
-    <status>0</status>
-    <msg>OK</msg>
-    <info>
+
+	<AppId><![CDATA[第三方平台appid]]></AppId>
+	<CreateTime>1535442403</CreateTime>
+	<InfoType><![CDATA[notify_third_fastverifybetaapp]]></InfoType>
+	<appid>小程序appid<appid>
+	<status>0</status>
+	<msg>OK</msg>
+	<info>
 		<name><![CDATA[企业名称]]></name>
 		<code><![CDATA[企业代码]]></code>
 		<code_type>1</code_type>
 		<legal_persona_wechat><![CDATA[法人微信号]]></legal_persona_wechat>
 		<legal_persona_name><![CDATA[法人姓名]]></legal_persona_name>
 		<component_phone><![CDATA[第三方联系电话]]></component_phone>
-    </info>
+	</info>
+
 </xml>
-**/
+*/
 type EventThirdFastVerifyBetaApp struct {
 	Event
 	MpAppid string `xml:"appid"`
@@ -171,41 +181,46 @@ type EventThirdFastVerifyBetaApp struct {
 	} `xml:"info"`
 }
 
-/**
-// https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/Register_Mini_Programs/fastregisterpersonalweapp.html
-// https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/Register_Mini_Programs/Fast_Registration_Interface_document.html
+/*
+https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/Register_Mini_Programs/fastregisterpersonalweapp.html
+https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/Register_Mini_Programs/Fast_Registration_Interface_document.html
 <xml>
-    <AppId><![CDATA[第三方平台appid]]></AppId>
-    <CreateTime>1535442403</CreateTime>
-    <InfoType><![CDATA[notify_third_fasteregister]]></InfoType>
-    <appid>创建小程序appid</appid>
-    <status>0</status>
-    <auth_code>xxxxx第三方授权码</auth_code>
-    <msg>OK</msg>
-    <info>
+
+	<AppId><![CDATA[第三方平台appid]]></AppId>
+	<CreateTime>1535442403</CreateTime>
+	<InfoType><![CDATA[notify_third_fasteregister]]></InfoType>
+	<appid>创建小程序appid</appid>
+	<status>0</status>
+	<auth_code>xxxxx第三方授权码</auth_code>
+	<msg>OK</msg>
+	<info>
 		<wxuser><![CDATA[用户微信号]]></wxuser>
 		<idname><![CDATA[用户姓名]]></wxidnnn>
 		<component_phone><![CDATA[第三方联系电话]]></component_phone>
-    </info>
+	</info>
+
 </xml>
 <xml>
-    <AppId><![CDATA[第三方平台appid]]></AppId>
-    <CreateTime>1535442403</CreateTime>
-    <InfoType><![CDATA[notify_third_fasteregister]]></InfoType>
-    <appid>创建小程序appid</appid>
-    <status>0</status>
-    <auth_code>xxxxx第三方授权码</auth_code>
-    <msg>OK</msg>
-    <info>
+
+	<AppId><![CDATA[第三方平台appid]]></AppId>
+	<CreateTime>1535442403</CreateTime>
+	<InfoType><![CDATA[notify_third_fasteregister]]></InfoType>
+	<appid>创建小程序appid</appid>
+	<status>0</status>
+	<auth_code>xxxxx第三方授权码</auth_code>
+	<msg>OK</msg>
+	<info>
 		<name><![CDATA[企业名称]]></name>
 		<code><![CDATA[企业代码]]></code>
 		<code_type>1</code_type>
 		<legal_persona_wechat><![CDATA[法人微信号]]></legal_persona_wechat>
 		<legal_persona_name><![CDATA[法人姓名]]></legal_persona_name>
 		<component_phone><![CDATA[第三方联系电话]]></component_phone>
-    </info>
+	</info>
+
 </xml>
-**/
+*
+*/
 type EventThirdFastRegister struct {
 	Event
 	MpAppid  string `xml:"appid"`
