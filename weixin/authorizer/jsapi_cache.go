@@ -45,7 +45,10 @@ func newJsApiTicketAdapter(
 	}
 }
 
-func (api *Authorizer) EnableJSApiTicketCache(cache utils.Cache, locker utils.Lock) {
+func (api *Authorizer) EnableJSApiTicketCache(
+	cache utils.Cache, locker utils.Lock,
+	tokenRefreshHandler utils.TokenRefreshHandler, // 刷新callback
+) {
 	if api.jsApiTicketCache != nil {
 		return
 	}
@@ -59,6 +62,7 @@ func (api *Authorizer) EnableJSApiTicketCache(cache utils.Cache, locker utils.Lo
 				return ticket, int(expiresIn), err
 			}),
 		cache, locker,
+		utils.CacheClientTokenOptWithExpireBefore(tokenRefreshHandler),
 	)
 }
 
@@ -100,7 +104,10 @@ func newWxCardTicketAdapter(
 	}
 }
 
-func (api *Authorizer) EnableWxCardTicketCache(cache utils.Cache, locker utils.Lock) {
+func (api *Authorizer) EnableWxCardTicketCache(
+	cache utils.Cache, locker utils.Lock,
+	tokenRefreshHandler utils.TokenRefreshHandler, // 刷新callback
+) {
 	if api.wxCardTicketCache != nil {
 		return
 	}
@@ -114,5 +121,6 @@ func (api *Authorizer) EnableWxCardTicketCache(cache utils.Cache, locker utils.L
 				return ticket, int(expiresIn), err
 			}),
 		cache, locker,
+		utils.CacheClientTokenOptWithExpireBefore(tokenRefreshHandler),
 	)
 }

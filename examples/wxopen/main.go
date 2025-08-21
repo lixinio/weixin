@@ -165,7 +165,7 @@ func main() {
 		Secret:         test.WxOpenSecret,
 		Token:          test.WxOpenToken,
 		EncodingAESKey: test.WxOpenEncodingAESKey,
-	})
+	}, nil)
 
 	// 初始化测试的授权服务号
 	oaTokenCache, err := manager.GetTokenCache(wxopenApi.Config.Appid, test.WxOpenOAAppid)
@@ -177,6 +177,7 @@ func main() {
 		wxopenApi.Config.Appid,
 		test.WxOpenOAAppid,
 		GetAuthorizerAccessToken(wxopenApi, oaTokenCache, test.WxOpenOAAppid),
+		nil,
 	)
 
 	// server

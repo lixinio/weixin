@@ -16,7 +16,7 @@ func initWxOpen() *WxOpen {
 		Secret:         test.WxOpenSecret,
 		Token:          test.WxOpenToken,
 		EncodingAESKey: test.WxOpenEncodingAESKey,
-	})
+	}, nil)
 	return wxopen
 }
 

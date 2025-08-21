@@ -203,8 +203,8 @@ func parseExternalContactEvent(body []byte, event *Event) (m interface{}, err er
 			return
 		}
 		return msg, nil
-	case EventSubTypeCustomerRefused:
-		msg := &EventRefuseExternalContactCustomer{}
+	case EventSubTypeTransferFail:
+		msg := &EventTransferExternalContactCustomerFail{}
 		if err = xml.Unmarshal(body, msg); err != nil {
 			return
 		}

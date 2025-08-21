@@ -270,7 +270,10 @@ type AuthorizerInfo struct {
 		ID int `json:"id"`
 	} `json:"verify_type_info"`
 	MiniProgramInfo *struct { // 用于判断是否是小程序
-		Todo int8 `json:"todo"` // 填充内容， 无意义
+		Categories []*struct {
+			First  string `json:"first"`
+			Second string `json:"second"`
+		} `json:"categories"`
 	} `json:"MiniProgramInfo,omitempty"`
 }
 

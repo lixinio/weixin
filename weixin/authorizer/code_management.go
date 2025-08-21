@@ -9,11 +9,38 @@ import (
 )
 
 const (
-	apiCommit      = "/wxa/commit"
-	apiGetQrcode   = "/wxa/get_qrcode"
-	apiSubmitAudit = "/wxa/submit_audit"
-	apiRelease     = "/wxa/release"
+	apiCommit         = "/wxa/commit"
+	apiGetQrcode      = "/wxa/get_qrcode"
+	apiSubmitAudit    = "/wxa/submit_audit"
+	apiRelease        = "/wxa/release"
+	apiGetAuditStatus = "/wxa/get_auditstatus"
 )
+
+type AuditResult struct {
+	Status     int32  `json:"status"`     // 审核状态
+	Reason     string `json:"reason"`     // 当 status = 1 时，返回的拒绝原因; status = 4 时，返回的延后原因
+	Screenshot string `json:"screenshot"` // 当 status = 1 时，会返回审核失败的小程序截图示例。用竖线分隔的 media_id 的列表，可通过获取永久素材接口拉取截图内容
+}
+
+// https://developers.weixin.qq.com/doc/oplatform/openApi/OpenApiDoc/miniprogram-management/code-management/getAuditStatus.html
+// 查询审核单状态
+func (api *Authorizer) GetAuditStatus(
+	ctx context.Context,
+	auditid int32,
+) (*AuditResult, error) {
+	result := &struct {
+		utils.WeixinError
+		AuditResult
+	}{}
+
+	if err := api.Client.HTTPPostJson(ctx, apiGetAuditStatus, map[string]int32{
+		"auditid": auditid,
+	}, result); err != nil {
+		return nil, err
+	}
+
+	return &result.AuditResult, nil
+}
 
 /*
 上传代码
