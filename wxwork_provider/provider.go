@@ -14,6 +14,7 @@ const (
 	apiGetProviderToken  = "/cgi-bin/service/get_provider_token"
 	apiGetLoginInfo      = "/cgi-bin/service/get_login_info"
 	apiGetAppLicenseInfo = "/cgi-bin/license/get_app_license_info"
+	accessTokenKey       = "provider_access_token"
 )
 
 type Config struct {
@@ -37,7 +38,7 @@ func New(
 	)
 
 	client := utils.NewClient(WXServerUrl, accessTokenCache)
-	client.UpdateAccessTokenKey("provider_access_token")
+	client.UpdateAccessTokenKey(accessTokenKey)
 
 	instance := &WxWorkProvider{
 		Config:           config,

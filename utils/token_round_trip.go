@@ -14,7 +14,8 @@ import (
 
 type (
 	AccessTokenStripTransport struct {
-		Base http.RoundTripper
+		defaultKey string
+		Base       http.RoundTripper
 	}
 	stripKeyContext int
 )
@@ -42,7 +43,7 @@ func (t *AccessTokenStripTransport) RoundTrip(req *http.Request) (*http.Response
 
 	span := trace.FromContext(ctx)
 	if span == nil {
-		return nil, err
+		return resp, err
 	}
 
 	u := req.URL
@@ -50,8 +51,8 @@ func (t *AccessTokenStripTransport) RoundTrip(req *http.Request) (*http.Response
 
 	// 如果存在， 重置
 	edit := false
-	if q.Get("access_token") != "" {
-		q.Set("access_token", "")
+	if q.Get(t.defaultKey) != "" {
+		q.Set(t.defaultKey, "")
 		edit = true
 	}
 
@@ -74,8 +75,9 @@ func (t *AccessTokenStripTransport) RoundTrip(req *http.Request) (*http.Response
 	return resp, err
 }
 
-var DefaultTransport http.RoundTripper = &ochttp.Transport{
-	Base: &AccessTokenStripTransport{
-		Base: http.DefaultTransport,
-	},
+func NewAccessTokenStripTransport(defaultKey string) *AccessTokenStripTransport {
+	return &AccessTokenStripTransport{
+		defaultKey: defaultKey,
+		Base:       http.DefaultTransport,
+	}
 }

@@ -435,7 +435,7 @@ func (client *Client) httpDoRaw(
 	ctx context.Context, req *http.Request,
 ) (resp *http.Response, err error) {
 	req.Header.Add("User-Agent", client.userAgent)
-	cli := &http.Client{Transport: DefaultTransport}
+	cli := &http.Client{Transport: NewAccessTokenStripTransport(client.accessTokenKey)}
 
 	resp, err = cli.Do(req)
 	if err != nil {
