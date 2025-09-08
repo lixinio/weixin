@@ -38,7 +38,7 @@ const (
 	EventSubTypeAddHalfExternalContact = "add_half_external_contact" // 外部联系人免验证添加成员事件
 	EventSubTypeDelExternalContact     = "del_external_contact"      // 删除企业客户事件
 	EventSubTypeDelFollowUser          = "del_follow_user"           // 删除跟进成员事件
-	EventSubTypeCustomerRefused        = "customer_refused"          // 客户接替失败事件
+	EventSubTypeCustomerRefused        = "transfer_fail"             // 客户接替失败事件
 )
 
 const (
