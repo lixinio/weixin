@@ -35,8 +35,8 @@ type FastRegisterResult struct {
 	utils.WeixinError
 	AppID             string `json:"appid"`              // 新创建小程序的 appid
 	AuthorizationCode string `json:"authorization_code"` // 新创建小程序的授权码
-	IsWxVerifySucc    string `json:"is_wx_verify_succ"`  // 复用公众号微信认证小程序是否成功
-	IsLinkSucc        string `json:"is_link_succ"`       // 小程序是否和公众号关联成功
+	IsWxVerifySucc    bool   `json:"is_wx_verify_succ"`  // 复用公众号微信认证小程序是否成功
+	IsLinkSucc        bool   `json:"is_link_succ"`       // 小程序是否和公众号关联成功
 }
 
 func (api *Authorizer) FastRegister(

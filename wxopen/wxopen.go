@@ -42,10 +42,14 @@ type WxOpen struct {
 	accessTokenCache *utils.AccessTokenCache
 }
 
-func New(cache utils.Cache, locker utils.Lock, config *Config) *WxOpen {
+func New(
+	cache utils.Cache, locker utils.Lock, config *Config,
+	tokenRefreshHandler utils.TokenRefreshHandler, // 刷新callback
+) *WxOpen {
 	ticketCache := utils.NewAccessTokenCache(newTicketAdapter(config.Appid), cache, locker)
 	accessTokenCache := utils.NewAccessTokenCache(
 		newAccessTokenAdaptor(config, ticketCache), cache, locker,
+		utils.CacheClientTokenOptWithExpireBefore(tokenRefreshHandler),
 	)
 	instance := &WxOpen{
 		Config:           config,

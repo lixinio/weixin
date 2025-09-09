@@ -112,7 +112,7 @@ func (api *Authorizer) RidGet(
 		utils.WeixinError
 		Request *RidResult `json:"request"`
 	}{}
-	err := api.Client.HTTPPostJson(ctx, apiWxOpenGet, params, &result)
+	err := api.Client.HTTPPostJson(ctx, apiRidGet, params, &result)
 	if err != nil {
 		return nil, err
 	}

@@ -32,9 +32,11 @@ func New(
 	locker utils.Lock,
 	componentAppid, appid string,
 	accessTokenGetter RefreshAccessToken,
+	tokenRefreshHandler utils.TokenRefreshHandler, // 刷新callback
 ) *Authorizer {
 	accessTokenCache := utils.NewAccessTokenCache(
 		newAdapter(componentAppid, appid, accessTokenGetter), cache, locker,
+		utils.CacheClientTokenOptWithExpireBefore(tokenRefreshHandler),
 	)
 	return &Authorizer{
 		ComponentAppid:   componentAppid,
@@ -87,6 +89,21 @@ func (authorizer *Authorizer) ClearAccessToken(ctx context.Context) error {
 		)
 	}
 	return authorizer.accessTokenCache.ClearAccessToken(ctx)
+}
+
+func (authorizer *Authorizer) UpdateAccessToken(
+	ctx context.Context, token string, expiresIn int,
+) error {
+	if authorizer.accessTokenCache == nil {
+		return fmt.Errorf(
+			"authorizer appid : %s,%s, error: %w",
+			authorizer.ComponentAppid, authorizer.Appid,
+			ErrTokenUpdateForbidden,
+		)
+	}
+
+	_, err := authorizer.accessTokenCache.UpdateAccessToken(ctx, token, expiresIn)
+	return err
 }
 
 func (authorizer *Authorizer) RefreshJsApiTicket(

@@ -8,8 +8,6 @@ import (
 
 const (
 	apiGetAccountBasicInfo   = "/cgi-bin/account/getaccountbasicinfo"
-	apiGetCategory           = "/cgi-bin/wxopen/getcategory"
-	apiAddCategory           = "/cgi-bin/wxopen/addcategory"
 	apiCheckWxVerifyNickname = "/cgi-bin/wxverify/checkwxverifynickname"
 	apiWxaSetNickname        = "/wxa/setnickname"
 	apiWxaQueryNickName      = "/wxa/api_wxa_querynickname"
@@ -56,32 +54,6 @@ type MpAccountBasicInfo struct {
 func (api *Authorizer) GetAccountBasicInfo(ctx context.Context) (*MpAccountBasicInfo, error) {
 	var result MpAccountBasicInfo
 	err := api.Client.HTTPGet(ctx, apiGetAccountBasicInfo, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// 获取已设置的所有类目
-// https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/category/getcategory.html
-type MpCategoryInfo struct {
-	utils.WeixinError
-	Categories []struct { // 已设置的类目信息列表
-		First       int    `json:"first"`        // 一级类目 ID
-		FirstName   string `json:"first_name"`   // 一级类目名称
-		Second      int    `json:"second"`       // 二级类目 ID
-		SecondName  string `json:"second_name"`  // 二级类目名称
-		AuditStatus int    `json:"audit_status"` // 审核状态（1 审核中 2 审核不通过 3 审核通过）
-		AuditReason string `json:"audit_reason"` // 审核不通过的原因
-	} `json:"categories"`
-	Limit         int `json:"limit"`          // 一个更改周期内可以添加类目的次数
-	Quota         int `json:"quota"`          // 本更改周期内还可以添加类目的次数
-	CategoryLimit int `json:"category_limit"` // 最多可以设置的类目数量
-}
-
-func (api *Authorizer) GetCategory(ctx context.Context) (*MpCategoryInfo, error) {
-	var result MpCategoryInfo
-	err := api.Client.HTTPGet(ctx, apiGetCategory, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -153,10 +125,10 @@ type WxaQueryNicknameResult struct {
 }
 
 func (api *Authorizer) WxaQueryNickName(
-	ctx context.Context, auditID string,
+	ctx context.Context, auditID int,
 ) (*WxaQueryNicknameResult, error) {
 	var result WxaQueryNicknameResult
-	params := map[string]string{
+	params := map[string]int{
 		"audit_id": auditID,
 	}
 
@@ -191,27 +163,5 @@ func (api *Authorizer) ModifySignature(
 	params := map[string]string{
 		"signature": signature,
 	}
-	return api.Client.HTTPPostJson(ctx, apiModifyHeadImage, params, nil)
-}
-
-// 添加类目
-// https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/category/addcategory.html
-type MpCategoryItem struct {
-	Key   string `json:"key"`   // 资质名称
-	Value string `json:"value"` // 资质图片
-}
-
-type MpCategoryParams struct {
-	First      int              `json:"first"`                // 一级类目 ID
-	Second     int              `json:"second"`               // 二级类目 ID
-	Certicates []MpCategoryItem `json:"certicates,omitempty"` // 资质信息列表。如果需要资质的类目，则该字段必填
-}
-
-func (api *Authorizer) AddCategory(
-	ctx context.Context, param []MpCategoryParams,
-) error {
-	params := map[string][]MpCategoryParams{
-		"categories": param,
-	}
-	return api.Client.HTTPPostJson(ctx, apiAddCategory, params, nil)
+	return api.Client.HTTPPostJson(ctx, apiModifySignature, params, nil)
 }

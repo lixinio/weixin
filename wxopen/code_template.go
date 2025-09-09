@@ -26,10 +26,10 @@ type Draft struct {
 See: https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/ThirdParty/code_template/gettemplatedraftlist.html
 GET https://api.weixin.qq.com/wxa/gettemplatedraftlist?access_token=ACCESS_TOKEN
 */
-func (api *WxOpen) GetTemplateDraftList(ctx context.Context) ([]Draft, error) {
+func (api *WxOpen) GetTemplateDraftList(ctx context.Context) ([]*Draft, error) {
 	result := struct {
 		utils.WeixinError
-		Drafts []Draft `json:"draft_list"`
+		Drafts []*Draft `json:"draft_list"`
 	}{}
 	err := api.Client.HTTPGet(ctx, apiGetTemplateDraftList, &result)
 	if err != nil {
@@ -64,10 +64,10 @@ type Template struct {
 See: https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/ThirdParty/code_template/gettemplatelist.html
 GET https://api.weixin.qq.com/wxa/gettemplatelist?access_token=ACCESS_TOKEN
 */
-func (api *WxOpen) GetTemplateList(ctx context.Context) ([]Template, error) {
+func (api *WxOpen) GetTemplateList(ctx context.Context) ([]*Template, error) {
 	result := struct {
 		utils.WeixinError
-		Templates []Template `json:"template_list"`
+		Templates []*Template `json:"template_list"`
 	}{}
 	err := api.Client.HTTPGet(ctx, apiGetTemplateList, &result)
 	if err != nil {
