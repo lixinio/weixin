@@ -35,11 +35,13 @@ const (
 	apiUploadTempMedia = "/cgi-bin/media/upload_attachment"
 )
 
+type MediaType string
+
 const (
-	MediaTypeImage = "image"
-	MediaTypeVoice = "voice"
-	MediaTypeVideo = "video"
-	MediaTypeFile  = "file"
+	MediaTypeImage MediaType = "image"
+	MediaTypeVoice MediaType = "voice"
+	MediaTypeVideo MediaType = "video"
+	MediaTypeFile  MediaType = "file"
 )
 
 // 附件类型，不同的附件类型用于不同的场景。1：朋友圈；2:商品图册
@@ -74,12 +76,12 @@ func (api *MaterialApi) Upload(
 	ctx context.Context,
 	filename string,
 	content io.Reader,
-	mediaType string,
+	mediaType MediaType,
 ) (result *MaterialID, err error) {
 	result = &MaterialID{}
 	if err := api.Client.HttpFile(
 		ctx, apiUpload, "media", filename, content, func(params url.Values) {
-			params.Add("type", mediaType)
+			params.Add("type", string(mediaType))
 		}, result,
 	); err != nil {
 		return nil, err
@@ -180,13 +182,13 @@ func (api *MaterialApi) UploadAttachment(
 	ctx context.Context,
 	filename string,
 	content io.Reader,
-	mediaType string,
+	mediaType MediaType,
 	aType AttachmentType,
 ) (result *AttachmentID, err error) {
 	result = &AttachmentID{}
 	if err := api.Client.HttpFile(
 		ctx, apiUploadTempMedia, "media", filename, content, func(params url.Values) {
-			params.Add("media_type", mediaType)
+			params.Add("media_type", string(mediaType))
 			params.Add("attachment_type", strconv.Itoa(int(aType)))
 		}, result,
 	); err != nil {

@@ -40,13 +40,28 @@ func (api *WxOpen) CreatePreAuthCode(ctx context.Context) (string, int, error) {
 	}
 }
 
+type AuthType string
+
 // 要授权的帐号类型：1 则商户点击链接后，手机端仅展示公众号、2 表示仅展示小程序，3 表示公众号和小程序都展示。
 // 如果为未指定，则默认小程序和公众号都展示。第三方平台开发者可以使用本字段来控制授权的帐号类型。
 const (
-	AuthTypeOaOnly = "1" // 仅显示公众号
-	AuthTypeMpOnly = "2" // 仅显示小程序
-	AuthTypeAll    = "3" // 所有
+	AuthTypeOaOnly AuthType = "1" // 仅显示公众号
+	AuthTypeMpOnly AuthType = "2" // 仅显示小程序
+	AuthTypeAll    AuthType = "3" // 所有
 )
+
+func AuthTypeFromString(tp string) AuthType {
+	switch tp {
+	case string(AuthTypeOaOnly):
+		return AuthTypeOaOnly
+	case string(AuthTypeMpOnly):
+		return AuthTypeMpOnly
+	case string(AuthTypeAll):
+		fallthrough
+	default:
+		return AuthTypeAll
+	}
+}
 
 /*
 方式一：授权注册页面扫码授权
@@ -55,14 +70,14 @@ See: https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/Author
 GET https://mp.weixin.qq.com/cgi-bin/componentloginpage?component_appid=xxxx&pre_auth_code=xxxxx&redirect_uri=xxxx&auth_type=xxx
 */
 func (api *WxOpen) GetComponentLoginPage(
-	preAuthCode, redirectUri, authType, bizAppid string,
+	preAuthCode, redirectUri string, authType AuthType, bizAppid string,
 ) string {
 	params := url.Values{}
 	params.Add("component_appid", api.Config.Appid)
 	params.Add("pre_auth_code", preAuthCode)
 	params.Add("redirect_uri", redirectUri)
 	if authType != "" {
-		params.Add("auth_type", authType)
+		params.Add("auth_type", string(authType))
 	}
 	if bizAppid != "" {
 		params.Add("biz_appid", bizAppid)
@@ -77,7 +92,7 @@ See: https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/Author
 GET https://mp.weixin.qq.com/safe/bindcomponent?action=bindcomponent&auth_type=3&no_scan=1&component_appid=xxxx&pre_auth_code=xxxxx&redirect_uri=xxxx&auth_type=xxx&biz_appid=xxxx#wechat_redirect
 */
 func (api *WxOpen) GetComponentLoginH5Page(
-	preAuthCode, redirectUri, authType, bizAppid string,
+	preAuthCode, redirectUri string, authType AuthType, bizAppid string,
 ) (uri string) {
 	params := url.Values{}
 	params.Add("component_appid", api.Config.Appid)
@@ -87,7 +102,7 @@ func (api *WxOpen) GetComponentLoginH5Page(
 	params.Add("no_scan", "1")
 
 	if authType != "" {
-		params.Add("auth_type", authType)
+		params.Add("auth_type", string(authType))
 	}
 	if bizAppid != "" {
 		params.Add("biz_appid", bizAppid)
