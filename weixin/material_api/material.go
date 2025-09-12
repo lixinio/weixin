@@ -25,12 +25,14 @@ const (
 	apiAddNews        = "/cgi-bin/material/add_news"          // 新增永久素材(news)
 )
 
+type MediaType string
+
 const (
-	MediaTypeImage = "image"
-	MediaTypeVoice = "voice"
-	MediaTypeVideo = "video"
-	MediaTypeThumb = "thumb"
-	MediaTypeNews  = "news"
+	MediaTypeImage MediaType = "image"
+	MediaTypeVoice MediaType = "voice"
+	MediaTypeVideo MediaType = "video"
+	MediaTypeThumb MediaType = "thumb"
+	MediaTypeNews  MediaType = "news"
 )
 
 type MaterialApi struct {
@@ -57,12 +59,12 @@ func (api *MaterialApi) UploadMedia(
 	filename string,
 	length int64,
 	content io.Reader,
-	mediaType string,
+	mediaType MediaType,
 ) (result *MediaID, err error) {
 	result = &MediaID{}
 	if err := api.Client.HTTPUpload(
 		ctx, apiUpload, content, "media", filename, length, func(params url.Values) {
-			params.Add("type", mediaType)
+			params.Add("type", string(mediaType))
 		}, result,
 	); err != nil {
 		return nil, err
@@ -148,12 +150,12 @@ func (api *MaterialApi) UploadMaterial(
 	filename string,
 	length int64,
 	content io.Reader,
-	mediaType string,
+	mediaType MediaType,
 ) (result *MaterialID, err error) {
 	result = &MaterialID{}
 	if err := api.Client.HTTPUpload(
 		ctx, apiUploadMaterial, content, "media", filename, length, func(params url.Values) {
-			params.Add("type", mediaType)
+			params.Add("type", string(mediaType))
 		}, result,
 	); err != nil {
 		return nil, err
@@ -189,7 +191,7 @@ func (api *MaterialApi) UploadVideoMaterial(
 	// multipartWriter,
 	if err = api.Client.HTTPUpload(
 		ctx, apiUploadMaterial, content, "media", filename, length, func(params url.Values) {
-			params.Add("type", MediaTypeVideo)
+			params.Add("type", string(MediaTypeVideo))
 		}, result, multipartWriter,
 	); err != nil {
 		return nil, err
@@ -342,11 +344,11 @@ type MaterialList struct {
 }
 
 func (api *MaterialApi) ListMaterial(
-	ctx context.Context, tp string, offset, count int,
+	ctx context.Context, tp MediaType, offset, count int,
 ) (*MaterialList, error) {
 	resp := &MaterialList{}
 	if err := api.Client.HTTPPostJson(ctx, apiListMaterial, map[string]interface{}{
-		"type":   tp,
+		"type":   string(tp),
 		"offset": offset,
 		"count":  count,
 	}, resp); err != nil {
@@ -375,7 +377,7 @@ func (api *MaterialApi) ListMpnewsMaterial(
 ) (*MpnewsMaterialList, error) {
 	resp := &MpnewsMaterialList{}
 	if err := api.Client.HTTPPostJson(ctx, apiListMaterial, map[string]interface{}{
-		"type":   MediaTypeNews,
+		"type":   string(MediaTypeNews),
 		"offset": offset,
 		"count":  count,
 	}, resp); err != nil {

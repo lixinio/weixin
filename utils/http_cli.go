@@ -135,7 +135,7 @@ func (client *Client) HTTPGetToken(
 
 	defer resp.Body.Close()
 
-	return doWeixinError(resp, result)
+	return doWeixinError(resp.Body, result)
 }
 
 // 素材下载， 需要根据Content-Type来判断Body， 可以是json，可能是二进制
@@ -163,7 +163,7 @@ func (client *Client) HTTPGetRaw(
 	if hasTextContentType(resp) {
 		defer resp.Body.Close()
 		result := &WeixinError{}
-		if err = doWeixinError(resp, result); err != nil {
+		if err = doWeixinError(resp.Body, result); err != nil {
 			return nil, err
 		} else {
 			// wtf
@@ -180,6 +180,10 @@ func (client *Client) HTTPGetRaw(
 // 因为转义的问题 (& => \u0026), 需要特殊处理, 参考
 // https://pkg.go.dev/encoding/json#Encoder.SetEscapeHTML
 func jsonMarshal(t interface{}) (*bytes.Buffer, error) {
+	if t == nil {
+		t = struct{}{}
+	}
+
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)
 	encoder.SetEscapeHTML(false)
@@ -221,7 +225,7 @@ func (client *Client) HTTPPostDownload(
 	if hasTextContentType(resp) {
 		defer resp.Body.Close()
 		result := &WeixinError{}
-		if err = doWeixinError(resp, result); err != nil {
+		if err = doWeixinError(resp.Body, result); err != nil {
 			return nil, err
 		} else {
 			// wtf
@@ -383,7 +387,7 @@ func (client *Client) httpDo(
 		weixinResult = &WeixinError{}
 	}
 
-	return doWeixinError(response, weixinResult)
+	return doWeixinError(response.Body, weixinResult)
 }
 
 func hasTextContentType(resp *http.Response) bool {
@@ -397,9 +401,23 @@ func hasTextContentType(resp *http.Response) bool {
 	return false
 }
 
-func doWeixinError(response *http.Response, result interface{}) error {
+func doWeixinError(reader io.Reader, result interface{}) error {
+	// for debug
+	/*
+		var buf bytes.Buffer
+		teeReader := io.TeeReader(reader, &buf)
+		fmt.Println("响应内容:")
+
+		if _, err := io.Copy(os.Stdout, teeReader); err != nil {
+			return err
+		}
+
+		reader = bytes.NewReader(buf.Bytes())
+		fmt.Println("")
+	*/
+
 	// 直接从body反序列化， 无需先读取到内存
-	if err := json.NewDecoder(response.Body).Decode(result); err != nil {
+	if err := json.NewDecoder(reader).Decode(result); err != nil {
 		return err
 	}
 
@@ -432,7 +450,7 @@ func doWeixinError(response *http.Response, result interface{}) error {
 // httpDoRaw 执行具体的请求发送， 处理认证， user-agent, trace, 判断http code等细节
 // 不做结果反序列化， 考虑文件下载
 func (client *Client) httpDoRaw(
-	ctx context.Context, req *http.Request,
+	_ context.Context, req *http.Request,
 ) (resp *http.Response, err error) {
 	req.Header.Add("User-Agent", client.userAgent)
 	cli := &http.Client{Transport: NewAccessTokenStripTransport(client.accessTokenKey)}

@@ -129,13 +129,6 @@ func TestSendMessage(t *testing.T) {
 	}
 }
 
-const (
-	MediaTypeImage = "image"
-	MediaTypeVoice = "voice"
-	MediaTypeVideo = "video"
-	MediaTypeFile  = "file"
-)
-
 func TestSendImageMessage(t *testing.T) {
 	ctx := context.Background()
 	for _, cli := range []*item{
@@ -152,9 +145,9 @@ func TestSendImageMessage(t *testing.T) {
 		require.Empty(t, err)
 		defer file.Close()
 
-		materialResult, err := materialApi.Upload(ctx, test.ImagePath, file, MediaTypeImage)
+		materialResult, err := materialApi.Upload(ctx, test.ImagePath, file, material_api.MediaTypeImage)
 		require.Empty(t, err)
-		require.Equal(t, materialResult.Type, MediaTypeImage)
+		require.Equal(t, materialResult.Type, material_api.MediaTypeImage)
 
 		result, err := messageApi.SendImageMessage(
 			ctx,
@@ -190,9 +183,9 @@ func TestSendVideoMessage(t *testing.T) {
 		require.Empty(t, err)
 		defer file.Close()
 
-		materialResult, err := materialApi.Upload(ctx, test.VideoPath, file, MediaTypeVideo)
+		materialResult, err := materialApi.Upload(ctx, test.VideoPath, file, material_api.MediaTypeVideo)
 		require.Empty(t, err)
-		require.Equal(t, materialResult.Type, MediaTypeVideo)
+		require.Equal(t, materialResult.Type, material_api.MediaTypeVideo)
 
 		result, err := messageApi.SendVideoMessage(
 			ctx,
@@ -228,9 +221,9 @@ func TestSendAudioMessage(t *testing.T) {
 		require.Empty(t, err)
 		defer file.Close()
 
-		materialResult, err := materialApi.Upload(ctx, test.AudioPath, file, MediaTypeVoice)
+		materialResult, err := materialApi.Upload(ctx, test.AudioPath, file, material_api.MediaTypeVoice)
 		require.Empty(t, err)
-		require.Equal(t, materialResult.Type, MediaTypeVoice)
+		require.Equal(t, materialResult.Type, material_api.MediaTypeVoice)
 
 		result, err := messageApi.SendVoiceMessage(
 			ctx,
@@ -266,9 +259,9 @@ func TestSendMpNewsMessage(t *testing.T) {
 		require.Empty(t, err)
 		defer file.Close()
 
-		materialResult, err := materialApi.Upload(ctx, test.ImagePath, file, MediaTypeImage)
+		materialResult, err := materialApi.Upload(ctx, test.ImagePath, file, material_api.MediaTypeImage)
 		require.Empty(t, err)
-		require.Equal(t, materialResult.Type, MediaTypeImage)
+		require.Equal(t, materialResult.Type, material_api.MediaTypeImage)
 
 		file.Seek(0, 0)
 		url, err := materialApi.UploadImg(ctx, test.ImagePath, file)
