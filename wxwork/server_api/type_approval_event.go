@@ -76,7 +76,7 @@ const (
 */
 type EventApproval struct {
 	Event
-	AgentID      string `xml:"AgentID"`
+	AgentID      int `xml:"AgentID"`
 	ApprovalInfo struct {
 		Text           string `xml:",chardata"`
 		ThirdNo        string `xml:"ThirdNo"`

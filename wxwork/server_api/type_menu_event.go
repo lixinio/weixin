@@ -24,6 +24,9 @@ const (
 	EventTypeMenuPicWeixin          = "pic_weixin"         // 弹出微信相册发图器的事件推送
 	EventTypeMenuLocationSelect     = "location_select"    // 弹出地理位置选择器的事件推送
 	EventTypeEnterAgent             = "enter_agent"        // 进入应用
+	EventTypeSubscribe              = "subscribe"          // 成员关注
+	EventTypeUnSubscribe            = "unsubscribe"        // 成员关注
+	EventTypeLocation               = "LOCATION"           // 上报地理位置
 )
 
 /*
@@ -39,8 +42,8 @@ const (
 */
 type EventMenuClick struct {
 	Event
-	EventKey string
-	AgentID  string
+	EventKey string `xml:"EventKey"`
+	AgentID  int    `xml:"AgentID"`
 }
 
 /*
@@ -56,8 +59,8 @@ type EventMenuClick struct {
 */
 type EventMenuView struct {
 	Event
-	EventKey string
-	AgentID  string
+	EventKey string `xml:"EventKey"`
+	AgentID  int    `xml:"AgentID"`
 }
 
 /*
@@ -79,12 +82,12 @@ type EventMenuView struct {
 */
 type EventMenuScanCodePush struct {
 	Event
-	EventKey     string
+	EventKey     string `xml:"EventKey"`
+	AgentID      int    `xml:"AgentID"`
 	ScanCodeInfo struct {
-		ScanType   string
-		ScanResult string
-	}
-	AgentID string
+		ScanType   string `xml:"ScanType"`
+		ScanResult string `xml:"ScanResult"`
+	} `xml:"ScanCodeInfo"`
 }
 
 /*
@@ -105,12 +108,12 @@ type EventMenuScanCodePush struct {
 */
 type EventMenuScanCodeWaitMsg struct {
 	Event
-	EventKey     string
+	EventKey     string `xml:"EventKey"`
+	AgentID      int    `xml:"AgentID"`
 	ScanCodeInfo struct {
-		ScanType   string
-		ScanResult string
-	}
-	AgentID string
+		ScanType   string `xml:"ScanType"`
+		ScanResult string `xml:"ScanResult"`
+	} `xml:"ScanCodeInfo"`
 }
 
 /*
@@ -130,6 +133,7 @@ type EventMenuScanCodeWaitMsg struct {
 type EventMenuPicSysPhoto struct {
 	Event
 	EventKey     string `xml:"EventKey"`
+	AgentID      int    `xml:"AgentID"`
 	SendPicsInfo struct {
 		Text    string `xml:",chardata"`
 		Count   string `xml:"Count"`
@@ -141,7 +145,6 @@ type EventMenuPicSysPhoto struct {
 			} `xml:"item"`
 		} `xml:"PicList"`
 	} `xml:"SendPicsInfo"`
-	AgentID string `xml:"AgentID"`
 }
 
 /*
@@ -163,6 +166,7 @@ type EventMenuPicSysPhoto struct {
 type EventMenuPicSysPhotoOrAlbum struct {
 	Event
 	EventKey     string `xml:"EventKey"`
+	AgentID      int    `xml:"AgentID"`
 	SendPicsInfo struct {
 		Text    string `xml:",chardata"`
 		Count   string `xml:"Count"`
@@ -174,7 +178,6 @@ type EventMenuPicSysPhotoOrAlbum struct {
 			} `xml:"item"`
 		} `xml:"PicList"`
 	} `xml:"SendPicsInfo"`
-	AgentID string `xml:"AgentID"`
 }
 
 /*
@@ -195,6 +198,7 @@ type EventMenuPicSysPhotoOrAlbum struct {
 type EventMenuPicWeixin struct {
 	Event
 	EventKey     string `xml:"EventKey"`
+	AgentID      int    `xml:"AgentID"`
 	SendPicsInfo struct {
 		Text    string `xml:",chardata"`
 		Count   string `xml:"Count"`
@@ -206,7 +210,6 @@ type EventMenuPicWeixin struct {
 			} `xml:"item"`
 		} `xml:"PicList"`
 	} `xml:"SendPicsInfo"`
-	AgentID string `xml:"AgentID"`
 }
 
 /*
@@ -230,6 +233,8 @@ type EventMenuPicWeixin struct {
 type EventMenuLocationSelect struct {
 	Event
 	EventKey         string `xml:"EventKey"`
+	AgentID          int    `xml:"AgentID"`
+	AppType          string `xml:"AppType"`
 	SendLocationInfo struct {
 		Text      string `xml:",chardata"`
 		LocationX string `xml:"Location_X"`
@@ -238,8 +243,6 @@ type EventMenuLocationSelect struct {
 		Label     string `xml:"Label"`
 		Poiname   string `xml:"Poiname"`
 	} `xml:"SendLocationInfo"`
-	AgentID string `xml:"AgentID"`
-	AppType string `xml:"AppType"`
 }
 
 // https://developer.work.weixin.qq.com/document/path/90240#%E8%BF%9B%E5%85%A5%E5%BA%94%E7%94%A8
@@ -257,5 +260,45 @@ type EventMenuLocationSelect struct {
 type EventEnterAgent struct {
 	Event
 	EventKey string `xml:"EventKey"`
-	AgentID  string `xml:"AgentID"`
+	AgentID  int    `xml:"AgentID"`
+}
+
+// https://developer.work.weixin.qq.com/document/path/90376#%E6%88%90%E5%91%98%E5%85%B3%E6%B3%A8%E5%8F%8A%E5%8F%96%E6%B6%88%E5%85%B3%E6%B3%A8%E4%BA%8B%E4%BB%B6
+/*
+<xml>
+<ToUserName><![CDATA[toUser]]></ToUserName>
+<FromUserName><![CDATA[UserID]]></FromUserName>
+<CreateTime>1348831860</CreateTime>
+<MsgType><![CDATA[event]]></MsgType>
+<Event><![CDATA[subscribe]]></Event>
+<AgentID>1</AgentID>
+</xml>
+*/
+type EventSubscribe struct {
+	Event
+	AgentID int `xml:"AgentID"`
+}
+
+// https://developer.work.weixin.qq.com/document/path/90376#%E4%B8%8A%E6%8A%A5%E5%9C%B0%E7%90%86%E4%BD%8D%E7%BD%AE
+/*
+<xml>
+<ToUserName><![CDATA[toUser]]></ToUserName>
+<FromUserName><![CDATA[FromUser]]></FromUserName>
+<CreateTime>123456789</CreateTime>
+<MsgType><![CDATA[event]]></MsgType>
+<Event><![CDATA[LOCATION]]></Event>
+<Latitude>23.104</Latitude>
+<Longitude>113.320</Longitude>
+<Precision>65.000</Precision>
+<AgentID>1</AgentID>
+<AppType><![CDATA[wxwork]]></AppType>
+</xml>
+*/
+type EventLocation struct {
+	Event
+	AgentID   int     `xml:"AgentID"`
+	AppType   string  `xml:"AppType"`
+	Latitude  float32 `xml:"Latitude"`
+	Longitude float32 `xml:"Longitude"`
+	Precision float32 `xml:"Precision"`
 }
