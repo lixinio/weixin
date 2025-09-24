@@ -117,7 +117,7 @@ func (s *ServerApi) ServeData(
 }
 
 // ParseXML 解析微信推送过来的消息/事件
-func (s *ServerApi) ParseXML(body []byte) (message *Message, m interface{}, err error) {
+func (s *ServerApi) ParseXML(body []byte) (message *Message, m any, err error) {
 	message = &Message{}
 	if err = xml.Unmarshal(body, message); err != nil {
 		return
@@ -179,7 +179,7 @@ func (s *ServerApi) ParseXML(body []byte) (message *Message, m interface{}, err 
 }
 
 // parseEvent 解析微信推送过来的事件
-func parseEvent(body []byte) (m interface{}, err error) {
+func parseEvent(body []byte) (_ any, err error) {
 	event := &Event{}
 	if err = xml.Unmarshal(body, event); err != nil {
 		return
@@ -439,9 +439,9 @@ func parseEvent(body []byte) (m interface{}, err error) {
 			return
 		}
 		return msg, nil
+	default:
+		return event, nil
 	}
-
-	return
 }
 
 // Response 响应微信消息 (自动判断是否要加密)

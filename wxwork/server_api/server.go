@@ -125,7 +125,7 @@ POST /api/callback?msg_signature=ASDFQWEXZCVAQFASDFASDFSS
 
 </xml>
 */
-func (s *ServerApi) ParseXML(body []byte) (message *Message, m interface{}, err error) {
+func (s *ServerApi) ParseXML(body []byte) (message *Message, m any, err error) {
 	message = &Message{}
 	if err = xml.Unmarshal(body, message); err != nil {
 		return
@@ -176,7 +176,7 @@ func (s *ServerApi) ParseXML(body []byte) (message *Message, m interface{}, err 
 }
 
 // ParseEvent 解析微信推送过来的事件
-func parseEvent(body []byte) (m interface{}, err error) {
+func parseEvent(body []byte) (_ any, err error) {
 	event := &Event{}
 	if err = xml.Unmarshal(body, event); err != nil {
 		return
@@ -230,6 +230,8 @@ func parseEvent(body []byte) (m interface{}, err error) {
 			if err = xml.Unmarshal(body, msg); err != nil {
 				return
 			}
+			return msg, nil
+		default:
 			return msg, nil
 		}
 	case EventTypeBatchJobResult:
@@ -304,9 +306,21 @@ func parseEvent(body []byte) (m interface{}, err error) {
 			return
 		}
 		return msg, nil
+	case EventTypeSubscribe, EventTypeUnSubscribe:
+		msg := &EventSubscribe{}
+		if err = xml.Unmarshal(body, msg); err != nil {
+			return
+		}
+		return msg, nil
+	case EventTypeLocation:
+		msg := &EventLocation{}
+		if err = xml.Unmarshal(body, msg); err != nil {
+			return
+		}
+		return msg, nil
+	default:
+		return event, nil
 	}
-
-	return
 }
 
 // Response 响应微信消息

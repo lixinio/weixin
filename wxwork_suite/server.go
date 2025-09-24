@@ -67,7 +67,7 @@ func (suite *WxWorkSuite) ServeData(
 }
 
 // ParseXML 解析微信推送过来的消息/事件
-func (suite *WxWorkSuite) ParseXML(body []byte) (event *Event, m interface{}, err error) {
+func (suite *WxWorkSuite) ParseXML(body []byte) (event *Event, m any, err error) {
 	event = &Event{}
 	if err = xml.Unmarshal(body, event); err != nil {
 		return
@@ -142,7 +142,7 @@ func parseExternalTagEvent(body []byte, event *Event) (m interface{}, err error)
 		}
 		return msg, nil
 	default:
-		return nil, fmt.Errorf("invalid ExternalTagEvent, ChangeType '%s'", event.ChangeType)
+		return
 	}
 }
 
@@ -167,7 +167,7 @@ func parseExternalChatEvent(body []byte, event *Event) (m interface{}, err error
 		}
 		return msg, nil
 	default:
-		return nil, fmt.Errorf("invalid ExternalChatEvent, ChangeType '%s'", event.ChangeType)
+		return
 	}
 }
 
@@ -210,7 +210,7 @@ func parseExternalContactEvent(body []byte, event *Event) (m interface{}, err er
 		}
 		return msg, nil
 	default:
-		return nil, fmt.Errorf("invalid ExternalContactEvent, ChangeType '%s'", event.ChangeType)
+		return
 	}
 }
 
@@ -258,8 +258,9 @@ func parseChangeContactEvent(body []byte, event *Event) (m interface{}, err erro
 			return
 		}
 		return msg, nil
+	default:
+		return
 	}
-	return
 }
 
 func calcSignatureFromHttp(r *http.Request, token string) (string, string) {

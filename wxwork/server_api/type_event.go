@@ -58,6 +58,6 @@ func (event *Event) Reply() *ReplyMessage {
 type EventTaskCardClick struct {
 	Event
 	EventKey string `xml:"EventKey"`
-	TaskId   string `xml:"TaskId"`
-	AgentId  string `xml:"AgentId"`
+	TaskID   string `xml:"TaskId"`
+	AgentID  int    `xml:"AgentId"`
 }
