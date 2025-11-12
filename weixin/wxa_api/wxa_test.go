@@ -48,7 +48,7 @@ func TestUrlLink(t *testing.T) {
 		fmt.Println(url)
 		// url := "https://wxaurl.cn/74306i0l9ug"
 
-		body, err := wxaApi.GetUrlLink(ctx, url)
+		body, err := wxaApi.GetUrlLink(ctx, url, 0)
 		require.Equal(t, nil, err)
 		fmt.Println(body)
 	}
@@ -62,11 +62,7 @@ func TestSchema(t *testing.T) {
 	} {
 		wxaApi := NewApi(client)
 		url, err := wxaApi.GenerateScheme(ctx, &GenerateSchemeRequest{
-			JumpWxa: &struct {
-				Path       string `json:"path"`
-				Query      string `json:"query,omitempty"`
-				EnvVersion string `json:"env_version,omitempty"`
-			}{
+			JumpWxa: &JumpWxa{
 				Path: "/modules/usedcar/Showroom/index",
 			},
 			ExpireType: 0,
@@ -76,7 +72,7 @@ func TestSchema(t *testing.T) {
 		fmt.Println(url)
 		// url := "weixin://dl/business/?t=hTMDg0hg3hu"
 
-		body, err := wxaApi.GetSchema(ctx, url)
+		body, err := wxaApi.GetSchema(ctx, url, 0)
 		require.Equal(t, nil, err)
 		fmt.Println(body)
 	}
