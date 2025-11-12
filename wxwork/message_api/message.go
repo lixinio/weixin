@@ -45,11 +45,12 @@ func NewApi(client *utils.Client, agentID int) *MessageApi {
 
 type MessageResponse struct {
 	utils.WeixinError
-	InvalidUser  string `json:"invaliduser"`
-	InvalidParty string `json:"invalidparty"`
-	InvalidTag   string `json:"invalidtag"`
-	MsgID        string `json:"msgid"`
-	ResponseCode string `json:"response_code"`
+	InvalidUser    string `json:"invaliduser"`
+	InvalidParty   string `json:"invalidparty"`
+	InvalidTag     string `json:"invalidtag"`
+	MsgID          string `json:"msgid"`
+	ResponseCode   string `json:"response_code"`
+	UnlicensedUser string `json:"unlicenseduser"`
 }
 
 /*
