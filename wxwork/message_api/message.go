@@ -291,11 +291,13 @@ type VideoMessage struct {
 	AgentID int    `json:"agentid"`
 	Video   struct {
 		MediaID string `json:"media_id"`
+		Title   string `json:"title"`
+		Desc    string `json:"description"`
 	} `json:"video"`
 }
 
 func (api *MessageApi) SendVideoMessage(
-	ctx context.Context, header *MessageHeader, mediaID string,
+	ctx context.Context, header *MessageHeader, mediaID, title, desc string,
 ) (*MessageResponse, error) {
 	result := &MessageResponse{}
 	if err := api.Client.HTTPPostJson(ctx, apiSend, &VideoMessage{
@@ -304,8 +306,12 @@ func (api *MessageApi) SendVideoMessage(
 		MsgType:       "video",
 		Video: struct {
 			MediaID string `json:"media_id"`
+			Title   string `json:"title"`
+			Desc    string `json:"description"`
 		}{
 			MediaID: mediaID,
+			Title:   title,
+			Desc:    desc,
 		},
 	}, result); err != nil {
 		return nil, err
