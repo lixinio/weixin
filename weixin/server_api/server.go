@@ -401,6 +401,14 @@ func parseEvent(body []byte) (_ any, err error) {
 		}
 		return msg, nil
 
+		// 群发消息完成
+	case EventTypeMassSendJobFinish:
+		msg := &EventMassSendJobFinish{}
+		if err = xml.Unmarshal(body, msg); err != nil {
+			return
+		}
+		return msg, nil
+
 	case EventTypeAuthorizeInvoice:
 		msg := &EventAuthorizeInvoice{}
 		if err = xml.Unmarshal(body, msg); err != nil {

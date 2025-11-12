@@ -46,7 +46,7 @@ type EventWxaNickNameAudit struct {
 */
 type EventWeappAuditSuccess struct {
 	Event
-	SuccTime int
+	SuccTime int64
 }
 
 // 审核不通过
@@ -65,7 +65,7 @@ type EventWeappAuditSuccess struct {
 type EventWeappAuditFail struct {
 	Event
 	Reason     string
-	FailTime   int
+	FailTime   int64
 	ScreenShot string
 }
 
@@ -84,7 +84,7 @@ type EventWeappAuditFail struct {
 type EventWeappAuditDelay struct {
 	Event
 	Reason    string
-	DelayTime int
+	DelayTime int64
 }
 
 // 类目审核结果事件推送

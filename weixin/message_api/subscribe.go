@@ -46,7 +46,7 @@ type Value struct {
 
 // 发送(小程序)订阅消息
 // https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/sendMessage.html
-func (api MessageApi) SendSubscribeMpMessage(
+func (api *MessageApi) SendSubscribeMpMessage(
 	ctx context.Context,
 	req *SendSubscribeMpMessageRequest,
 	payload map[string]string,
@@ -75,7 +75,7 @@ type SendSubscribeOaMessageRequest struct {
 
 // 发送(服务号)订阅消息
 // https://developers.weixin.qq.com/doc/offiaccount/Subscription_Messages/api.html#send%E5%8F%91%E9%80%81%E8%AE%A2%E9%98%85%E9%80%9A%E7%9F%A5
-func (api MessageApi) SendSubscribeOaMessage(
+func (api *MessageApi) SendSubscribeOaMessage(
 	ctx context.Context,
 	req *SendSubscribeOaMessageRequest,
 	payload map[string]string,
@@ -99,7 +99,7 @@ func (api MessageApi) SendSubscribeOaMessage(
 // sceneDesc 官方文档可选， 实际不能为空
 // sceneDesc 官方文档可选， 实际不能为空
 // sceneDesc 官方文档可选， 实际不能为空
-func (api MessageApi) SubscribeAddTemplate(
+func (api *MessageApi) SubscribeAddTemplate(
 	ctx context.Context, tid int, kidList []int, sceneDesc string,
 ) (string, error) {
 	resp := &struct {
@@ -121,7 +121,7 @@ func (api MessageApi) SubscribeAddTemplate(
 
 // 删除模板
 // https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/deleteMessageTemplate.html
-func (api MessageApi) SubscribeDelTemplate(
+func (api *MessageApi) SubscribeDelTemplate(
 	ctx context.Context, priTmplId string,
 ) error {
 	if err := api.Client.HTTPPostJson(
@@ -151,7 +151,7 @@ type SubscribeTemplate struct {
 
 // 获取个人模板列表
 // https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/getMessageTemplateList.html
-func (api MessageApi) SubscribeGetTemplate(
+func (api *MessageApi) SubscribeGetTemplate(
 	ctx context.Context,
 ) ([]*SubscribeTemplate, error) {
 	resp := &struct {
@@ -174,7 +174,7 @@ type SubscribeCategory struct {
 
 // 获取类目
 // https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/getCategory.html
-func (api MessageApi) SubscribeGetCategory(
+func (api *MessageApi) SubscribeGetCategory(
 	ctx context.Context,
 ) ([]*SubscribeCategory, error) {
 	resp := &struct {
@@ -199,7 +199,7 @@ type SubscribeKeyword struct {
 
 // 获取关键词列表
 // https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/getPubTemplateKeyWordsById.html
-func (api MessageApi) SubscribeGetPubTemplateKeywords(
+func (api *MessageApi) SubscribeGetPubTemplateKeywords(
 	ctx context.Context, tid int,
 ) ([]*SubscribeKeyword, int, error) {
 	resp := &struct {
@@ -227,7 +227,7 @@ type SubscribePubTemplate struct {
 
 // 获取所属类目下的公共模板
 // https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/getPubTemplateTitleList.html
-func (api MessageApi) SubscribeGetPubTemplateTitles(
+func (api *MessageApi) SubscribeGetPubTemplateTitles(
 	ctx context.Context, ids string, start, limit int,
 ) ([]*SubscribePubTemplate, int, error) {
 	resp := &struct {

@@ -66,7 +66,7 @@ type User struct {
 	Province       string  `json:"province"`
 	Language       string  `json:"language"`
 	Headimgurl     string  `json:"headimgurl"`
-	SubscribeTime  int32   `json:"subscribe_time"`
+	SubscribeTime  int64   `json:"subscribe_time"`
 	UnionID        string  `json:"unionid"`
 	Remark         string  `json:"remark"`
 	GroupID        int32   `json:"groupid"`
@@ -101,12 +101,15 @@ func (api *UserApi) GetUserInfo(ctx context.Context, openid, lang string) (*User
 	return &result, nil
 }
 
-type BatchGetUserParams struct {
-	UserList []struct {
-		OpenID string `json:"openid"`
-		Lang   string `json:"lang"`
-	} `json:"user_list"`
+type UserParam struct {
+	OpenID string `json:"openid"`
+	Lang   string `json:"lang"`
 }
+
+type BatchGetUserParams struct {
+	UserList []*UserParam `json:"user_list"`
+}
+
 type UserInfoList struct {
 	utils.WeixinError
 	UserInfoList []User `json:"user_info_list"`

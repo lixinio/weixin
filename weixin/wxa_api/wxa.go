@@ -69,11 +69,12 @@ type UrlLinkInfo struct {
 }
 
 func (api *WxaApi) GetUrlLink(
-	ctx context.Context, urlLink string,
+	ctx context.Context, urlLink string, queryType int,
 ) (*UrlLinkInfo, error) {
 	param := &struct {
-		UrlLink string `json:"url_link"`
-	}{urlLink}
+		UrlLink   string `json:"url_link"`
+		QueryType int    `json:"query_type"`
+	}{urlLink, queryType}
 
 	result := &struct {
 		utils.WeixinError
@@ -85,20 +86,23 @@ func (api *WxaApi) GetUrlLink(
 	return &result.UrlLinkInfo, nil
 }
 
+type JumpWxa struct {
+	Path       string `json:"path"`
+	Query      string `json:"query,omitempty"`
+	EnvVersion string `json:"env_version,omitempty"`
+}
+
 /*
 获取小程序 scheme 码，适用于短信、邮件、外部网页、微信内等拉起小程序的业务场景。
 https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/url-scheme/urlscheme.generate.html
 https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/Business/url_scheme.html
 */
 type GenerateSchemeRequest struct {
-	JumpWxa *struct {
-		Path       string `json:"path"`
-		Query      string `json:"query,omitempty"`
-		EnvVersion string `json:"env_version,omitempty"`
-	} `json:"jump_wxa"`
-	ExpireTime     int64 `json:"expire_time,omitempty"`
-	ExpireType     int64 `json:"expire_type,omitempty"`
-	ExpireInterval int64 `json:"expire_interval,omitempty"`
+	JumpWxa        *JumpWxa `json:"jump_wxa"`
+	IsExpire       bool     `json:"is_expire"`
+	ExpireTime     int64    `json:"expire_time,omitempty"`
+	ExpireType     int64    `json:"expire_type,omitempty"`
+	ExpireInterval int64    `json:"expire_interval,omitempty"`
 }
 
 func (api *WxaApi) GenerateScheme(
@@ -134,11 +138,12 @@ type SchemaInfo struct {
 }
 
 func (api *WxaApi) GetSchema(
-	ctx context.Context, scheme string,
+	ctx context.Context, scheme string, queryType int,
 ) (*SchemaInfo, error) {
 	param := &struct {
-		Scheme string `json:"scheme"`
-	}{scheme}
+		Scheme    string `json:"scheme"`
+		QueryType int    `json:"query_type"`
+	}{scheme, queryType}
 
 	result := &struct {
 		utils.WeixinError
