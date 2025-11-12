@@ -85,12 +85,12 @@ func TestInvoiceInsert(t *testing.T) {
 	api, _ := newInvoiceApi()
 	ctx := context.Background()
 
-	billingTime := 0
+	var billingTime int64
 	{
 		layout := "2006-01-02"
 		tm, err := time.Parse(layout, "2021-06-23")
 		require.Equal(t, nil, err)
-		billingTime = int(tm.Unix())
+		billingTime = tm.Unix()
 	}
 
 	param := &InvoiceInsertObj{

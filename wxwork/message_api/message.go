@@ -25,6 +25,7 @@ import (
 
 const (
 	apiSend                  = "/cgi-bin/message/send"
+	apiRecall                = "/cgi-bin/message/recall"
 	apiUpdateTaskcard        = "/cgi-bin/message/update_taskcard"
 	apiAppchatCreate         = "/cgi-bin/appchat/create"
 	apiAppchatUpdate         = "/cgi-bin/appchat/update"
@@ -45,11 +46,12 @@ func NewApi(client *utils.Client, agentID int) *MessageApi {
 
 type MessageResponse struct {
 	utils.WeixinError
-	InvalidUser  string `json:"invaliduser"`
-	InvalidParty string `json:"invalidparty"`
-	InvalidTag   string `json:"invalidtag"`
-	MsgID        string `json:"msgid"`
-	ResponseCode string `json:"response_code"`
+	InvalidUser    string `json:"invaliduser"`
+	InvalidParty   string `json:"invalidparty"`
+	InvalidTag     string `json:"invalidtag"`
+	MsgID          string `json:"msgid"`
+	ResponseCode   string `json:"response_code"`
+	UnlicensedUser string `json:"unlicenseduser"`
 }
 
 /*
@@ -290,11 +292,13 @@ type VideoMessage struct {
 	AgentID int    `json:"agentid"`
 	Video   struct {
 		MediaID string `json:"media_id"`
+		Title   string `json:"title"`
+		Desc    string `json:"description"`
 	} `json:"video"`
 }
 
 func (api *MessageApi) SendVideoMessage(
-	ctx context.Context, header *MessageHeader, mediaID string,
+	ctx context.Context, header *MessageHeader, mediaID, title, desc string,
 ) (*MessageResponse, error) {
 	result := &MessageResponse{}
 	if err := api.Client.HTTPPostJson(ctx, apiSend, &VideoMessage{
@@ -303,8 +307,12 @@ func (api *MessageApi) SendVideoMessage(
 		MsgType:       "video",
 		Video: struct {
 			MediaID string `json:"media_id"`
+			Title   string `json:"title"`
+			Desc    string `json:"description"`
 		}{
 			MediaID: mediaID,
+			Title:   title,
+			Desc:    desc,
 		},
 	}, result); err != nil {
 		return nil, err
@@ -534,3 +542,15 @@ POST https://qyapi.weixin.qq.com/cgi-bin/message/get_statistics?access_token=ACC
 // 		"application/json;charset=utf-8",
 // 	)
 // }
+
+// https://developer.work.weixin.qq.com/document/path/94947
+// 撤回应用消息
+func (api *MessageApi) RecallMessage(ctx context.Context, msgid string) error {
+	result := &MessageResponse{}
+	if err := api.Client.HTTPPostJson(ctx, apiRecall, map[string]string{
+		"msgid": msgid,
+	}, result); err != nil {
+		return err
+	}
+	return nil
+}

@@ -12,12 +12,12 @@ const (
 	apiUserID2OpenUserID        = "/cgi-bin/batch/userid_to_openuserid"
 )
 
-type idTransferApi struct {
+type IdTransferApi struct {
 	*utils.Client
 }
 
-func NewApi(client *utils.Client) *idTransferApi {
-	return &idTransferApi{Client: client}
+func NewApi(client *utils.Client) *IdTransferApi {
+	return &IdTransferApi{Client: client}
 }
 
 type SubjectType int
@@ -43,7 +43,7 @@ type UnionID2ExternalUserIDResponse struct {
 
 // https://developer.work.weixin.qq.com/document/path/95900
 // UnionID转换成企业第三方的external_userid
-func (api *idTransferApi) UnionID2ExternalUserID(
+func (api *IdTransferApi) UnionID2ExternalUserID(
 	ctx context.Context,
 	unionID, openID string,
 	subjectType SubjectType,
@@ -80,7 +80,7 @@ type ExternalUserID2PendingIDResponse struct {
 	} `json:"result"`
 }
 
-func (api *idTransferApi) ExternalUserID2PendingID(
+func (api *IdTransferApi) ExternalUserID2PendingID(
 	ctx context.Context,
 	externalUserIDs []string,
 	chatID string,
@@ -115,7 +115,7 @@ type UserID2OpenUserIDResponse struct {
 	InvalidUserIDList []string `json:"invalid_userid_list"`
 }
 
-func (api *idTransferApi) UserID2OpenUserID(
+func (api *IdTransferApi) UserID2OpenUserID(
 	ctx context.Context,
 	userIDs []string,
 ) (*UserID2OpenUserIDResponse, error) {
