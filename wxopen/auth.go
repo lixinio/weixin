@@ -123,7 +123,7 @@ POST https://api.weixin.qq.com/cgi-bin/component/api_get_authorizer_list?compone
 type AuthorizationLite struct {
 	AuthorizerAppid        string `json:"authorizer_appid"`
 	AuthorizerRefreshToken string `json:"refresh_token"`
-	AuthTime               int    `json:"auth_time"`
+	AuthTime               int64  `json:"auth_time"`
 }
 
 // 拉取所有已授权的帐号信息

@@ -359,7 +359,7 @@ type InvoiceInsertCardExt struct {
 type InvoiceInsertCardExtUser struct {
 	Fee                   int                        `json:"fee"`                                // 发票的金额，以分为单位
 	Title                 string                     `json:"title"`                              // 发票的抬头
-	BillingTime           int                        `json:"billing_time"`                       // 发票的开票时间，为10位时间戳（utc+8）
+	BillingTime           int64                      `json:"billing_time"`                       // 发票的开票时间，为10位时间戳（utc+8）
 	BillingNO             string                     `json:"billing_no"`                         // 发票的发票代码
 	BillingCode           string                     `json:"billing_code"`                       // 发票的发票号码
 	CheckCode             string                     `json:"check_code"`                         // 校验码，发票pdf右上角，开票日期下的校验码

@@ -66,10 +66,7 @@ func TestUser(t *testing.T) {
 		{
 			// 批量获取
 			resp, err := userApi.BatchGetUserInfo(ctx, &BatchGetUserParams{
-				UserList: []struct {
-					OpenID string `json:"openid"`
-					Lang   string `json:"lang"`
-				}{
+				UserList: []*UserParam{
 					{
 						OpenID: openid,
 						Lang:   "",

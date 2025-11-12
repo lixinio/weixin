@@ -49,9 +49,10 @@ See: https://developers.weixin.qq.com/doc/offiaccount/Asset_Management/New_tempo
 */
 type MediaID struct {
 	utils.WeixinError
-	MediaID   string `json:"media_id"`
-	Type      string `json:"type"`
-	CreatedAt int64  `json:"created_at"`
+	MediaID      string `json:"media_id"`
+	ThumbMediaID string `json:"thumb_media_id"` // thumb类型返回这个字段，没有media_id
+	Type         string `json:"type"`
+	CreatedAt    int64  `json:"created_at"`
 }
 
 func (api *MaterialApi) UploadMedia(
@@ -113,6 +114,26 @@ func (api *MaterialApi) SaveMedia(ctx context.Context, mediaID string, saver io.
 		return err
 	}
 	return nil
+}
+
+// https://developers.weixin.qq.com/doc/service/api/material/temporary/api_getmedia.html
+// 下载 视频临时素材
+func (api *MaterialApi) GetVideoMedia(
+	ctx context.Context, mediaID string,
+) (string, error) {
+	resp := struct {
+		utils.WeixinError
+		VideoUrl string `json:"video_url"`
+	}{}
+	if err := api.Client.HTTPGetWithParams(
+		ctx, apiGet, func(v url.Values) {
+			v.Add("media_id", mediaID)
+		}, &resp,
+	); err != nil {
+		return "", err
+	}
+
+	return resp.VideoUrl, nil
 }
 
 /*
@@ -243,6 +264,8 @@ type VideoMaterial struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	DownloadUrl string `json:"down_url"`
+	CoverUrl    string `json:"cover_url"`
+	Vid         string `json:"vid"`
 }
 
 func (api *MaterialApi) GetVideoMaterial(
@@ -349,6 +372,37 @@ func (api *MaterialApi) ListMaterial(
 	resp := &MaterialList{}
 	if err := api.Client.HTTPPostJson(ctx, apiListMaterial, map[string]interface{}{
 		"type":   string(tp),
+		"offset": offset,
+		"count":  count,
+	}, resp); err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+type VideoMaterialListItem struct {
+	MediaID     string `json:"media_id"`
+	Title       string `json:"name"`
+	Description string `json:"description"`
+	CoverUrl    string `json:"cover_url"`
+	Vid         string `json:"vid"`
+	UpdateTime  int64  `json:"update_time"`
+}
+
+// 永久视频消息素材列表
+type VideoMaterialList struct {
+	utils.WeixinError
+	TotalCount int                      `json:"total_count"`
+	ItemCount  int                      `json:"item_count"`
+	Items      []*VideoMaterialListItem `json:"item"`
+}
+
+func (api *MaterialApi) ListVideoMaterial(
+	ctx context.Context, offset, count int,
+) (*VideoMaterialList, error) {
+	resp := &VideoMaterialList{}
+	if err := api.Client.HTTPPostJson(ctx, apiListMaterial, map[string]interface{}{
+		"type":   string(MediaTypeVideo),
 		"offset": offset,
 		"count":  count,
 	}, resp); err != nil {

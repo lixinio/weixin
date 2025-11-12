@@ -177,7 +177,7 @@ type OpenApprovalDetail struct {
 					ItemUserID string `json:"ItemUserId"` // 分支审批人头像
 					ItemStatus int    `json:"ItemStatus"` // 分支审批审批操作状态：1-审批中；2-已同意；3-已驳回；4-已转审
 					ItemSpeech string `json:"ItemSpeech"` // 分支审批人审批意见
-					ItemOpTime int    `json:"ItemOpTime"` // 分支审批人操作时间
+					ItemOpTime int64  `json:"ItemOpTime"` // 分支审批人操作时间
 				}
 			} `json:"Items"`
 		} `json:"ApprovalNode"`
