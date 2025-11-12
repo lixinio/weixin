@@ -25,6 +25,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"path/filepath"
 	"reflect"
@@ -403,18 +404,17 @@ func hasTextContentType(resp *http.Response) bool {
 
 func doWeixinError(reader io.Reader, result interface{}) error {
 	// for debug
-	/*
-		var buf bytes.Buffer
-		teeReader := io.TeeReader(reader, &buf)
-		fmt.Println("响应内容:")
+	/**/
+	var buf bytes.Buffer
+	teeReader := io.TeeReader(reader, &buf)
+	fmt.Println("响应内容:")
 
-		if _, err := io.Copy(os.Stdout, teeReader); err != nil {
-			return err
-		}
+	if _, err := io.Copy(os.Stdout, teeReader); err != nil {
+		return err
+	}
 
-		reader = bytes.NewReader(buf.Bytes())
-		fmt.Println("")
-	*/
+	reader = bytes.NewReader(buf.Bytes())
+	fmt.Println("")
 
 	// 直接从body反序列化， 无需先读取到内存
 	if err := json.NewDecoder(reader).Decode(result); err != nil {
