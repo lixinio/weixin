@@ -25,6 +25,7 @@ import (
 
 const (
 	apiSend                  = "/cgi-bin/message/send"
+	apiRecall                = "/cgi-bin/message/recall"
 	apiUpdateTaskcard        = "/cgi-bin/message/update_taskcard"
 	apiAppchatCreate         = "/cgi-bin/appchat/create"
 	apiAppchatUpdate         = "/cgi-bin/appchat/update"
@@ -541,3 +542,15 @@ POST https://qyapi.weixin.qq.com/cgi-bin/message/get_statistics?access_token=ACC
 // 		"application/json;charset=utf-8",
 // 	)
 // }
+
+// https://developer.work.weixin.qq.com/document/path/94947
+// 撤回应用消息
+func (api *MessageApi) RecallMessage(ctx context.Context, msgid string) error {
+	result := &MessageResponse{}
+	if err := api.Client.HTTPPostJson(ctx, apiRecall, map[string]string{
+		"msgid": msgid,
+	}, result); err != nil {
+		return err
+	}
+	return nil
+}
