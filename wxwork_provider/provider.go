@@ -3,18 +3,23 @@ package wxwork_provider
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/url"
 
 	"github.com/lixinio/weixin/utils"
+	"github.com/lixinio/weixin/wxwork/material_api"
 )
 
 const (
-	WXServerUrl          = "https://qyapi.weixin.qq.com" // 微信 api 服务器地址
-	apiAuthorize         = "https://open.work.weixin.qq.com/wwopen/sso/3rd_qrConnect"
-	apiGetProviderToken  = "/cgi-bin/service/get_provider_token"
-	apiGetLoginInfo      = "/cgi-bin/service/get_login_info"
-	apiGetAppLicenseInfo = "/cgi-bin/license/get_app_license_info"
-	accessTokenKey       = "provider_access_token"
+	WXServerUrl              = "https://qyapi.weixin.qq.com" // 微信 api 服务器地址
+	apiAuthorize             = "https://open.work.weixin.qq.com/wwopen/sso/3rd_qrConnect"
+	apiGetProviderToken      = "/cgi-bin/service/get_provider_token"
+	apiGetLoginInfo          = "/cgi-bin/service/get_login_info"
+	apiGetAppLicenseInfo     = "/cgi-bin/license/get_app_license_info"
+	accessTokenKey           = "provider_access_token"
+	apiCorpidToOpenCorpid    = "/cgi-bin/service/corpid_to_opencorpid"
+	apiFinishOpenidMigration = "/cgi-bin/service/finish_openid_migration"
+	apiUpload                = "/cgi-bin/service/media/upload"
 )
 
 type Config struct {
@@ -148,4 +153,60 @@ func (provider *WxWorkProvider) GetAppLicenseInfo(
 		return nil, err
 	}
 	return result, nil
+}
+
+// corpid的转换
+// https://developer.work.weixin.qq.com/document/path/97061
+func (provider *WxWorkProvider) CorpidToOpenCorpid(
+	ctx context.Context, corpid string,
+) (string, error) {
+	result := &struct {
+		utils.WeixinError
+		OpenCorpid string `json:"open_corpid"`
+	}{}
+
+	if err := provider.Client.HTTPPostJson(ctx, apiCorpidToOpenCorpid, map[string]interface{}{
+		"corpid": corpid,
+	}, result); err != nil {
+		return "", err
+	}
+	return result.OpenCorpid, nil
+}
+
+// ID迁移完成状态的设置
+// openid_type	id类型：1-userid与corpid; 3-external_userid
+// https://developer.work.weixin.qq.com/document/path/99375
+func (provider *WxWorkProvider) FinishOpenidMigration(
+	ctx context.Context, corpid string, openidTypes ...int,
+) error {
+	if err := provider.Client.HTTPPostJson(ctx, apiFinishOpenidMigration, map[string]any{
+		"corpid":      corpid,
+		"openid_type": openidTypes,
+	}, nil); err != nil {
+		return err
+	}
+	return nil
+}
+
+// https://developer.work.weixin.qq.com/document/path/99310
+// 服务商上传临时素材
+func (api *WxWorkProvider) Upload(
+	ctx context.Context,
+	filename string,
+	content io.Reader,
+	mediaType material_api.MediaType,
+) (string, error) {
+	result := &struct {
+		utils.WeixinError
+		MediaID string `json:"media_id"`
+	}{}
+
+	if err := api.Client.HttpFile(
+		ctx, apiUpload, "media", filename, content, func(params url.Values) {
+			params.Add("type", string(mediaType))
+		}, result,
+	); err != nil {
+		return "", err
+	}
+	return result.MediaID, nil
 }
