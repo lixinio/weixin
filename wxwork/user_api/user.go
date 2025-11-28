@@ -34,6 +34,7 @@ const (
 	apiSimpleList      = "/cgi-bin/user/simplelist"
 	apiList            = "/cgi-bin/user/list"
 	apiMobileGetUserId = "/cgi-bin/user/getuserid"
+	apiEmailGetUserId  = "/cgi-bin/user/get_userid_by_email"
 	apiConvertToOpenId = "/cgi-bin/user/convert_to_openid"
 	apiConvertToUserId = "/cgi-bin/user/convert_to_userid"
 	apiAuthSucc        = "/cgi-bin/user/authsucc"
@@ -239,6 +240,26 @@ func (api *UserApi) MobileGetUserId(
 	}{}
 	if err := api.Client.HTTPPostJson(context, apiMobileGetUserId, map[string]string{
 		"mobile": mobile,
+	}, result); err != nil {
+		return "", err
+	}
+	return result.Userid, nil
+}
+
+// https://developer.work.weixin.qq.com/document/path/95892
+// 邮箱获取userid
+func (api *UserApi) EmailGetUserId(
+	context context.Context,
+	mobile string,
+	emailType int, // 邮箱类型：1-企业邮箱（默认）；2-个人邮箱
+) (string, error) {
+	result := &struct {
+		utils.WeixinError
+		Userid string `json:"userid"`
+	}{}
+	if err := api.Client.HTTPPostJson(context, apiEmailGetUserId, map[string]any{
+		"email":      mobile,
+		"email_type": emailType,
 	}, result); err != nil {
 		return "", err
 	}

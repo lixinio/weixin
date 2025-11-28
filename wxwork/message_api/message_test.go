@@ -191,6 +191,8 @@ func TestSendVideoMessage(t *testing.T) {
 			ctx,
 			NewMessageHeaderByUser(userid),
 			materialResult.MediaID,
+			"",
+			"",
 		)
 		require.Equal(t, nil, err)
 		fmt.Println(result.MsgID)
