@@ -2,6 +2,7 @@ package authorizer
 
 import (
 	"context"
+	"net/url"
 
 	"github.com/lixinio/weixin/utils"
 )
@@ -53,10 +54,12 @@ type MpAccountBasicInfo struct {
 
 func (api *Authorizer) GetAccountBasicInfo(ctx context.Context) (*MpAccountBasicInfo, error) {
 	var result MpAccountBasicInfo
-	err := api.Client.HTTPGet(ctx, apiGetAccountBasicInfo, &result)
-	if err != nil {
+	if err := api.Client.HTTPPost(
+		ctx, apiGetAccountBasicInfo, "{}", func(params url.Values) {}, &result, "",
+	); err != nil {
 		return nil, err
 	}
+
 	return &result, nil
 }
 

@@ -318,6 +318,12 @@ func parseEvent(body []byte) (_ any, err error) {
 			return
 		}
 		return msg, nil
+	case EventTypeChangeAppAdmin:
+		msg := &EventChangeAppAdmin{}
+		if err = xml.Unmarshal(body, msg); err != nil {
+			return
+		}
+		return msg, nil
 	default:
 		return event, nil
 	}

@@ -33,6 +33,7 @@ const (
 	EventTypeChangeContactUpdateTag = "update_tag" // 标签成员变更事件
 
 	EventTypeBatchJobResult = "batch_job_result" // 异步任务完成通知
+	EventTypeChangeAppAdmin = "change_app_admin" // 应用管理员变更通知
 )
 
 /*
