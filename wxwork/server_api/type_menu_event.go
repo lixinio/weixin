@@ -302,3 +302,22 @@ type EventLocation struct {
 	Longitude float32 `xml:"Longitude"`
 	Precision float32 `xml:"Precision"`
 }
+
+// 应用管理员变更通知
+// https://developer.work.weixin.qq.com/document/path/95038
+/*
+<xml>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[sys]]></FromUserName>
+	<CreateTime>1348831860</CreateTime>
+	<MsgType><![CDATA[event]]></MsgType>
+	<Event><![CDATA[change_app_admin]]></Event>
+	<AgentID>1</AgentID>
+
+</xml>
+*/
+type EventChangeAppAdmin struct {
+	Event
+	AgentID int `xml:"AgentID"`
+}
